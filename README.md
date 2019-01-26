@@ -1,2 +1,2 @@
-# CLM_LIB
-A C library with useful functions and data structures.
+# CLM_LIBS
+A set of useful C libraries in a single header file.
