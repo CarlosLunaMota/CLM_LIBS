@@ -10,7 +10,7 @@
 
 <details><summary><strong>Dependencies</strong></summary><p>
 
-All the `CLM_LIBS` are mutually independent. That means that they don't rely on each other to work and that including one of them will never include the others. Moreover, functions inside a given `CLM_LIB` are mutually independent too (with the exception of the `CLM_STREE` library, where some of the functions do rely on the `stree_find`, `stree_min` and `stree_max` functions). In particular, there are no hidden auxiliary functions that do not appear in the lists provided below.
+All the `CLM_LIBS` are mutually independent. That means that they don't rely on each other to work and that including one of them will never include the others. Moreover, functions inside a given `CLM_LIB` are mutually independent too. In particular, there are no hidden auxiliary functions that do not appear in the lists provided below.
 
 Regarding the C standar library, the `CLM_LIBS.h` header file automatically includes the following headers:
 
