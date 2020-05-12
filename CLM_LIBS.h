@@ -213,7 +213,7 @@
   /**                                                                       **/
   /** Contains the version number (= date) of this release of CLM_LIBS.     **/
   /**                                                                       **/
-  #define CLM_LIBS 20200506
+  #define CLM_LIBS 20200512
 
   /** ********************************************************************* **/
   /**                                                                       **/
@@ -1913,68 +1913,111 @@
                                                                                 \
     /** ******************************************************************* **/ \
     /**                                                                     **/ \
-    /** #### array_select                                                   **/ \
+    /** #### array_sort                                                     **/ \
     /**                                                                     **/ \
-    /** Uses Quickselect to find and return the `rank`-th element of an     **/ \
-    /** `array` of size `length` in `O(length)` expected time.              **/ \
+    /** Sorts the first `length` elements of the array `A` in-place.        **/ \
     /**                                                                     **/ \
-    /** The algorithm is in-place, i.e. the original order of the `array`   **/ \
-    /** can be disturbed during this operation.                             **/ \
+    /** This function is based on a rather obscure variant of QuickSort     **/ \
+    /** called MedianSort:                                                  **/ \
     /**                                                                     **/ \
-    /** In particular, the `k`-th element of the array will be in its       **/ \
-    /** correct place after doing `array_select(A, N, k)`.                  **/ \
+    /**     void MedianSort(const array A, const size_t length) {           **/ \
     /**                                                                     **/ \
-    /** Moreover, `A[0:k-1]` will contain the `k-1` elements of `A` that    **/ \
-    /** are smaller or equal than `A[k]` and `A[k+1:length-1]` will contain **/ \
-    /** the `length-k` elements of `A` that are bigger than `A[k]`.         **/ \
+    /**         const size_t MIN_SIZE = 1<<5;                               **/ \
     /**                                                                     **/ \
-    /** **Warning:** The parameters must satisfy: `rank < length`.          **/ \
+    /**         size_t step, low, high, rank;                               **/ \
     /**                                                                     **/ \
-    /** **Example:** Find the median of an unsorted array of doubles with:  **/ \
+    /**         for (step   = 1; step <  length;   step <<= 1);             **/ \
+    /**         for (step >>= 1; step >= MIN_SIZE; step >>= 1) {            **/ \
+    /**             for (rank = step; rank < length; rank += (step << 1)) { **/ \
+    /**                 low  = (rank-step);                                 **/ \
+    /**                 high = (rank+step) > length ? length : (rank+step); **/ \
+    /**                 QuickSelect(A, low, high, rank);                    **/ \
+    /**             }                                                       **/ \
+    /**         }                                                           **/ \
+    /**         if (MIN_SIZE > 1) { InsertionSort(A, length); }             **/ \
+    /**     }                                                               **/ \
     /**                                                                     **/ \
-    /**     double median = array_select(MyArray, N, N/2);                  **/ \
+    /** The implementation relies heavily on the properties of QuickSelect: **/ \
+    /**                                                                     **/ \
+    /** If we assume that `QuickSelect` is a non-recursive function that    **/ \
+    /** runs in `O(high-low)` time and `O(1)` space, then `MedianSort` is   **/ \
+    /** a non-recursive function that runs in `O(length*log(length))` time  **/ \
+    /** and `O(1)` space.                                                   **/ \
+    /**                                                                     **/ \
+    /** This implementation uses a simple variant of `QuickSelect` that is  **/ \
+    /** lightning fast in practice but may require a quadratic number of    **/ \
+    /** steps to finish for some particular inputs (much like QuickSort).   **/ \
+    /**                                                                     **/ \
+    /** These degenerate cases are VERY rare in practice and do NOT include **/ \
+    /** sorted arrays, reversely sorted arrays or arrays with many repeated **/ \
+    /** elements. Indeed, for these three particular cases, the algorithm   **/ \
+    /** performs better than usual (again, much like QuickSort).            **/ \
+    /**                                                                     **/ \
+    /** Finally, for efficiency reasons, it is advisable to stop the        **/ \
+    /** algorithm early and perform a final `InsertionSort` step. The       **/ \
+    /** constant `MIN_SIZE` controls the breaking point and may be tuned.   **/ \
+    /**                                                                     **/ \
+    /** **Warning:** The parameter `A` must satisfy: `A != NULL`.           **/ \
+    /**                                                                     **/ \
+    /** **Warning:** This sorting algorithm is NOT stable.                  **/ \
+    /**                                                                     **/ \
+    /** **Example:** Sort the first N elements of MyArray with:             **/ \
+    /**                                                                     **/ \
+    /**     array_sort(MyArray, N);                                         **/ \
     /**                                                                     **/ \
     /** **Example:** Sort the K smallest elements of MyArray with:          **/ \
     /**                                                                     **/ \
     /**     array_select(MyArray, N, K);                                    **/ \
-    /**     array_heapsort(MyArray, K-1);                                   **/ \
+    /**     array_sort(MyArray, K-1);                                       **/ \
     /**                                                                     **/ \
     /** **Example:** Sort the K biggest elements of MyArray with:           **/ \
     /**                                                                     **/ \
     /**     array_select(MyArray, N, N-1-K)                                 **/ \
-    /**     array_heapsort(&MyArray[N-K], N-K);                             **/ \
+    /**     array_sort(&MyArray[N-K], N-K);                                 **/ \
     /**                                                                     **/ \
-    static inline type prefix##array_select(const prefix##array A,              \
-                                            const size_t length,                \
-                                            const size_t rank) {                \
+    static inline void prefix##array_sort(const prefix##array A,                \
+                                          const size_t length) {                \
+                                                                                \
         /* Precondition */                                                      \
-        assert(rank < length);                                                  \
+        assert(A != NULL);                                                      \
                                                                                 \
-        size_t l, low  = 0;                                                     \
-        size_t h, high = length-1;                                              \
-        type temp, pivot;                                                       \
+        const size_t MIN_SIZE = 1<<5; /* `MIN_SIZE` power of 2 && > 0 */        \
                                                                                 \
-        /* Apply Quickselect in place */                                        \
-        while (low < high) {                                                    \
-            pivot = A[rank];                                                    \
-            l     = low;                                                        \
-            h     = high;                                                       \
-            do {                                                                \
-                while (comp(A[l], pivot) < 0) { l++; }                          \
-                while (comp(pivot, A[h]) < 0) { h--; }                          \
-                if (l <= h) {                                                   \
-                    temp = A[l];                                                \
-                    A[l] = A[h];                                                \
-                    A[h] = temp;                                                \
-                    l++; h--;                                                   \
+        size_t i, j, left, right, step, rank;                                   \
+        type   t, pivot;                                                        \
+                                                                                \
+        /* MEDIAN SORT (down to MIN_SIZE) */                                    \
+        for (step   = 1; step <  length;   step <<= 1);                         \
+        for (step >>= 1; step >= MIN_SIZE; step >>= 1) {                        \
+            for (rank = step; rank < length; rank += (step << 1)) {             \
+                left  =  (rank-step);                                           \
+                right = ((rank+step) > length ? length : (rank+step)) - 1;      \
+                                                                                \
+                /* QUICK_SELECT the element `rank` in `A[left, right)` */       \
+                while (left < right) {                                          \
+                    pivot = A[rank];                                            \
+                    i     = left;                                               \
+                    j     = right;                                              \
+                    do {while (COMP_NUM(A[i], pivot) < 0) { ++i; }              \
+                        while (COMP_NUM(pivot, A[j]) < 0) { --j; }              \
+                        if  (i <= j) { t=A[i]; A[i]=A[j]; A[j]=t; ++i; --j; }   \
+                    } while (i <= j);                                           \
+                    if (j < rank) { left  = i; }                                \
+                    if (rank < i) { right = j; }                                \
                 }                                                               \
-            } while (l <= h);                                                   \
-            if (h < rank) { low  = l; }                                         \
-            if (rank < l) { high = h; }                                         \
+            }                                                                   \
         }                                                                       \
                                                                                 \
-        /* Return the requested element */                                      \
-        return A[rank];                                                         \
+        /* INSERTION SORT */                                                    \
+        for(i = 1; i < length; ++i) {                                           \
+            if (COMP_NUM(A[i], A[i-1]) < 0) {                                   \
+                t    = A[i];                                                    \
+                j    = i-1;                                                     \
+                A[i] = A[j];                                                    \
+                while(j > 0 && COMP_NUM(t, A[j-1]) < 0) { A[j] = A[j-1]; --j; } \
+                A[j] = t;                                                       \
+            }                                                                   \
+        }                                                                       \
     }                                                                           \
                                                                                 \
     /*  Uniformly Random Shuffles an array in-place in O(length) time.       */ \
@@ -2008,129 +2051,70 @@
         }                                                                       \
     }                                                                           \
                                                                                 \
-    /*  Unstable & In-Place Sort function based on Heap Sort                 */ \
-    /*      Worst Case: O(n log n) time and O(1) space                       */ \
-    /*      Best  Case: O(n log n) time and O(1) space                       */ \
-    /*                                                                       */ \
-    static inline void prefix##array_heapsort(const prefix##array A,            \
-                                              const size_t length) {            \
-                                                                                \
+    /** ******************************************************************* **/ \
+    /**                                                                     **/ \
+    /** #### array_select                                                   **/ \
+    /**                                                                     **/ \
+    /** Uses Quickselect to find and return the `rank`-th element of an     **/ \
+    /** `array` of size `length` in `O(length)` expected time.              **/ \
+    /**                                                                     **/ \
+    /** The algorithm is in-place, i.e. the original order of the `array`   **/ \
+    /** can be disturbed during this operation.                             **/ \
+    /**                                                                     **/ \
+    /** In particular, the `k`-th element of the array will be in its       **/ \
+    /** correct place after doing `array_select(A, N, k)`.                  **/ \
+    /**                                                                     **/ \
+    /** Moreover, `A[0:k-1]` will contain the `k-1` elements of `A` that    **/ \
+    /** are smaller or equal than `A[k]` and `A[k+1:length-1]` will contain **/ \
+    /** the `length-k` elements of `A` that are bigger than `A[k]`.         **/ \
+    /**                                                                     **/ \
+    /** **Warning:** The parameters must satisfy: `rank < length`.          **/ \
+    /**                                                                     **/ \
+    /** **Example:** Find the median of an unsorted array of doubles with:  **/ \
+    /**                                                                     **/ \
+    /**     double median = array_select(MyArray, N, N/2);                  **/ \
+    /**                                                                     **/ \
+    /** **Example:** Sort the K smallest elements of MyArray with:          **/ \
+    /**                                                                     **/ \
+    /**     array_select(MyArray, N, K);                                    **/ \
+    /**     array_sort(MyArray, K-1);                                       **/ \
+    /**                                                                     **/ \
+    /** **Example:** Sort the K biggest elements of MyArray with:           **/ \
+    /**                                                                     **/ \
+    /**     array_select(MyArray, N, N-1-K)                                 **/ \
+    /**     array_sort(&MyArray[N-K], N-K);                                 **/ \
+    /**                                                                     **/ \
+    static inline type prefix##array_select(const prefix##array A,              \
+                                            const size_t length,                \
+                                            const size_t rank) {                \
         /* Precondition */                                                      \
-        assert(A != NULL);                                                      \
+        assert(rank < length);                                                  \
                                                                                 \
-        size_t i, j, k;                                                         \
-        type   temp;                                                            \
+        size_t l, low  = 0;                                                     \
+        size_t h, high = length-1;                                              \
+        type temp, pivot;                                                       \
                                                                                 \
-        /* Max-Heapify the array A[0..length-1] in O(length) */                 \
-        for (i = (length>>1); i > 0; i--) {                                     \
-            j    = i-1;                                                         \
-            temp = A[j];                                                        \
-            for (;;) {                                                          \
-                k = (j<<1) + 1;                                                 \
-                if (k+1 >  length) { break; }                                   \
-                if (k+2 <= length && comp(A[k], A[k+1]) < 0) { k++; }           \
-                if (comp(temp, A[k]) >= 0) { break; }                           \
-                else { A[j] = A[k]; j = k; }                                    \
-            }                                                                   \
-            A[j] = temp;                                                        \
-        }                                                                       \
-                                                                                \
-        /* Selection Sort phase in O(length * log(length)) */                   \
-        for (i = length-1; i > 0; i--) {                                        \
-            temp = A[i];                                                        \
-            A[i] = A[0];                                                        \
-            j    = 0;                                                           \
-            for (;;) {                                                          \
-                k = (j<<1) + 1;                                                 \
-                if (k+1 >  i) { break; }                                        \
-                if (k+2 <= i && comp(A[k], A[k+1]) < 0) { k++; }                \
-                if (comp(temp, A[k]) >= 0) { break; }                           \
-                else { A[j] = A[k]; j = k; }                                    \
-            }                                                                   \
-            A[j] = temp;                                                        \
-        }                                                                       \
-    }                                                                           \
-                                                                                \
-    /*  Stable & Adaptive Sort function based on Natural Merge Sort          */ \
-    /*      Worst Case: O(n log n) time and O(n) space                       */ \
-    /*      Best  Case: O(n)       time and O(n) space                       */ \
-    /*                                                                       */ \
-    static inline bool prefix##array_mergesort(const prefix##array A,           \
-                                               const size_t length) {           \
-                                                                                \
-        /* Precondition */                                                      \
-        assert(A != NULL);                                                      \
-                                                                                \
-        size_t i, j, k, end, mid, ini = length;                                 \
-        size_t size = sizeof(type);                                             \
-        type   t;                                                               \
-                                                                                \
-        /* Allocate working memory */                                           \
-        prefix##array B = (prefix##array) malloc(length*size);                  \
-        if (length > 1 && B == NULL) {                                          \
-            fprintf(stderr, "ERROR: Unable to allocate mergesort array.\n");    \
-            return false;                                                       \
-        }                                                                       \
-                                                                                \
-        /* Pre-Process: Reverse all stricly descending runs */                  \
-        for (i = 0, k = 1; k < length && comp(A[k], A[k-1]) < 0; k++);          \
-        while (i < length && k-i > 2) {                                         \
-            for (j = k-1; i < j; i++, j--) { t = A[i]; A[i] = A[j]; A[j] = t; } \
-            for (i = k, k = i+1; k < length && comp(A[k], A[k-1]) < 0; k++);    \
-        }                                                                       \
-                                                                                \
-        /* While data is not fully sorted */                                    \
-        while (ini > 0) {                                                       \
-                                                                                \
-            /* Make a single pass over the data merging adjacent runs */        \
-            k = end = 0;                                                        \
-            while (end < length) {                                              \
-                                                                                \
-                /* Find new ini, mid & end */                                   \
-                ini = end;                                                      \
-                for (mid=ini+1; mid<length && comp(A[mid-1],A[mid])<=0; mid++); \
-                for (end=mid+1; end<length && comp(A[end-1],A[end])<=0; end++); \
-                if (end > length) { end = length; }                             \
-                                                                                \
-                /* Merge A[ini, mid) with A[mid, end) into B[z, z+end-ini) */   \
-                i = ini;                                                        \
-                j = mid;                                                        \
-                while (i < mid && j < end) {                                    \
-                    if (comp(A[i], A[j]) <= 0) { B[k++] = A[i++]; }             \
-                    else                       { B[k++] = A[j++]; }             \
+        /* Apply Quickselect in place */                                        \
+        while (low < high) {                                                    \
+            pivot = A[rank];                                                    \
+            l     = low;                                                        \
+            h     = high;                                                       \
+            do {                                                                \
+                while (comp(A[l], pivot) < 0) { l++; }                          \
+                while (comp(pivot, A[h]) < 0) { h--; }                          \
+                if (l <= h) {                                                   \
+                    temp = A[l];                                                \
+                    A[l] = A[h];                                                \
+                    A[h] = temp;                                                \
+                    l++; h--;                                                   \
                 }                                                               \
-                if (i < mid) { memcpy(&B[k],&A[i],(mid-i)*size); k += mid-i; }  \
-                if (j < end) { memcpy(&B[k],&A[j],(end-j)*size); k += end-j; }  \
-            }                                                                   \
-                                                                                \
-            /* If it is already sorted: Copy B back into A & break */           \
-            if (ini == 0) { memcpy(A, B, length*size); break; }                 \
-                                                                                \
-            /* Make a single pass over the data merging adjacent runs */        \
-            k = end = 0;                                                        \
-            while (end < length) {                                              \
-                                                                                \
-                /* Find new ini, mid & end */                                   \
-                ini = end;                                                      \
-                for (mid=ini+1; mid<length && comp(B[mid-1],B[mid])<=0; mid++); \
-                for (end=mid+1; end<length && comp(B[end-1],B[end])<=0; end++); \
-                if (end > length) { end = length; }                             \
-                                                                                \
-                /* Merge B[ini, mid) with B[mid, end) into A[z, z+end-ini) */   \
-                i = ini;                                                        \
-                j = mid;                                                        \
-                while (i < mid && j < end) {                                    \
-                    if (comp(B[i], B[j]) <= 0) { A[k++] = B[i++]; }             \
-                    else                       { A[k++] = B[j++]; }             \
-                }                                                               \
-                if (i < mid) { memcpy(&A[k],&B[i],(mid-i)*size); k += mid-i; }  \
-                if (j < end) { memcpy(&A[k],&B[j],(end-j)*size); k += end-j; }  \
-            }                                                                   \
+            } while (l <= h);                                                   \
+            if (h < rank) { low  = l; }                                         \
+            if (rank < l) { high = h; }                                         \
         }                                                                       \
-        free(B);                                                                \
                                                                                 \
-        /* Return success */                                                    \
-        return true;                                                            \
+        /* Return the requested element */                                      \
+        return A[rank];                                                         \
     }                                                                           \
                                                                                 \
     /*  Find the leftmost insertion point for data in a sorted array in      */ \
@@ -2385,41 +2369,6 @@
         assert((*list) != NULL);                                                \
                                                                                 \
         return (*list)->data;                                                   \
-    }                                                                           \
-                                                                                \
-    /** ******************************************************************* **/ \
-    /**                                                                     **/ \
-    /** #### clist_next                                                     **/ \
-    /**                                                                     **/ \
-    /** Returns the first element of a non-empty list in O(1) time.         **/ \
-    /**                                                                     **/ \
-    /** **Warning:** The `list` pointer will move around the list.          **/ \
-    /**                                                                     **/ \
-    /** **Warning:** The parameter `list` must satisfy `*list != NULL`.     **/ \
-    /**                                                                     **/ \
-    /** **Example:** Iterate over all the elements of `MyList` with:        **/ \
-    /**                                                                     **/ \
-    /**     clist iter = MyList;                                            **/ \
-    /**     if (iter){                                                      **/ \
-    /**         do { do_something(clist_next(&iter));                       **/ \
-    /**         } while (iter != MyList);                                   **/ \
-    /**     }                                                               **/ \
-    /**                                                                     **/ \
-    /** **Example:** Count how many elements contains `MyList` with:        **/ \
-    /**                                                                     **/ \
-    /**     size_t size = 0;                                                **/ \
-    /**     clist  iter = MyList;                                           **/ \
-    /**     if (iter) {                                                     **/ \
-    /**         do { clist_next(&iter); size++; } while (iter != MyList);   **/ \
-    /**     }                                                               **/ \
-    /**                                                                     **/ \
-    static inline type prefix##clist_next(prefix##clist *list) {                \
-                                                                                \
-        /* Sanity Check */                                                      \
-        assert((*list) != NULL);                                                \
-                                                                                \
-        *list = (*list)->next;                                                  \
-        return  (*list)->data;                                                  \
     }                                                                           \
                                                                                 \
 
@@ -3228,7 +3177,6 @@
     /**                                                                     **/ \
     /** If `tree` already contains `data`, it gets overwritten and the      **/ \
     /** function returns the current `rank` of `data` in the `tree`.        **/ \
-    /**                                                                     **/ \
     /** Otherwise the function tries to insert `data` in `tree` and returns **/ \
     /** its current `rank` if possible and `0` otherwise.                   **/ \
     /**                                                                     **/ \

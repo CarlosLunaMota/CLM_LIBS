@@ -1882,6 +1882,53 @@ void CLM_FRACTAL_TEST(bool verbose) {
 
 }
 
+void CLM_ARRAY_TEST(bool verbose) {
+
+    printf("\nTesting CLM_ARRAY...\n\n");
+
+    size_t size = 1000000;
+
+    size_t i,j;
+    array A = array_new(size);
+    assert(A);
+    assert(size > 20);
+
+    for (i = 0; i < size; i++) { A[i] = i; }
+    if (verbose) {
+        printf("\tA = [ ");
+        for (i = 0; i < 20; i++) { printf("%zu, ",A[i]); }
+        printf("...]\n");
+    }
+
+    /* Test Shuffle */
+    array_shuffle(A, size);
+    if (verbose) {
+        printf("\tA = [ ");
+        for (i = 0; i < 20; i++) { printf("%zu, ",A[i]); }
+        printf("...]\n");
+    }
+
+    /* Test Select */
+    for (i = 0; i < 100; i++) {
+        j = rand_size_t(size);
+        assert(array_select(A, size, j) == j);
+    }
+
+    /* Test sort */
+    array_shuffle(A, size);
+    array_sort(A, size);
+    for (i = 0; i < size-1; i++) { assert(A[i] <= A[i+1]); }
+
+    /* Test Binary Search */
+    for (i = j = 0; i+3 < size; i += 4) { A[i]=A[i+1]=A[i+2]=A[i+3]=j++;}
+    while (i < size-1) { A[i++] = j; }
+    for (i = 0; i < A[size-1]; i++) {
+        assert(array_bisect_r(A, size, i)-array_bisect_l(A, size, i) == 4);
+    }
+
+    free(A);
+}
+
 void CLM_CLIST_TEST(bool verbose) {
 
     printf("\nTesting CLM_CLIST...\n\n");
@@ -1923,63 +1970,7 @@ void CLM_CLIST_TEST(bool verbose) {
         assert(clist_verify(L));
     }
 
-    for (i = 0; i < MAX_SIZE; i++) { clist_push_front(&L, i); assert(clist_verify(L)); }
-
-    while (L) { clist_pop_front(&L); }
     assert(L == NULL);
-
-}
-
-void CLM_ARRAY_TEST(bool verbose) {
-
-    printf("\nTesting CLM_ARRAY...\n\n");
-
-    size_t size = 1000000;
-
-
-    size_t i,j;
-    array A = array_new(size);
-    assert(A);
-    assert(size > 20);
-
-    for (i = 0; i < size; i++) { A[i] = i; }
-    if (verbose) {
-        printf("\tA = [ ");
-        for (i = 0; i < 20; i++) { printf("%zu, ",A[i]); }
-        printf("...]\n");
-    }
-
-    /* Test Shuffle */
-    array_shuffle(A, size);
-    if (verbose) {
-        printf("\tA = [ ");
-        for (i = 0; i < 20; i++) { printf("%zu, ",A[i]); }
-        printf("...]\n");
-    }
-
-    /* Test Select */
-    for (i = 0; i < 100; i++) {
-        j = rand_size_t(size);
-        assert(array_select(A, size, j) == j);
-    }
-
-    /* Test Mergesort */
-    array_mergesort(A, size);
-    for (i = 0; i < size-1; i++) { assert(A[i] <= A[i+1]); }
-
-    /* Test Heapsort */
-    array_shuffle(A, size);
-    array_heapsort(A, size);
-    for (i = 0; i < size-1; i++) { assert(A[i] <= A[i+1]); }
-
-    /* Test Binary Search */
-    for (i = j = 0; i+3 < size; i += 4) { A[i]=A[i+1]=A[i+2]=A[i+3]=j++;}
-    while (i < size-1) { A[i++] = j; }
-    for (i = 0; i < A[size-1]; i++) {
-        assert(array_bisect_r(A, size, i)-array_bisect_l(A, size, i) == 4);
-    }
-
-    free(A);
 }
 
 void CLM_STREE_TEST(bool verbose) {
@@ -2071,11 +2062,107 @@ void CLM_WTREE_TEST(bool verbose) {
     assert(T == NULL);
 }
 
+/** CURRENT EXPERIMENT **************************************************** **/
+
+void QuickSelect(const array A, const size_t ini, const size_t end, const size_t rank) {
+
+    size_t l, low  = ini;
+    size_t h, high = end-1;
+    size_t temp, pivot;
+    while (low < high) {
+        pivot = A[rank];
+        l     = low;
+        h     = high;
+        do {
+            while (COMP_NUM(A[l], pivot) < 0) { ++l; }
+            while (COMP_NUM(pivot, A[h]) < 0) { --h; }
+            if (l <= h) {
+                temp = A[l]; A[l] = A[h]; A[h] = temp;
+                ++l;
+                --h;
+            }
+        } while (l <= h);
+        if (h < rank) { low  = l; }
+        if (rank < l) { high = h; }
+    }
+}
+
+void QuickSelect2(const array A, const size_t ini, const size_t end, const size_t rank) {
+
+    size_t l, low  = ini;
+    size_t h, high = end-1;
+    size_t temp, pivot;
+    while (low < high) {
+        if (COMP_NUM(A[low],  A[rank]) > 0) { temp = A[low];  A[low]  = A[rank]; A[rank] = temp; }
+        if (COMP_NUM(A[rank], A[high]) > 0) { temp = A[rank]; A[rank] = A[high]; A[high] = temp; }
+        if (COMP_NUM(A[low],  A[rank]) > 0) { temp = A[low];  A[low]  = A[rank]; A[rank] = temp; }
+        pivot = A[rank];
+        l = low;
+        h = high;
+        do {
+            while (COMP_NUM(A[l], pivot) < 0) { ++l; }
+            while (COMP_NUM(pivot, A[h]) < 0) { --h; }
+            if (l <= h) {
+                temp = A[l]; A[l] = A[h]; A[h] = temp;
+                ++l;
+                --h;
+            }
+        } while (l <= h);
+        if (h < rank) { low  = l; }
+        if (rank < l) { high = h; }
+    }
+}
+
+void InsertionSort(const array A, const size_t length) {
+
+    size_t i, j;
+    size_t temp;
+
+    for(i = 1; i < length; ++i) {
+        temp = A[i];
+        if (COMP_NUM(temp, A[i-1]) < 0) {
+            A[i] = A[i-1];
+            j    = i-1;
+            while(j > 0 && COMP_NUM(temp, A[j-1]) < 0) { A[j] = A[j-1]; --j; }
+            A[j] = temp;
+        }
+    }
+}
+
+void MedianSort(const array A, const size_t length) {
+
+    const size_t MIN_SIZE = 1<<5; /* MUST BE: power of 2 && > 0 */
+
+    size_t step, left, right, rank;
+
+    /* MEDIAN SORT (up to MIN_SIZE) */
+    for (step   = 1; step <  length;   step <<= 1);
+    for (step >>= 1; step >= MIN_SIZE; step >>= 1) {
+        for (rank = step; rank < length; rank += (step << 1)) {
+            left  = (rank-step);
+            right = (rank+step) > length ? length : (rank+step);
+
+            /* QUICK_SELECT the element rank in the interval [left, right) */
+            QuickSelect(A, left, right, rank);
+        }
+    }
+
+    /* INSERTION SORT */
+    if (MIN_SIZE > 1) { InsertionSort(A, length); }
+}
+
+int COMP(const void *i, const void *j) {
+    size_t ii = *(size_t *) i;
+    size_t jj = *(size_t *) j;
+    return (((ii) > (jj)) - ((ii) < (jj)));
+}
+
+
 /** MAIN ****************************************************************** **/
 
 int main (void) {
 
-    const bool verbose = true;
+    /*const bool verbose = true;
 
     CLM_TIME_TEST(verbose);
     CLM_RAND_TEST(verbose);
@@ -2088,6 +2175,53 @@ int main (void) {
     CLM_STREE_TEST(verbose);
     CLM_WTREE_TEST(verbose);
 
-    printf("\nAll tests passing!\n\n");
+    printf("\nAll tests passing!\n\n");*/
+
+    size_t i, s, size = 1<<24;
+    clock_t crono;
+
+    array R = array_new(size);  assert(R);
+    array W = array_new(size);  assert(W);
+    array S = array_new(size);  assert(S);
+    
+    for ( ; ; ) {
+
+        // Generate Problem:
+        s = 1+rand_size_t(size);
+        //for (i = 0; i < size; i++) { R[i] = i;}
+        //for (i = 0; i < size; i++) { R[i] = size-i; }
+        //for (i = 0; i < size; i++) { R[i] = i%(100000;}
+        for (i = 0; i < s; i++) { R[i] = rand_size_t(size);}
+        array_shuffle(R, s);
+
+
+        /* Test qsort */
+        for (i = 0; i < s; i++) { S[i] = R[i]; }
+        crono = clock();
+        qsort(S, s, sizeof(size_t), &COMP);
+        printf("\tqsort(%zu)      in %.3f seconds.\n", s, time_elapsed(crono));
+        for (i = 1; i < s; i++) { assert(S[i-1] <= S[i]); }
+
+        /* Test array_sort */
+        for (i = 0; i < s; i++) { W[i] = R[i]; }
+        crono = clock();
+        array_sort(W, s);
+        printf("\tarray_sort(%zu) in %.3f seconds.\n", s, time_elapsed(crono));
+        for (i = 0; i < s; i++) { assert(W[i] == S[i]); }
+
+        /* Test MedianSort */
+        /*for (i = 0; i < s; i++) { W[i] = R[i]; }
+        crono = clock();
+        MedianSort(W, s);
+        printf("\tMedianSort(%zu) in %.3f seconds.\n", size, time_elapsed(crono));
+        for (i = 0; i < s; i++) { assert(W[i] == S[i]); }*/
+
+        printf("\n");
+    }
+
+    free(R);
+    free(W);
+    free(S);
+
     return 0;
 }

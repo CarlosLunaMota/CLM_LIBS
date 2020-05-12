@@ -232,7 +232,7 @@ int main(void) {
 ### CLM\_LIBS
 
 ```c
-#define CLM_LIBS 20200506
+#define CLM_LIBS 20200512
 ```
 
 Contains the version number (= date) of this release of CLM_LIBS.
@@ -1191,6 +1191,82 @@ array A = array_new(N);
 
 *******************************************************************
 
+#### array\_sort
+
+```c
+static inline void array_sort(const array A, const size_t length);
+```
+
+Sorts the first `length` elements of the array `A` in-place.
+
+This function is based on a rather obscure variant of QuickSort
+called MedianSort:
+
+```c
+void MedianSort(const array A, const size_t length) {
+
+    const size_t MIN_SIZE = 1<<5;
+
+    size_t step, low, high, rank;
+
+    for (step   = 1; step <  length;   step <<= 1);
+    for (step >>= 1; step >= MIN_SIZE; step >>= 1) {
+        for (rank = step; rank < length; rank += (step << 1)) {
+            low  = (rank-step);
+            high = (rank+step) > length ? length : (rank+step);
+            QuickSelect(A, low, high, rank);
+        }
+    }
+    if (MIN_SIZE > 1) { InsertionSort(A, length); }
+}
+```
+
+The implementation relies heavily on the properties of QuickSelect:
+
+If we assume that `QuickSelect` is a non-recursive function that
+runs in `O(high-low)` time and `O(1)` space, then `MedianSort` is
+a non-recursive function that runs in `O(length*log(length))` time
+and `O(1)` space.
+
+This implementation uses a simple variant of `QuickSelect` that is
+lightning fast in practice but may require a quadratic number of
+steps to finish for some particular inputs (much like QuickSort).
+
+These degenerate cases are VERY rare in practice and do NOT include
+sorted arrays, reversely sorted arrays or arrays with many repeated
+elements. Indeed, for these three particular cases, the algorithm
+performs better than usual (again, much like QuickSort).
+
+Finally, for efficiency reasons, it is advisable to stop the
+algorithm early and perform a final `InsertionSort` step. The
+constant `MIN_SIZE` controls the breaking point and may be tuned.
+
+**Warning:** The parameter `A` must satisfy: `A != NULL`.
+
+**Warning:** This sorting algorithm is NOT stable.
+
+**Example:** Sort the first N elements of MyArray with:
+
+```c
+array_sort(MyArray, N);
+```
+
+**Example:** Sort the K smallest elements of MyArray with:
+
+```c
+array_select(MyArray, N, K);
+array_sort(MyArray, K-1);
+```
+
+**Example:** Sort the K biggest elements of MyArray with:
+
+```c
+array_select(MyArray, N, N-1-K)
+array_sort(&MyArray[N-K], N-K);
+```
+
+*******************************************************************
+
 #### array\_select
 
 ```c
@@ -1222,14 +1298,14 @@ double median = array_select(MyArray, N, N/2);
 
 ```c
 array_select(MyArray, N, K);
-array_heapsort(MyArray, K-1);
+array_sort(MyArray, K-1);
 ```
 
 **Example:** Sort the K biggest elements of MyArray with:
 
 ```c
 array_select(MyArray, N, N-1-K)
-array_heapsort(&MyArray[N-K], N-K);
+array_sort(&MyArray[N-K], N-K);
 ```
 
 *********************************************************************
@@ -1373,40 +1449,6 @@ Returns the last element of a non-empty list in O(1) time.
 
 ```c
 type last = clist_back(&MyList);
-```
-
-*******************************************************************
-
-#### clist\_next
-
-```c
-static inline type clist_next(clist *list);
-```
-
-Returns the first element of a non-empty list in O(1) time.
-
-**Warning:** The `list` pointer will move around the list.
-
-**Warning:** The parameter `list` must satisfy `*list != NULL`.
-
-**Example:** Iterate over all the elements of `MyList` with:
-
-```c
-clist iter = MyList;
-if (iter){
-    do { do_something(clist_next(&iter));
-    } while (iter != MyList);
-}
-```
-
-**Example:** Count how many elements contains `MyList` with:
-
-```c
-size_t size = 0;
-clist  iter = MyList;
-if (iter) {
-    do { clist_next(&iter); size++; } while (iter != MyList);
-}
 ```
 
 *********************************************************************
@@ -1873,7 +1915,6 @@ Inserts `data` in `tree` in O(log(size)) time.
 
 If `tree` already contains `data`, it gets overwritten and the
 function returns the current `rank` of `data` in the `tree`.
-
 Otherwise the function tries to insert `data` in `tree` and returns
 its current `rank` if possible and `0` otherwise.
 

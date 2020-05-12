@@ -2,7 +2,7 @@
 # CLM\_LIBS CHEAT SHEET
 
 ```c
-#define CLM_LIBS 20200506
+#define CLM_LIBS 20200512
 
 
 #define IMPORT_CLM_TIME(prefix)
@@ -68,10 +68,9 @@
     typedef type *array;
 
     array   array_new(size_t length);
-    type    array_select(array A, size_t length, size_t rank);
+    void    array_sort(array A, size_t length);
     void    array_shuffle(array A, size_t length);
-    void    array_heapsort(array A, size_t length);
-    bool    array_mergesort(array A, size_t length);
+    type    array_select(array A, size_t length, size_t rank);
     size_t  array_bisect_l(array A, size_t length, type data);
     size_t  array_bisect_r(array A, size_t length, type data);
 
@@ -87,7 +86,6 @@
     type    clist_pop_front(clist *list);
     type    clist_front(clist *list);
     type    clist_back(clist *list);
-    type    clist_next(clist *list);
 
 #define IMPORT_CLM_STREE(type, comp, prefix)
 
