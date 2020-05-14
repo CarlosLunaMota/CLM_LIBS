@@ -153,42 +153,37 @@ user to change the name of the functions and data types so they don't
 crash with other user-defined functions/types or with different calls
 of the same macro.
 
-Some of the macros require two mandatory parameters (`type` & `comp`)
+Some of the macros require two mandatory parameters (`type`, `is_less`)
 that are used to build generic functions tailored to that data type.
 
 The `type` parameter could be any standard or user-defined data type.
 
-The `comp` parameter should be the name (NOT A POINTER, JUST THE NAME)
-of a comparing function/macro for the corresponding data type.
+The `is_less` parameter should be the name (NOT A POINTER, JUST THE
+NAME) of a comparing function/macro for the corresponding data type.
 
-The `int comp(const type x, const type y)` function must accept two
-`type` values and return:
+The `bool is_less(const type x, const type y)` function must accept
+two `type` values and return:
 
- * `comp(x, y) <  0`   if   `x <  y`
- * `comp(x, y) == 0`   if   `x == y`
- * `comp(x, y) >  0`   if   `x >  y`
+ * `is_less(x, y) == true`   if   `x <  y`
+ * `is_less(x, y) == false`  if   `x >= y`
 
 **Example:**
 
 ```c
 #include "CLM_LIBS.h"
 
-#define COMP_NUM(i, j) (((i)>(j)) - ((i)<(j)))
+#define IS_LESS_NUM(i, j) ((i)<(j))
 
 typedef struct pair { int i; double d; } pair_t;
 
-int comp_pair(const pair_t p1, pair_t p2) {
-    if      (p1.i > p2.i) { return  1; }
-    else if (p1.i < p2.i) { return -1; }
-    else if (p1.d > p2.d) { return  1; }
-    else if (p1.d < p2.d) { return -1; }
-    else                  { return  0; }
+bool is_less_pair(const pair_t p1, pair_t p2) {
+    return (p1.i < p2.i || (p1.i == p2.i && p1.d < p2.d));
 }
 
 IMPORT_CLM_RAND()
-IMPORT_CLM_ARRAY(int, COMP_NUM, int_)
-IMPORT_CLM_ARRAY(double, COMP_NUM, dbl_)
-IMPORT_CLM_STREE(pair_t, comp_pair, )
+IMPORT_CLM_ARRAY(int, IS_LESS_NUM, int_)
+IMPORT_CLM_ARRAY(double, IS_LESS_NUM, dbl_)
+IMPORT_CLM_STREE(pair_t, is_less_pair, )
 
 int main(void) {
 
@@ -1154,7 +1149,7 @@ coordinates in the Hilbert space-filling curve of `bits` levels.
 ### CLM\_ARRAY
 
 ```c
-#define IMPORT_CLM_ARRAY(type, comp, prefix)
+#define IMPORT_CLM_ARRAY(type, is_less, prefix)
 ```
 
 A set of functions to work with arrays.
@@ -1205,7 +1200,7 @@ called MedianSort:
 ```c
 void MedianSort(const array A, const size_t length) {
 
-    const size_t MIN_SIZE = 1<<5;
+    const size_t MIN_SIZE = 1<<7;
 
     size_t step, low, high, rank;
 
@@ -1214,7 +1209,7 @@ void MedianSort(const array A, const size_t length) {
         for (rank = step; rank < length; rank += (step << 1)) {
             low  = (rank-step);
             high = (rank+step) > length ? length : (rank+step);
-            QuickSelect(A, low, high, rank);
+            QuickSelect(A+low, high-low, step);
         }
     }
     if (MIN_SIZE > 1) { InsertionSort(A, length); }
@@ -1456,7 +1451,7 @@ type last = clist_back(&MyList);
 ### CLM\_STREE
 
 ```c
-#define IMPORT_CLM_STREE(type, comp, prefix)
+#define IMPORT_CLM_STREE(type, is_less, prefix)
 ```
 
 A set of data types and functions related to the `stree` container.
@@ -1738,7 +1733,7 @@ if (stree_find(&MyTree, data)) {
 ### CLM\_WTREE
 
 ```c
-#define IMPORT_CLM_WTREE(type, comp, prefix)
+#define IMPORT_CLM_WTREE(type, is_less, prefix)
 ```
 
 A set of data types and functions related to the `wtree` container.

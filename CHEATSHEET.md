@@ -63,7 +63,7 @@
     void    fractal_h_to_coord(size_t dim, size_t bits, size_t *n, size_t *coord);
     void    fractal_coord_to_h(size_t dim, size_t bits, size_t *n, size_t *coord);
 
-#define IMPORT_CLM_ARRAY(type, comp, prefix)
+#define IMPORT_CLM_ARRAY(type, is_less, prefix)
 
     typedef type *array;
 
@@ -87,7 +87,7 @@
     type    clist_front(clist *list);
     type    clist_back(clist *list);
 
-#define IMPORT_CLM_STREE(type, comp, prefix)
+#define IMPORT_CLM_STREE(type, is_less, prefix)
 
     typedef struct stree_s {
         struct stree_s *left;
@@ -104,7 +104,7 @@
     bool    stree_find(stree *tree, type data);
     bool    stree_insert(stree *tree, type data);
 
-#define IMPORT_CLM_WTREE(type, comp, prefix)
+#define IMPORT_CLM_WTREE(type, is_less, prefix)
 
     typedef struct wtree_s {
       struct wtree_s *left;

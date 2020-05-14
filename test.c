@@ -41,8 +41,7 @@
 
 /** MACROS **************************************************************** **/
 
-#define COMP_NUM(i, j) (((i) > (j)) - ((i) < (j)))
-#define COMP_STR(i, j) strcmp(i, j)
+#define LESS_THAN(i, j) ((i) < (j))
 
 /** LIBRARIES ************************************************************* **/
 
@@ -55,9 +54,9 @@ IMPORT_CLM_ITER()
 IMPORT_CLM_PRINTF()
 IMPORT_CLM_FRACTAL()
 IMPORT_CLM_CLIST(size_t, )
-IMPORT_CLM_ARRAY(size_t, COMP_NUM, )
-IMPORT_CLM_STREE(size_t, COMP_NUM, )
-IMPORT_CLM_WTREE(size_t, COMP_NUM, )
+IMPORT_CLM_ARRAY(size_t, LESS_THAN, )
+IMPORT_CLM_STREE(size_t, LESS_THAN, )
+IMPORT_CLM_WTREE(size_t, LESS_THAN, )
 
 /** AUXILIARY FUNCTIONS *************************************************** **/
 
@@ -2030,7 +2029,7 @@ void CLM_WTREE_TEST(bool verbose) {
     printf("\nTesting CLM_WTREE...\n\n");
 
     size_t MAX_SIZE = 1000000;
-    size_t MAX_KEY  = 64;
+    size_t MAX_KEY  = 1<<8;
     size_t i, j, rank, size = 0;
     wtree T = NULL;
 
@@ -2074,8 +2073,8 @@ void QuickSelect(const array A, const size_t ini, const size_t end, const size_t
         l     = low;
         h     = high;
         do {
-            while (COMP_NUM(A[l], pivot) < 0) { ++l; }
-            while (COMP_NUM(pivot, A[h]) < 0) { --h; }
+            while (LESS_THAN(A[l], pivot)) { ++l; }
+            while (LESS_THAN(pivot, A[h])) { --h; }
             if (l <= h) {
                 temp = A[l]; A[l] = A[h]; A[h] = temp;
                 ++l;
@@ -2093,15 +2092,15 @@ void QuickSelect2(const array A, const size_t ini, const size_t end, const size_
     size_t h, high = end-1;
     size_t temp, pivot;
     while (low < high) {
-        if (COMP_NUM(A[low],  A[rank]) > 0) { temp = A[low];  A[low]  = A[rank]; A[rank] = temp; }
-        if (COMP_NUM(A[rank], A[high]) > 0) { temp = A[rank]; A[rank] = A[high]; A[high] = temp; }
-        if (COMP_NUM(A[low],  A[rank]) > 0) { temp = A[low];  A[low]  = A[rank]; A[rank] = temp; }
+        if (LESS_THAN(A[rank], A[low] )) { temp = A[low];  A[low]  = A[rank]; A[rank] = temp; }
+        if (LESS_THAN(A[high], A[rank])) { temp = A[rank]; A[rank] = A[high]; A[high] = temp; }
+        if (LESS_THAN(A[rank], A[low] )) { temp = A[low];  A[low]  = A[rank]; A[rank] = temp; }
         pivot = A[rank];
         l = low;
         h = high;
         do {
-            while (COMP_NUM(A[l], pivot) < 0) { ++l; }
-            while (COMP_NUM(pivot, A[h]) < 0) { --h; }
+            while (LESS_THAN(A[l], pivot)) { ++l; }
+            while (LESS_THAN(pivot, A[h])) { --h; }
             if (l <= h) {
                 temp = A[l]; A[l] = A[h]; A[h] = temp;
                 ++l;
@@ -2118,36 +2117,60 @@ void InsertionSort(const array A, const size_t length) {
     size_t i, j;
     size_t temp;
 
-    for(i = 1; i < length; ++i) {
+    for (i = 1; i < length; ++i) {
         temp = A[i];
-        if (COMP_NUM(temp, A[i-1]) < 0) {
-            A[i] = A[i-1];
-            j    = i-1;
-            while(j > 0 && COMP_NUM(temp, A[j-1]) < 0) { A[j] = A[j-1]; --j; }
-            A[j] = temp;
-        }
+        for (j = i; j > 0 && LESS_THAN(temp, A[j-1]); j--) { A[j] = A[j-1]; }
+        A[j] = temp;
     }
 }
 
 void MedianSort(const array A, const size_t length) {
 
-    const size_t MIN_SIZE = 1<<5; /* MUST BE: power of 2 && > 0 */
+    const size_t MIN_SIZE = 1<<7;
 
-    size_t step, left, right, rank;
+    assert(A != NULL);
+    assert(MIN_SIZE > 0);
 
-    /* MEDIAN SORT (up to MIN_SIZE) */
+    size_t left, right, rank, half, step;
+
+    /* MEDIAN SORT (down to MIN_SIZE intervals) */
     for (step   = 1; step <  length;   step <<= 1);
-    for (step >>= 1; step >= MIN_SIZE; step >>= 1) {
-        for (rank = step; rank < length; rank += (step << 1)) {
-            left  = (rank-step);
-            right = (rank+step) > length ? length : (rank+step);
+    for (half = (step >> 1); half >= MIN_SIZE; step = half, half >>= 1) {   
+        for (rank = half; rank < length; rank += step) {                    
+            left  = (rank-half);                                           
+            right = (rank+half) > length ? length : (rank+half);      
+    
+            /* QUICK_SELECT the element rank in the interval [left, right) */
+            QuickSelect(A, left, right, rank);
+        }
+    }
+
+    /* INSERTION SORT (up to MIN_SIZE distances) */
+    if (MIN_SIZE > 1) { InsertionSort(A, length); }
+}
+
+void MedianSort2(const array A, const size_t length) {
+
+    const size_t MIN_SIZE = 1<<8;
+
+    assert(A != NULL);
+    assert(MIN_SIZE > 0);
+
+    size_t left, right, rank, half, step;
+
+    /* MEDIAN SORT (down to MIN_SIZE intervals) */
+    for (step   = 1; step <  length;   step <<= 1);
+    for (half = (step >> 1); half >= MIN_SIZE; step = half, half >>= 1) {   
+        for (rank = half; rank < length; rank += step) {                    
+            left  = (rank-half);                                           
+            right = (rank+half) > length ? length : (rank+half);      
 
             /* QUICK_SELECT the element rank in the interval [left, right) */
             QuickSelect(A, left, right, rank);
         }
     }
 
-    /* INSERTION SORT */
+    /* INSERTION SORT (up to MIN_SIZE distances) */
     if (MIN_SIZE > 1) { InsertionSort(A, length); }
 }
 
@@ -2162,22 +2185,22 @@ int COMP(const void *i, const void *j) {
 
 int main (void) {
 
-    /*const bool verbose = true;
+    const bool verbose = true;
 
-    CLM_TIME_TEST(verbose);
-    CLM_RAND_TEST(verbose);
-    CLM_PRINTF_TEST(verbose);
-    CLM_ARC4_TEST(verbose);
-    CLM_ITER_TEST(verbose);
-    CLM_FRACTAL_TEST(verbose);
+    //CLM_TIME_TEST(verbose);
+    //CLM_RAND_TEST(verbose);
+    //CLM_PRINTF_TEST(verbose);
+    //CLM_ARC4_TEST(verbose);
+    //CLM_ITER_TEST(verbose);
+    //CLM_FRACTAL_TEST(verbose);
     CLM_ARRAY_TEST(verbose);
     CLM_CLIST_TEST(verbose);
     CLM_STREE_TEST(verbose);
     CLM_WTREE_TEST(verbose);
 
-    printf("\nAll tests passing!\n\n");*/
+    printf("\nAll tests passing!\n\n");
 
-    size_t i, s, size = 1<<24;
+    /*size_t i, s, size = 1<<24;
     clock_t crono;
 
     array R = array_new(size);  assert(R);
@@ -2190,38 +2213,45 @@ int main (void) {
         s = 1+rand_size_t(size);
         //for (i = 0; i < size; i++) { R[i] = i;}
         //for (i = 0; i < size; i++) { R[i] = size-i; }
-        //for (i = 0; i < size; i++) { R[i] = i%(100000;}
-        for (i = 0; i < s; i++) { R[i] = rand_size_t(size);}
-        array_shuffle(R, s);
+        for (i = 0; i < size; i++) { R[i] = i%(10000); }
+        //for (i = 0; i < s; i++) { R[i] = rand_size_t(size);}
+        //array_shuffle(R, s);
 
 
-        /* Test qsort */
+        // Test qsort 
         for (i = 0; i < s; i++) { S[i] = R[i]; }
         crono = clock();
         qsort(S, s, sizeof(size_t), &COMP);
-        printf("\tqsort(%zu)      in %.3f seconds.\n", s, time_elapsed(crono));
+        printf("\tqsort(%zu)       in %.3f seconds.\n", s, time_elapsed(crono));
         for (i = 1; i < s; i++) { assert(S[i-1] <= S[i]); }
 
-        /* Test array_sort */
+        // Test array_sort 
         for (i = 0; i < s; i++) { W[i] = R[i]; }
         crono = clock();
         array_sort(W, s);
-        printf("\tarray_sort(%zu) in %.3f seconds.\n", s, time_elapsed(crono));
+        printf("\tarray_sort(%zu)  in %.3f seconds.\n", s, time_elapsed(crono));
         for (i = 0; i < s; i++) { assert(W[i] == S[i]); }
 
-        /* Test MedianSort */
-        /*for (i = 0; i < s; i++) { W[i] = R[i]; }
+        // Test MedianSort 
+        for (i = 0; i < s; i++) { W[i] = R[i]; }
         crono = clock();
         MedianSort(W, s);
-        printf("\tMedianSort(%zu) in %.3f seconds.\n", size, time_elapsed(crono));
-        for (i = 0; i < s; i++) { assert(W[i] == S[i]); }*/
+        printf("\tMedianSort(%zu)  in %.3f seconds.\n", s, time_elapsed(crono));
+        for (i = 0; i < s; i++) { assert(W[i] == S[i]); }
+
+        // Test MedianSort2 
+        for (i = 0; i < s; i++) { W[i] = R[i]; }
+        crono = clock();
+        MedianSort2(W, s);
+        printf("\tMedianSort2(%zu) in %.3f seconds.\n", s, time_elapsed(crono));
+        for (i = 0; i < s; i++) { assert(W[i] == S[i]); }
 
         printf("\n");
     }
 
     free(R);
     free(W);
-    free(S);
+    free(S);*/
 
     return 0;
 }

@@ -132,41 +132,36 @@
 /** crash with other user-defined functions/types or with different calls   **/
 /** of the same macro.                                                      **/
 /**                                                                         **/
-/** Some of the macros require two mandatory parameters (`type` & `comp`)   **/
+/** Some of the macros require two mandatory parameters (`type`, `is_less`) **/
 /** that are used to build generic functions tailored to that data type.    **/
 /**                                                                         **/
 /** The `type` parameter could be any standard or user-defined data type.   **/
 /**                                                                         **/
-/** The `comp` parameter should be the name (NOT A POINTER, JUST THE NAME)  **/
-/** of a comparing function/macro for the corresponding data type.          **/
+/** The `is_less` parameter should be the name (NOT A POINTER, JUST THE     **/
+/** NAME) of a comparing function/macro for the corresponding data type.    **/
 /**                                                                         **/
-/** The `int comp(const type x, const type y)` function must accept two     **/
-/** `type` values and return:                                               **/
+/** The `bool is_less(const type x, const type y)` function must accept     **/
+/** two `type` values and return:                                           **/
 /**                                                                         **/
-/**  * `comp(x, y) <  0`   if   `x <  y`                                    **/
-/**  * `comp(x, y) == 0`   if   `x == y`                                    **/
-/**  * `comp(x, y) >  0`   if   `x >  y`                                    **/
+/**  * `is_less(x, y) == true`   if   `x <  y`                              **/
+/**  * `is_less(x, y) == false`  if   `x >= y`                              **/
 /**                                                                         **/
 /** **Example:**                                                            **/
 /**                                                                         **/
 /**     #include "CLM_LIBS.h"                                               **/
 /**                                                                         **/
-/**     #define COMP_NUM(i, j) (((i)>(j)) - ((i)<(j)))                      **/
+/**     #define IS_LESS_NUM(i, j) ((i)<(j))                                 **/
 /**                                                                         **/
 /**     typedef struct pair { int i; double d; } pair_t;                    **/
 /**                                                                         **/
-/**     int comp_pair(const pair_t p1, pair_t p2) {                         **/
-/**         if      (p1.i > p2.i) { return  1; }                            **/
-/**         else if (p1.i < p2.i) { return -1; }                            **/
-/**         else if (p1.d > p2.d) { return  1; }                            **/
-/**         else if (p1.d < p2.d) { return -1; }                            **/
-/**         else                  { return  0; }                            **/
+/**     bool is_less_pair(const pair_t p1, pair_t p2) {                     **/
+/**         return (p1.i < p2.i || (p1.i == p2.i && p1.d < p2.d));          **/
 /**     }                                                                   **/
 /**                                                                         **/
 /**     IMPORT_CLM_RAND()                                                   **/
-/**     IMPORT_CLM_ARRAY(int, COMP_NUM, int_)                               **/
-/**     IMPORT_CLM_ARRAY(double, COMP_NUM, dbl_)                            **/
-/**     IMPORT_CLM_STREE(pair_t, comp_pair, )                               **/
+/**     IMPORT_CLM_ARRAY(int, IS_LESS_NUM, int_)                            **/
+/**     IMPORT_CLM_ARRAY(double, IS_LESS_NUM, dbl_)                         **/
+/**     IMPORT_CLM_STREE(pair_t, is_less_pair, )                            **/
 /**                                                                         **/
 /**     int main(void) {                                                    **/
 /**                                                                         **/
@@ -1872,7 +1867,7 @@
   /**                                                                       **/
   /** A set of functions to work with arrays.                               **/
   /**                                                                       **/
-  #define IMPORT_CLM_ARRAY(type, comp, prefix)                                  \
+  #define IMPORT_CLM_ARRAY(type, is_less, prefix)                               \
                                                                                 \
     /** ******************************************************************* **/ \
     /**                                                                     **/ \
@@ -1922,7 +1917,7 @@
     /**                                                                     **/ \
     /**     void MedianSort(const array A, const size_t length) {           **/ \
     /**                                                                     **/ \
-    /**         const size_t MIN_SIZE = 1<<5;                               **/ \
+    /**         const size_t MIN_SIZE = 1<<7;                               **/ \
     /**                                                                     **/ \
     /**         size_t step, low, high, rank;                               **/ \
     /**                                                                     **/ \
@@ -1931,7 +1926,7 @@
     /**             for (rank = step; rank < length; rank += (step << 1)) { **/ \
     /**                 low  = (rank-step);                                 **/ \
     /**                 high = (rank+step) > length ? length : (rank+step); **/ \
-    /**                 QuickSelect(A, low, high, rank);                    **/ \
+    /**                 QuickSelect(A+low, high-low, step);                 **/ \
     /**             }                                                       **/ \
     /**         }                                                           **/ \
     /**         if (MIN_SIZE > 1) { InsertionSort(A, length); }             **/ \
@@ -1978,28 +1973,29 @@
     static inline void prefix##array_sort(const prefix##array A,                \
                                           const size_t length) {                \
                                                                                 \
-        /* Precondition */                                                      \
+        const size_t MIN_SIZE = 1<<7; /* Any power of 2 */                      \
+                                                                                \
+        /* Preconditions */                                                     \
         assert(A != NULL);                                                      \
+        assert(MIN_SIZE > 0);                                                   \
                                                                                 \
-        const size_t MIN_SIZE = 1<<5; /* `MIN_SIZE` power of 2 && > 0 */        \
-                                                                                \
-        size_t i, j, left, right, step, rank;                                   \
+        size_t i, j, left, right, rank, half, step;                             \
         type   t, pivot;                                                        \
                                                                                 \
-        /* MEDIAN SORT (down to MIN_SIZE) */                                    \
-        for (step   = 1; step <  length;   step <<= 1);                         \
-        for (step >>= 1; step >= MIN_SIZE; step >>= 1) {                        \
-            for (rank = step; rank < length; rank += (step << 1)) {             \
-                left  =  (rank-step);                                           \
-                right = ((rank+step) > length ? length : (rank+step)) - 1;      \
+        /* MEDIAN SORT (down to MIN_SIZE intervals) */                          \
+        for (step = 1; step <  length;   step <<= 1);                           \
+        for (half = (step >> 1); half >= MIN_SIZE; step = half, half >>= 1) {   \
+            for (rank = half; rank < length; rank += step) {                    \
+                left  =  (rank-half);                                           \
+                right = ((rank+half) > length ? length : (rank+half)) - 1;      \
                                                                                 \
                 /* QUICK_SELECT the element `rank` in `A[left, right)` */       \
                 while (left < right) {                                          \
                     pivot = A[rank];                                            \
                     i     = left;                                               \
                     j     = right;                                              \
-                    do {while (COMP_NUM(A[i], pivot) < 0) { ++i; }              \
-                        while (COMP_NUM(pivot, A[j]) < 0) { --j; }              \
+                    do {while (is_less(A[i], pivot)) { ++i; }                   \
+                        while (is_less(pivot, A[j])) { --j; }                   \
                         if  (i <= j) { t=A[i]; A[i]=A[j]; A[j]=t; ++i; --j; }   \
                     } while (i <= j);                                           \
                     if (j < rank) { left  = i; }                                \
@@ -2008,15 +2004,11 @@
             }                                                                   \
         }                                                                       \
                                                                                 \
-        /* INSERTION SORT */                                                    \
+        /* INSERTION SORT (up to MIN_SIZE distances) */                         \
         for(i = 1; i < length; ++i) {                                           \
-            if (COMP_NUM(A[i], A[i-1]) < 0) {                                   \
-                t    = A[i];                                                    \
-                j    = i-1;                                                     \
-                A[i] = A[j];                                                    \
-                while(j > 0 && COMP_NUM(t, A[j-1]) < 0) { A[j] = A[j-1]; --j; } \
-                A[j] = t;                                                       \
-            }                                                                   \
+            t = A[i];                                                           \
+            for (j=i; j>0 && is_less(t, A[j-1]); --j) { A[j] = A[j-1]; }        \
+            A[j] = t;                                                           \
         }                                                                       \
     }                                                                           \
                                                                                 \
@@ -2099,9 +2091,8 @@
             pivot = A[rank];                                                    \
             l     = low;                                                        \
             h     = high;                                                       \
-            do {                                                                \
-                while (comp(A[l], pivot) < 0) { l++; }                          \
-                while (comp(pivot, A[h]) < 0) { h--; }                          \
+            do {while (is_less(A[l], pivot)) { l++; }                           \
+                while (is_less(pivot, A[h])) { h--; }                           \
                 if (l <= h) {                                                   \
                     temp = A[l];                                                \
                     A[l] = A[h];                                                \
@@ -2136,7 +2127,7 @@
     /*                                                                       */ \
     /*                  array_heapsort(A, length);                           */ \
     /*                  size_t rank = array_bisect_l(MyArray, length, data); */ \
-    /*                  if (comp(MyArray[rank], data) == 0) {                */ \
+    /*                  if (MyArray[rank] == data) {                         */ \
     /*                      printf("Rank of data = %zu\n", rank);            */ \
     /*                  } else {                                             */ \
     /*                      printf("Data not found!\n");                     */ \
@@ -2151,8 +2142,8 @@
                                                                                 \
         while (left < right) {                                                  \
             pivot = left + ((right-left) >> 1);                                 \
-            if (comp(data, A[pivot]) > 0) { left  = pivot+1; }                  \
-            else                          { right = pivot;   }                  \
+            if (is_less(A[pivot], data)) { left  = pivot+1; }                   \
+            else                         { right = pivot;   }                   \
         }                                                                       \
                                                                                 \
         return left;                                                            \
@@ -2188,8 +2179,8 @@
                                                                                 \
         while (left < right) {                                                  \
             pivot = left + ((right-left) >> 1);                                 \
-            if (comp(data, A[pivot]) < 0) { right = pivot;   }                  \
-            else                          { left  = pivot+1; }                  \
+            if (is_less(data, A[pivot])) { right = pivot;   }                   \
+            else                         { left  = pivot+1; }                   \
         }                                                                       \
                                                                                 \
         return left;                                                            \
@@ -2421,7 +2412,7 @@
   /**   fail unless the `stree` is empty, which is a condition that can be  **/
   /**   checked easily in O(1) time with a `tree != NULL` test.             **/
   /**                                                                       **/
-  #define IMPORT_CLM_STREE(type, comp, prefix)                                  \
+  #define IMPORT_CLM_STREE(type, is_less, prefix)                               \
                                                                                 \
     /** ******************************************************************* **/ \
     /**                                                                     **/ \
@@ -2809,7 +2800,7 @@
                                           const type data) {                    \
                                                                                 \
         prefix##stree_s dummy, *left, *right, *temp, *root = *tree;             \
-        int cmp;                                                                \
+        bool found = false;                                                     \
                                                                                 \
         /* Trivial case: Empty tree */                                          \
         if (root == NULL) { return false; }                                     \
@@ -2819,15 +2810,12 @@
         left       = right       = &dummy;                                      \
         for (;;) {                                                              \
                                                                                 \
-            /* Compare data with current tree root */                           \
-            cmp = comp(data, root->data);                                       \
-                                                                                \
             /* Case 1: data < root->data */                                     \
-            if (cmp < 0) {                                                      \
+            if (is_less(data, root->data)) {                                    \
                                                                                 \
                 /* Rotate Right */                                              \
                 if (root->left == NULL) { break; }                              \
-                if (comp(data, root->left->data) < 0) {                         \
+                if (is_less(data, root->left->data)) {                          \
                     temp        = root->left;                                   \
                     root->left  = temp->right;                                  \
                     temp->right = root;                                         \
@@ -2842,11 +2830,11 @@
             }                                                                   \
                                                                                 \
             /* Case 2: data > root->data */                                     \
-            else if (cmp > 0) {                                                 \
+            else if (is_less(root->data, data)) {                               \
                                                                                 \
                 /* Rotate Left */                                               \
                 if (root->right == NULL) { break; }                             \
-                if (comp(data, root->right->data) > 0) {                        \
+                if (is_less(root->right->data, data)) {                         \
                     temp        = root->right;                                  \
                     root->right = temp->left;                                   \
                     temp->left  = root;                                         \
@@ -2861,7 +2849,7 @@
             }                                                                   \
                                                                                 \
             /* Case 3: data == root->data */                                    \
-            else { break; }                                                     \
+            else { found = true; break; }                                       \
         }                                                                       \
                                                                                 \
         /* Final assemble & return */                                           \
@@ -2870,8 +2858,7 @@
         root->left  = dummy.right;                                              \
         root->right = dummy.left;                                               \
         *tree       = root;                                                     \
-        if (cmp == 0) { return true;  }                                         \
-        else          { return false; }                                         \
+        return found;                                                           \
     }                                                                           \
                                                                                 \
     /** ******************************************************************* **/ \
@@ -2896,7 +2883,7 @@
                                             const type data) {                  \
                                                                                 \
         prefix##stree_s dummy, *left, *right, *temp, *new_root, *root = *tree;  \
-        int cmp;                                                                \
+        bool found = false;                                                     \
                                                                                 \
         /* Splay data to the root of the tree */                                \
         if (root != NULL) {                                                     \
@@ -2904,15 +2891,12 @@
             left       = right       = &dummy;                                  \
             for (;;) {                                                          \
                                                                                 \
-                /* Compare data with current tree root */                       \
-                cmp = comp(data, root->data);                                   \
-                                                                                \
                 /* Case 1: data < root->data */                                 \
-                if (cmp < 0) {                                                  \
+                if (is_less(data, root->data)) {                                \
                                                                                 \
                     /* Rotate Right */                                          \
                     if (root->left == NULL) { break; }                          \
-                    if (comp(data, root->left->data) < 0) {                     \
+                    if (is_less(data, root->left->data)) {                      \
                         temp        = root->left;                               \
                         root->left  = temp->right;                              \
                         temp->right = root;                                     \
@@ -2927,11 +2911,11 @@
                 }                                                               \
                                                                                 \
                 /* Case 2: data > root->data */                                 \
-                else if (cmp > 0) {                                             \
+                else if (is_less(root->data, data)) {                           \
                                                                                 \
                     /* Rotate Left */                                           \
                     if (root->right == NULL) { break; }                         \
-                    if (comp(data, root->right->data) > 0) {                    \
+                    if (is_less(root->right->data, data)) {                     \
                         temp        = root->right;                              \
                         root->right = temp->left;                               \
                         temp->left  = root;                                     \
@@ -2946,7 +2930,7 @@
                 }                                                               \
                                                                                 \
                 /* Case 3: data == root->data */                                \
-                else { break; }                                                 \
+                else { found = true; break; }                                   \
             }                                                                   \
                                                                                 \
             /* Final assemble & return */                                       \
@@ -2957,7 +2941,7 @@
         }                                                                       \
                                                                                 \
         /* Trivial case 1: Overwrite data */                                    \
-        if (root != NULL && cmp == 0) {                                         \
+        if (found) {                                                            \
             root->data = data;                                                  \
             *tree      = root;                                                  \
             return true;                                                        \
@@ -2975,7 +2959,7 @@
         if (root == NULL) { new_root->left = new_root->right = NULL; }          \
                                                                                 \
         /* General case */                                                      \
-        else if (cmp < 0) {                                                     \
+        else if (is_less(data, root->data)) {                                   \
             new_root->right = root;                                             \
             new_root->left  = root->left;                                       \
             root->left      = NULL;                                             \
@@ -3080,7 +3064,7 @@
   /**   but also to get for free the information that other operations over **/
   /**   the same `data` might require.                                      **/
   /**                                                                       **/
-  #define IMPORT_CLM_WTREE(type, comp, prefix)                                  \
+  #define IMPORT_CLM_WTREE(type, is_less, prefix)                               \
                                                                                 \
     /** ******************************************************************* **/ \
     /**                                                                     **/ \
@@ -3152,16 +3136,14 @@
                                                                                 \
         prefix##wtree node = *tree;                                             \
         size_t        rank = 1;                                                 \
-        int           cmp;                                                      \
                                                                                 \
         /* Find data in the tree */                                             \
         while (node) {                                                          \
-            cmp = comp(data, node->data);                                       \
-            if (cmp < 0) { node = node->left; }                                 \
+            if (is_less(data, node->data)) { node = node->left; }               \
             else {                                                              \
-                if (node->left) { rank += node->left->size;    }                \
-                if (cmp > 0)    { node  = node->right; rank++; }                \
-                else            { return rank;                 }                \
+                if (node->left)               { rank += node->left->size;   }   \
+                if (is_less(node->data,data)) { node = node->right; rank++; }   \
+                else                          { return rank;                }   \
             }                                                                   \
         }                                                                       \
                                                                                 \
@@ -3214,6 +3196,7 @@
         /* Variables */                                                         \
         prefix##wtree left, right, node = *tree;                                \
         size_t        rank, l_weight, r_weight;                                 \
+        bool          is_right = false;                                         \
                                                                                 \
         /* Trivial case: Insert data into empty tree */                         \
         if (node == NULL) {                                                     \
@@ -3230,20 +3213,22 @@
             }                                                                   \
         }                                                                       \
                                                                                 \
-        /* General case: Insert data recursively */                             \
-        const int cmp = comp(data, node->data);                                 \
+        /* Case 1: Insert data into node->left */                               \
+        if (is_less(data, node->data)) {                                        \
+            rank = prefix##wtree_insert(&(node->left), data);                   \
+        }                                                                       \
                                                                                 \
-        /* Case 1: Overwrite data */                                            \
-        if (cmp == 0) {                                                         \
+        /* Case 2: Insert data into node->right */                              \
+        else if (is_less(node->data, data)) {                                   \
+            rank = prefix##wtree_insert(&(node->right), data);                  \
+            is_right = true;                                                    \
+        }                                                                       \
+                                                                                \
+        /* Case 3: Overwrite data */                                            \
+        else {                                                                  \
             node->data = data;                                                  \
             return (node->left) ? (node->left->size + 1) : (1);                 \
         }                                                                       \
-                                                                                \
-        /* Case 2: Insert data into node->left */                               \
-        else if (cmp < 0) { rank = prefix##wtree_insert(&(node->left), data); } \
-                                                                                \
-        /* Case 3: Insert data into node->right */                              \
-        else { rank = prefix##wtree_insert(&(node->right), data); }             \
                                                                                 \
         /* REBALANCE (if something changed) */                                  \
         if (rank) {                                                             \
@@ -3254,7 +3239,7 @@
             node->size = l_weight + r_weight - 1;                               \
                                                                                 \
             /* Update rank */                                                   \
-            if (cmp > 0) { rank += l_weight; }                                  \
+            if (is_right) { rank += l_weight; }                                 \
                                                                                 \
             /* If node->left has become too big after insertion */              \
             if (DELTA_NUM*r_weight < DELTA_DEN*l_weight) {                      \
