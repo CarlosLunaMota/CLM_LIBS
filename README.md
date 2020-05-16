@@ -31,7 +31,7 @@
 
 ***********************************************************************
 
-## INTRODUCTION
+## INTRODUCTION [⬑](#CLM_LIBS)
 
 This is a collection of code-generating macros for the C preprocessor.
 
@@ -49,7 +49,7 @@ into the Public Domain using the Unlicense (see LICENSE section below).
 
 ***********************************************************************
 
-## CODE CONVENTIONS
+## CODE CONVENTIONS [⬑](#CLM_LIBS)
 
 Each library is just a code generating macro whose name starts with
 `IMPORT_CLM_`. The C preprocessor will substitute each macro call with
@@ -93,7 +93,7 @@ Finally, regarding data types:
 
 ***********************************************************************
 
-## CODE DEPENDENCIES
+## CODE DEPENDENCIES [⬑](#CLM_LIBS)
 
 `CLM_LIBS.h` relies only on the C standard library and compiles without
 warnings using the GCC parameters `-std=c99 -Wall -Wextra -pedantic`.
@@ -115,7 +115,7 @@ The standard libraries used are (in alphabetical order):
 
 ***********************************************************************
 
-## CODE LICENSE
+## CODE LICENSE [⬑](#CLM_LIBS)
 
 This is free and unencumbered software released into the public domain.
 
@@ -144,7 +144,7 @@ For more information, please refer to [http://unlicense.org/](http://unlicense.o
 
 ***********************************************************************
 
-## THE MACROS
+## THE MACROS [⬑](#CLM_LIBS)
 
 Each macro generates a collection of related functions and typedefs.
 
@@ -224,8 +224,8 @@ int main(void) {
 
 *********************************************************************
 
-### CLM\_LIBS
-[back to top ↩](#CLM_LIBS)
+### CLM\_LIBS [⬑](#CLM_LIBS)
+[⬑](#CLM_LIBS)
 
 
 ```c
@@ -236,8 +236,8 @@ Contains the version number (= date) of this release of CLM_LIBS.
 
 *********************************************************************
 
-### CLM\_TIME
-[back to top ↩](#CLM_LIBS)
+### CLM\_TIME [⬑](#CLM_LIBS)
+[⬑](#CLM_LIBS)
 
 
 ```c
@@ -248,7 +248,9 @@ A set of time-related and date-related functions.
 
 *******************************************************************
 
-#### time\_elapsed
+#### time\_elapsed [⬑](#CLM_LIBS)
+[⬑](#CLM_LIBS)
+
 
 ```c
 static inline double time_elapsed(const clock_t crono);
@@ -271,7 +273,9 @@ printf("Function 2 = %.3f sec.\n", time_elapsed(crono));
 
 *******************************************************************
 
-#### time\_pause
+#### time\_pause [⬑](#CLM_LIBS)
+[⬑](#CLM_LIBS)
+
 
 ```c
 static inline void time_pause(const char* message);
@@ -296,7 +300,9 @@ show_more_results();
 
 *******************************************************************
 
-#### time\_stamp
+#### time\_stamp [⬑](#CLM_LIBS)
+[⬑](#CLM_LIBS)
+
 
 ```c
 static inline char *time_stamp(const int format);
@@ -349,8 +355,8 @@ free(timestamp);
 
 *********************************************************************
 
-### CLM\_RAND
-[back to top ↩](#CLM_LIBS)
+### CLM\_RAND [⬑](#CLM_LIBS)
+[⬑](#CLM_LIBS)
 
 
 ```c
@@ -361,7 +367,9 @@ A set of random and quasi-random number generators.
 
 *******************************************************************
 
-#### rand\_int
+#### rand\_int [⬑](#CLM_LIBS)
+[⬑](#CLM_LIBS)
+
 
 ```c
 static inline int rand_int(const int n);
@@ -380,7 +388,9 @@ for (i = 0; i < 10; i++) { printf("%d ", A+rand_int(B-A+1)); }
 
 *******************************************************************
 
-#### rand\_size\_t
+#### rand\_size\_t [⬑](#CLM_LIBS)
+[⬑](#CLM_LIBS)
+
 
 ```c
 static inline size_t rand_size_t(const size_t n);
@@ -398,7 +408,9 @@ type elem = MyArray[rand_size_t(N)];
 
 *******************************************************************
 
-#### rand\_double
+#### rand\_double [⬑](#CLM_LIBS)
+[⬑](#CLM_LIBS)
+
 
 ```c
 static inline double rand_double(const double n);
@@ -417,7 +429,9 @@ for (i = 0; i < 10; i++) { printf("%f ", A+rand_double(B-A)); }
 
 *******************************************************************
 
-#### rand\_halton
+#### rand\_halton [⬑](#CLM_LIBS)
+[⬑](#CLM_LIBS)
+
 
 ```c
 static inline double rand_halton(const size_t base, size_t n);
@@ -455,7 +469,9 @@ if (X && Y && Z) {
 
 *******************************************************************
 
-#### rand\_color
+#### rand\_color [⬑](#CLM_LIBS)
+[⬑](#CLM_LIBS)
+
 
 ```c
 static inline void rand_color(int *r, int *g, int *b);
@@ -497,8 +513,8 @@ for (size_t i = 0; i < 5; i++) {
 
 *********************************************************************
 
-### CLM\_PRINTF
-[back to top ↩](#CLM_LIBS)
+### CLM\_PRINTF [⬑](#CLM_LIBS)
+[⬑](#CLM_LIBS)
 
 
 ```c
@@ -509,7 +525,9 @@ A set of formatting functions for the standard terminal output.
 
 *******************************************************************
 
-#### printf\_reset
+#### printf\_reset [⬑](#CLM_LIBS)
+[⬑](#CLM_LIBS)
+
 
 ```c
 static inline void printf_reset();
@@ -527,7 +545,9 @@ printf_set_text_color(0x33, 0xFF, 0x00);
 
 *******************************************************************
 
-#### printf\_set\_bold
+#### printf\_set\_bold [⬑](#CLM_LIBS)
+[⬑](#CLM_LIBS)
+
 
 ```c
 static inline void printf_set_bold();
@@ -545,7 +565,9 @@ printf_reset();
 
 *******************************************************************
 
-#### printf\_set\_light
+#### printf\_set\_light [⬑](#CLM_LIBS)
+[⬑](#CLM_LIBS)
+
 
 ```c
 static inline void printf_set_light();
@@ -563,7 +585,9 @@ printf_reset();
 
 *******************************************************************
 
-#### printf\_set\_strike
+#### printf\_set\_strike [⬑](#CLM_LIBS)
+[⬑](#CLM_LIBS)
+
 
 ```c
 static inline void printf_set_strike();
@@ -581,7 +605,9 @@ printf_reset();
 
 *******************************************************************
 
-#### printf\_set\_underline
+#### printf\_set\_underline [⬑](#CLM_LIBS)
+[⬑](#CLM_LIBS)
+
 
 ```c
 static inline void printf_set_underline();
@@ -599,7 +625,9 @@ printf_reset();
 
 *******************************************************************
 
-#### printf\_set\_text\_grey
+#### printf\_set\_text\_grey [⬑](#CLM_LIBS)
+[⬑](#CLM_LIBS)
+
 
 ```c
 static inline void printf_set_text_grey(const int grey);
@@ -621,7 +649,9 @@ printf_reset();
 
 *******************************************************************
 
-#### printf\_set\_back\_grey
+#### printf\_set\_back\_grey [⬑](#CLM_LIBS)
+[⬑](#CLM_LIBS)
+
 
 ```c
 static inline void printf_set_back_grey(const int grey);
@@ -643,7 +673,9 @@ printf_reset();
 
 *******************************************************************
 
-#### printf\_set\_text\_color
+#### printf\_set\_text\_color [⬑](#CLM_LIBS)
+[⬑](#CLM_LIBS)
+
 
 ```c
 static inline void printf_set_text_color(const int r, const int g, const int b);
@@ -666,7 +698,9 @@ printf_reset();
 
 *******************************************************************
 
-#### printf\_set\_back\_color
+#### printf\_set\_back\_color [⬑](#CLM_LIBS)
+[⬑](#CLM_LIBS)
+
 
 ```c
 static inline void printf_set_back_color(const int r, const int g, const int b);
@@ -689,8 +723,8 @@ printf_reset();
 
 *********************************************************************
 
-### CLM\_ARC4
-[back to top ↩](#CLM_LIBS)
+### CLM\_ARC4 [⬑](#CLM_LIBS)
+[⬑](#CLM_LIBS)
 
 
 ```c
@@ -706,7 +740,9 @@ in systems where that condition is not satisfied.
 
 *******************************************************************
 
-#### arc4\_hash
+#### arc4\_hash [⬑](#CLM_LIBS)
+[⬑](#CLM_LIBS)
+
 
 ```c
 static inline char *arc4_hash(const char *txt, const size_t length, const size_t drop);
@@ -748,7 +784,9 @@ free(hash);
 
 *******************************************************************
 
-#### arc4\_encrypt
+#### arc4\_encrypt [⬑](#CLM_LIBS)
+[⬑](#CLM_LIBS)
+
 
 ```c
 static inline char *arc4_encrypt(const char *txt, const char *key, const size_t drop);
@@ -785,7 +823,9 @@ free(code);
 
 *******************************************************************
 
-#### arc4\_decrypt
+#### arc4\_decrypt [⬑](#CLM_LIBS)
+[⬑](#CLM_LIBS)
+
 
 ```c
 static inline char *arc4_decrypt(const char *txt, const char *key, const size_t drop);
@@ -822,8 +862,8 @@ free(txt);
 
 *********************************************************************
 
-### CLM\_ITER
-[back to top ↩](#CLM_LIBS)
+### CLM\_ITER [⬑](#CLM_LIBS)
+[⬑](#CLM_LIBS)
 
 
 ```c
@@ -909,7 +949,9 @@ arbitrary sets of `base` elements.
 
 *******************************************************************
 
-#### iter\_num\_prod
+#### iter\_num\_prod [⬑](#CLM_LIBS)
+[⬑](#CLM_LIBS)
+
 
 ```c
 static inline size_t iter_num_prod(const size_t length, const size_t *base);
@@ -938,7 +980,9 @@ while (prod) {
 
 *******************************************************************
 
-#### iter\_rand\_prod
+#### iter\_rand\_prod [⬑](#CLM_LIBS)
+[⬑](#CLM_LIBS)
+
 
 ```c
 static inline size_t *iter_rand_prod(const size_t length, const size_t *base);
@@ -946,7 +990,9 @@ static inline size_t *iter_rand_prod(const size_t length, const size_t *base);
 
 *******************************************************************
 
-#### iter\_next\_prod
+#### iter\_next\_prod [⬑](#CLM_LIBS)
+[⬑](#CLM_LIBS)
+
 
 ```c
 static inline void iter_next_prod(size_t **prod, const size_t length, const size_t *base);
@@ -954,7 +1000,9 @@ static inline void iter_next_prod(size_t **prod, const size_t length, const size
 
 *******************************************************************
 
-#### iter\_num\_perm
+#### iter\_num\_perm [⬑](#CLM_LIBS)
+[⬑](#CLM_LIBS)
+
 
 ```c
 static inline size_t iter_num_perm(const size_t length, const size_t base);
@@ -962,7 +1010,9 @@ static inline size_t iter_num_perm(const size_t length, const size_t base);
 
 *******************************************************************
 
-#### iter\_rand\_perm
+#### iter\_rand\_perm [⬑](#CLM_LIBS)
+[⬑](#CLM_LIBS)
+
 
 ```c
 static inline size_t *iter_rand_perm(const size_t length, const size_t base);
@@ -970,7 +1020,9 @@ static inline size_t *iter_rand_perm(const size_t length, const size_t base);
 
 *******************************************************************
 
-#### iter\_next\_perm
+#### iter\_next\_perm [⬑](#CLM_LIBS)
+[⬑](#CLM_LIBS)
+
 
 ```c
 static inline void iter_next_perm(size_t **perm, const size_t length, const size_t base);
@@ -978,7 +1030,9 @@ static inline void iter_next_perm(size_t **perm, const size_t length, const size
 
 *******************************************************************
 
-#### iter\_num\_perm\_rep
+#### iter\_num\_perm\_rep [⬑](#CLM_LIBS)
+[⬑](#CLM_LIBS)
+
 
 ```c
 static inline size_t iter_num_perm_rep(const size_t length, const size_t base);
@@ -986,7 +1040,9 @@ static inline size_t iter_num_perm_rep(const size_t length, const size_t base);
 
 *******************************************************************
 
-#### iter\_rand\_perm\_rep
+#### iter\_rand\_perm\_rep [⬑](#CLM_LIBS)
+[⬑](#CLM_LIBS)
+
 
 ```c
 static inline size_t *iter_rand_perm_rep(const size_t length, const size_t base);
@@ -994,7 +1050,9 @@ static inline size_t *iter_rand_perm_rep(const size_t length, const size_t base)
 
 *******************************************************************
 
-#### iter\_next\_perm\_rep
+#### iter\_next\_perm\_rep [⬑](#CLM_LIBS)
+[⬑](#CLM_LIBS)
+
 
 ```c
 static inline void iter_next_perm_rep(size_t **perm, const size_t length, const size_t base);
@@ -1002,7 +1060,9 @@ static inline void iter_next_perm_rep(size_t **perm, const size_t length, const 
 
 *******************************************************************
 
-#### iter\_num\_comb
+#### iter\_num\_comb [⬑](#CLM_LIBS)
+[⬑](#CLM_LIBS)
+
 
 ```c
 static inline size_t iter_num_comb(const size_t length, const size_t base);
@@ -1010,7 +1070,9 @@ static inline size_t iter_num_comb(const size_t length, const size_t base);
 
 *******************************************************************
 
-#### iter\_rand\_comb
+#### iter\_rand\_comb [⬑](#CLM_LIBS)
+[⬑](#CLM_LIBS)
+
 
 ```c
 static inline size_t *iter_rand_comb(const size_t length, const size_t base);
@@ -1018,7 +1080,9 @@ static inline size_t *iter_rand_comb(const size_t length, const size_t base);
 
 *******************************************************************
 
-#### iter\_next\_comb
+#### iter\_next\_comb [⬑](#CLM_LIBS)
+[⬑](#CLM_LIBS)
+
 
 ```c
 static inline void iter_next_comb(size_t **comb, const size_t length, const size_t base);
@@ -1026,7 +1090,9 @@ static inline void iter_next_comb(size_t **comb, const size_t length, const size
 
 *******************************************************************
 
-#### iter\_num\_comb\_rep
+#### iter\_num\_comb\_rep [⬑](#CLM_LIBS)
+[⬑](#CLM_LIBS)
+
 
 ```c
 static inline size_t iter_num_comb_rep(const size_t length, const size_t base);
@@ -1034,7 +1100,9 @@ static inline size_t iter_num_comb_rep(const size_t length, const size_t base);
 
 *******************************************************************
 
-#### iter\_rand\_comb\_rep
+#### iter\_rand\_comb\_rep [⬑](#CLM_LIBS)
+[⬑](#CLM_LIBS)
+
 
 ```c
 static inline size_t *iter_rand_comb_rep(const size_t length, const size_t base);
@@ -1042,7 +1110,9 @@ static inline size_t *iter_rand_comb_rep(const size_t length, const size_t base)
 
 *******************************************************************
 
-#### iter\_next\_comb\_rep
+#### iter\_next\_comb\_rep [⬑](#CLM_LIBS)
+[⬑](#CLM_LIBS)
+
 
 ```c
 static inline void iter_next_comb_rep(size_t **comb, const size_t length, const size_t base);
@@ -1050,8 +1120,8 @@ static inline void iter_next_comb_rep(size_t **comb, const size_t length, const 
 
 *********************************************************************
 
-### CLM\_FRACTAL
-[back to top ↩](#CLM_LIBS)
+### CLM\_FRACTAL [⬑](#CLM_LIBS)
+[⬑](#CLM_LIBS)
 
 
 ```c
@@ -1062,7 +1132,9 @@ A set of functions to work with some well known space-filling curves.
 
 *******************************************************************
 
-#### fractal\_van\_der\_corput
+#### fractal\_van\_der\_corput [⬑](#CLM_LIBS)
+[⬑](#CLM_LIBS)
+
 
 ```c
 static inline size_t fractal_van_der_corput(const size_t base, size_t digits, size_t n);
@@ -1092,7 +1164,9 @@ for (size_t N = 0; N < pow; N++) {
 
 *******************************************************************
 
-#### fractal\_z\_to\_coord
+#### fractal\_z\_to\_coord [⬑](#CLM_LIBS)
+[⬑](#CLM_LIBS)
+
 
 ```c
 static inline void fractal_z_to_coord(const size_t dim, const size_t bits, size_t *n, size_t *coord);
@@ -1109,7 +1183,9 @@ the Z-index space-filling curve of `bits` levels.
 
 *******************************************************************
 
-#### fractal\_z\_to\_coord
+#### fractal\_z\_to\_coord [⬑](#CLM_LIBS)
+[⬑](#CLM_LIBS)
+
 
 ```c
 static inline void fractal_coord_to_z(const size_t dim, const size_t bits, size_t *n, size_t *coord);
@@ -1126,7 +1202,9 @@ coordinates in the Z-index space-filling curve of `bits` levels.
 
 *******************************************************************
 
-#### fractal\_h\_to\_coord
+#### fractal\_h\_to\_coord [⬑](#CLM_LIBS)
+[⬑](#CLM_LIBS)
+
 
 ```c
 static inline void fractal_h_to_coord(const size_t dim, const size_t bits, size_t *n, size_t *coord);
@@ -1143,7 +1221,9 @@ the Hilbert space-filling curve of `bits` levels.
 
 *******************************************************************
 
-#### fractal\_coord\_to\_h
+#### fractal\_coord\_to\_h [⬑](#CLM_LIBS)
+[⬑](#CLM_LIBS)
+
 
 ```c
 static inline void fractal_coord_to_h(const size_t dim, const size_t bits, size_t *n, size_t *coord);
@@ -1160,8 +1240,8 @@ coordinates in the Hilbert space-filling curve of `bits` levels.
 
 *********************************************************************
 
-### CLM\_ARRAY
-[back to top ↩](#CLM_LIBS)
+### CLM\_ARRAY [⬑](#CLM_LIBS)
+[⬑](#CLM_LIBS)
 
 
 ```c
@@ -1172,7 +1252,9 @@ A set of functions to work with arrays.
 
 *******************************************************************
 
-#### array
+#### array [⬑](#CLM_LIBS)
+[⬑](#CLM_LIBS)
+
 
 ```c
 typedef type *array;
@@ -1182,7 +1264,9 @@ Definition of the `array` data type.
 
 *******************************************************************
 
-#### array\_new
+#### array\_new [⬑](#CLM_LIBS)
+[⬑](#CLM_LIBS)
+
 
 ```c
 static inline array array_new(const size_t length);
@@ -1202,7 +1286,9 @@ array A = array_new(N);
 
 *******************************************************************
 
-#### array\_sort
+#### array\_sort [⬑](#CLM_LIBS)
+[⬑](#CLM_LIBS)
+
 
 ```c
 static inline void array_sort(const array A, const size_t length);
@@ -1278,7 +1364,9 @@ array_sort(MyArray+N-K, N-K);
 
 *******************************************************************
 
-#### array\_shuffle
+#### array\_shuffle [⬑](#CLM_LIBS)
+[⬑](#CLM_LIBS)
+
 
 ```c
 static inline void array_shuffle(const array A, const size_t length);
@@ -1297,7 +1385,9 @@ array_shuffle(MyArray, N);
 
 *******************************************************************
 
-#### array\_select
+#### array\_select [⬑](#CLM_LIBS)
+[⬑](#CLM_LIBS)
+
 
 ```c
 static inline type array_select(const array A, const size_t length, const size_t rank);
@@ -1342,7 +1432,9 @@ array_sort(MyArray+N-K, N-K);
 
 *******************************************************************
 
-#### array\_bisect
+#### array\_bisect [⬑](#CLM_LIBS)
+[⬑](#CLM_LIBS)
+
 
 ```c
 static inline size_t array_bisect(const array A, const size_t length, const type data);
@@ -1381,8 +1473,8 @@ for (size_t i = 1; i < length; ++i) {
 
 *********************************************************************
 
-### CLM\_CLIST
-[back to top ↩](#CLM_LIBS)
+### CLM\_CLIST [⬑](#CLM_LIBS)
+[⬑](#CLM_LIBS)
 
 
 ```c
@@ -1400,7 +1492,9 @@ so it is not a fully operational deque.
 
 *******************************************************************
 
-#### clist
+#### clist [⬑](#CLM_LIBS)
+[⬑](#CLM_LIBS)
+
 
 ```c
 typedef struct clist_s {
@@ -1428,7 +1522,9 @@ else        { printf("MyList is empty");     }
 
 *******************************************************************
 
-#### clist\_push\_front
+#### clist\_push\_front [⬑](#CLM_LIBS)
+[⬑](#CLM_LIBS)
+
 
 ```c
 static inline bool clist_push_front(clist *list, const type data);
@@ -1447,7 +1543,9 @@ if (success) { assert(clist_front(&MyList) == data); }
 
 *******************************************************************
 
-#### clist\_push\_back
+#### clist\_push\_back [⬑](#CLM_LIBS)
+[⬑](#CLM_LIBS)
+
 
 ```c
 static inline bool clist_push_back(clist *list, const type data);
@@ -1466,7 +1564,9 @@ if (success) { assert(clist_back(&MyList) == data); }
 
 *******************************************************************
 
-#### clist\_pop\_front
+#### clist\_pop\_front [⬑](#CLM_LIBS)
+[⬑](#CLM_LIBS)
+
 
 ```c
 static inline type clist_pop_front(clist *list);
@@ -1490,7 +1590,9 @@ while (MyList) { free(clist_pop_front(&MyList)); }
 
 *******************************************************************
 
-#### clist\_front
+#### clist\_front [⬑](#CLM_LIBS)
+[⬑](#CLM_LIBS)
+
 
 ```c
 static inline type clist_front(clist *list);
@@ -1508,7 +1610,9 @@ type next = clist_front(&MyList);
 
 *******************************************************************
 
-#### clist\_back
+#### clist\_back [⬑](#CLM_LIBS)
+[⬑](#CLM_LIBS)
+
 
 ```c
 static inline type clist_back(clist *list);
@@ -1526,8 +1630,8 @@ type last = clist_back(&MyList);
 
 *********************************************************************
 
-### CLM\_STREE
-[back to top ↩](#CLM_LIBS)
+### CLM\_STREE [⬑](#CLM_LIBS)
+[⬑](#CLM_LIBS)
 
 
 ```c
@@ -1581,7 +1685,9 @@ query fails) in a very natural way:
 
 *******************************************************************
 
-#### stree
+#### stree [⬑](#CLM_LIBS)
+[⬑](#CLM_LIBS)
+
 
 ```c
 typedef struct stree_s {
@@ -1610,7 +1716,9 @@ else        { printf("MyTree is empty");     }
 
 *******************************************************************
 
-#### stree\_root
+#### stree\_root [⬑](#CLM_LIBS)
+[⬑](#CLM_LIBS)
+
 
 ```c
 static inline type stree_root(stree *tree);
@@ -1629,7 +1737,9 @@ if (MyTree) { root = stree_root(&MyTree); }
 
 *******************************************************************
 
-#### stree\_min
+#### stree\_min [⬑](#CLM_LIBS)
+[⬑](#CLM_LIBS)
+
 
 ```c
 static inline type stree_min(stree *tree);
@@ -1647,7 +1757,9 @@ if (MyTree) { smallest = stree_min(&MyTree); }
 
 *******************************************************************
 
-#### stree\_max
+#### stree\_max [⬑](#CLM_LIBS)
+[⬑](#CLM_LIBS)
+
 
 ```c
 static inline type stree_max(stree *tree);
@@ -1665,7 +1777,9 @@ if (MyTree) { biggest = stree_max(&MyTree); }
 
 *******************************************************************
 
-#### stree\_pop
+#### stree\_pop [⬑](#CLM_LIBS)
+[⬑](#CLM_LIBS)
+
 
 ```c
 static inline type stree_pop(stree *tree);
@@ -1718,7 +1832,9 @@ if (MyTree) {
 
 *******************************************************************
 
-#### stree\_next
+#### stree\_next [⬑](#CLM_LIBS)
+[⬑](#CLM_LIBS)
+
 
 ```c
 static inline bool stree_next(stree *tree);
@@ -1741,7 +1857,9 @@ if (MyTree) {
 
 *******************************************************************
 
-#### stree\_prev
+#### stree\_prev [⬑](#CLM_LIBS)
+[⬑](#CLM_LIBS)
+
 
 ```c
 static inline bool stree_prev(stree *tree);
@@ -1764,7 +1882,9 @@ if (MyTree) {
 
 *******************************************************************
 
-#### stree\_find
+#### stree\_find [⬑](#CLM_LIBS)
+[⬑](#CLM_LIBS)
+
 
 ```c
 static inline bool stree_find(stree *tree, const type data);
@@ -1786,7 +1906,9 @@ if (stree_find(&MyTree, data)) {
 
 *******************************************************************
 
-#### stree\_insert
+#### stree\_insert [⬑](#CLM_LIBS)
+[⬑](#CLM_LIBS)
+
 
 ```c
 static inline bool stree_insert(stree *tree, const type data);
@@ -1810,8 +1932,8 @@ if (stree_find(&MyTree, data)) {
 
 *********************************************************************
 
-### CLM\_WTREE
-[back to top ↩](#CLM_LIBS)
+### CLM\_WTREE [⬑](#CLM_LIBS)
+[⬑](#CLM_LIBS)
 
 
 ```c
@@ -1904,7 +2026,9 @@ the fail-proof queries approach:
 
 *******************************************************************
 
-#### wtree
+#### wtree [⬑](#CLM_LIBS)
+[⬑](#CLM_LIBS)
+
 
 ```c
 typedef struct wtree_s {
@@ -1934,7 +2058,9 @@ else        { printf("MyTree is empty");     }
 
 *******************************************************************
 
-#### wtree\_size
+#### wtree\_size [⬑](#CLM_LIBS)
+[⬑](#CLM_LIBS)
+
 
 ```c
 static inline size_t wtree_size(const wtree *tree);
@@ -1957,7 +2083,9 @@ if (A != NULL) {
 
 *******************************************************************
 
-#### wtree\_find
+#### wtree\_find [⬑](#CLM_LIBS)
+[⬑](#CLM_LIBS)
+
 
 ```c
 static inline size_t wtree_find(const wtree *tree, const type data);
@@ -1982,7 +2110,9 @@ if (rank) {
 
 *******************************************************************
 
-#### wtree\_insert
+#### wtree\_insert [⬑](#CLM_LIBS)
+[⬑](#CLM_LIBS)
+
 
 ```c
 static inline size_t wtree_insert(wtree *tree, const type data);
@@ -2020,7 +2150,9 @@ size_t wtree_bisect(wtree *tree, type data) {
 
 *******************************************************************
 
-#### wtree\_select
+#### wtree\_select [⬑](#CLM_LIBS)
+[⬑](#CLM_LIBS)
+
 
 ```c
 static inline type wtree_select(const wtree *tree, const size_t rank);
@@ -2054,7 +2186,9 @@ for (size_t i = 1; i <= size; i++) {
 
 *******************************************************************
 
-#### wtree\_remove
+#### wtree\_remove [⬑](#CLM_LIBS)
+[⬑](#CLM_LIBS)
+
 
 ```c
 static inline type wtree_remove(wtree *tree, const size_t rank);
