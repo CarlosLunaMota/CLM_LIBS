@@ -17,8 +17,8 @@
 /** This is a collection of code-generating macros for the C preprocessor.  **/
 /**                                                                         **/
 /** The main motivation to write these macros is to put together all the    **/
-/** useful functions that I frequently use in my C projects so I can test   **/
-/** them properly, document them properly and trust them hereafter.         **/
+/** functions that I frequently use in my C projects so I can test them     **/
+/** properly, document them properly and trust them hereafter.              **/
 /**                                                                         **/
 /** I am using the code-generating macro approach for writting these        **/
 /** libraries because I wanted to provide generic data structures without   **/
@@ -53,10 +53,10 @@
 /** I am willing to sacrfice efficiency for practical reasons like safety,  **/
 /** versatility or interface coherence. I will probably be the main user of **/
 /** these libraries so I want them to be easy to use rather than fast or    **/
-/** easy to code. If performance is your main concern there might be better **/
-/** libraries out there (that will probably be WAY more difficult to use).  **/
-/** This being said, I will try to provide code that is efficient in terms  **/
-/** of time and space. I just will not agonize about it.                    **/
+/** easy to code. If performance is your main concern, there might be       **/
+/** better libraries out there (that will probably be WAY more difficult to **/
+/** use). This being said, I will try to provide code that is efficient in  **/
+/** terms of time and space. I just will not agonize about it.              **/
 /**                                                                         **/
 /** I am also not targeting outdated C compilers or embeded systems. I make **/
 /** use of C99 features and manage the memory allocations with the standard **/
@@ -69,8 +69,8 @@
 /**  * `size_t` is the default index and size type (transdichotomous model) **/
 /**  * `char *` is the default `\0`-ended string type                       **/
 /**  * `bool`   is the default boolean type (rather than `int`)             **/
-/**  * All "container" types are named as the macro they belong to and are  **/
-/**    pointers to the corresponding structs (same name with "_s" suffix).  **/
+/**  * All container types are named as the macro they belong to and are    **/
+/**    pointers to the corresponding structs (same name with `_s` suffix).  **/
 /**                                                                         **/
 /** *********************************************************************** **/
 /**                                                                         **/
@@ -141,7 +141,7 @@
 /** of a comparing function/macro for the corresponding data type.          **/
 /**                                                                         **/
 /** The `bool less(const type x, const type y)` function must accept two    **/
-/** `type` values and return:                                               **/
+/** `const type` values and return:                                         **/
 /**                                                                         **/
 /**  * `less(x, y) == true`     if   `x <  y`                               **/
 /**  * `less(x, y) == false`    if   `x >= y`                               **/
