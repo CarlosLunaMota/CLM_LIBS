@@ -79,10 +79,10 @@ if __name__ == "__main__":
                         line = line[:i]+"["+URL+"](#"+URL.replace(" ","-")+")"+line[j+1:]
 
                 if line.startswith("# "):     line = line.replace("_", "\_")
-                if line.startswith("## "):    line = line.replace("_", "\_"); line += " [⬑](#CLM_LIBS)"
-                if line.startswith("### "):   line = line.replace("_", "\_"); line += " [⬑](#CLM_LIBS)"
-                if line.startswith("#### "):  line = line.replace("_", "\_"); line += " [⬑](#CLM_LIBS)"
-                if line.startswith("##### "): line = line.replace("_", "\_"); line += " [⬑](#CLM_LIBS)"
+                if line.startswith("## "):    line = line.replace("_", "\_"); line += " [:top:](#CLM_LIBS)"
+                if line.startswith("### "):   line = line.replace("_", "\_"); line += " [:top:](#CLM_LIBS)"
+                if line.startswith("#### "):  line = line.replace("_", "\_"); line += " [:top:](#CLM_LIBS)"
+                if line.startswith("##### "): line = line.replace("_", "\_"); line += " [:top:](#CLM_LIBS)"
 
                 line += "\n"
 
