@@ -79,10 +79,10 @@ if __name__ == "__main__":
                         line = line[:i]+"["+URL+"](#"+URL.replace(" ","-")+")"+line[j+1:]
 
                 if line.startswith("# "):     line = line.replace("_", "\_")
-                if line.startswith("## "):    line = line.replace("_", "\_"); line += "[ ⬑](#CLM_LIBS)"
-                if line.startswith("### "):   line = line.replace("_", "\_"); line += "[ ⬑](#CLM_LIBS)"
-                if line.startswith("#### "):  line = line.replace("_", "\_"); line += "[ ⬑](#CLM_LIBS)"
-                if line.startswith("##### "): line = line.replace("_", "\_"); line += "[ ⬑](#CLM_LIBS)"
+                if line.startswith("## "):    line = line.replace("_", "\_"); line += " [⬑](#CLM_LIBS)"
+                if line.startswith("### "):   line = line.replace("_", "\_"); line += " [⬑](#CLM_LIBS)"
+                if line.startswith("#### "):  line = line.replace("_", "\_"); line += " [⬑](#CLM_LIBS)"
+                if line.startswith("##### "): line = line.replace("_", "\_"); line += " [⬑](#CLM_LIBS)"
 
                 line += "\n"
 
@@ -104,7 +104,7 @@ if __name__ == "__main__":
                                 row = row.replace("* ", "* [")
                                 row = row.replace(" *", "    *")
                                 if URL == "CLM_LIBS": URL += "-1"
-                                output.write(row+"](#"+URL+")\n")
+                                output.write(row+"](#"+URL+"-)\n")
 
                 if line.startswith("### "):
                     diff = 1
