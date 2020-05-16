@@ -132,36 +132,36 @@
 /** crash with other user-defined functions/types or with different calls   **/
 /** of the same macro.                                                      **/
 /**                                                                         **/
-/** Some of the macros require two mandatory parameters (`type`, `is_less`) **/
+/** Some of the macros require two mandatory parameters (`type` & `less`)   **/
 /** that are used to build generic functions tailored to that data type.    **/
 /**                                                                         **/
 /** The `type` parameter could be any standard or user-defined data type.   **/
 /**                                                                         **/
-/** The `is_less` parameter should be the name (NOT A POINTER, JUST THE     **/
-/** NAME) of a comparing function/macro for the corresponding data type.    **/
+/** The `less` parameter should be the name (NOT A POINTER, JUST THE NAME)  **/
+/** of a comparing function/macro for the corresponding data type.          **/
 /**                                                                         **/
-/** The `bool is_less(const type x, const type y)` function must accept     **/
-/** two `type` values and return:                                           **/
+/** The `bool less(const type x, const type y)` function must accept two    **/
+/** `type` values and return:                                               **/
 /**                                                                         **/
-/**  * `is_less(x, y) == true`   if   `x <  y`                              **/
-/**  * `is_less(x, y) == false`  if   `x >= y`                              **/
+/**  * `less(x, y) == true`     if   `x <  y`                               **/
+/**  * `less(x, y) == false`    if   `x >= y`                               **/
 /**                                                                         **/
 /** **Example:**                                                            **/
 /**                                                                         **/
 /**     #include "CLM_LIBS.h"                                               **/
 /**                                                                         **/
-/**     #define IS_LESS_NUM(i, j) ((i)<(j))                                 **/
+/**     #define LESS_NUM(i, j) ((i)<(j))                                    **/
 /**                                                                         **/
 /**     typedef struct pair { int i; double d; } pair_t;                    **/
 /**                                                                         **/
-/**     bool is_less_pair(const pair_t p1, pair_t p2) {                     **/
+/**     bool less_pair(const pair_t p1, pair_t p2) {                        **/
 /**         return (p1.i < p2.i || (p1.i == p2.i && p1.d < p2.d));          **/
 /**     }                                                                   **/
 /**                                                                         **/
 /**     IMPORT_CLM_RAND()                                                   **/
-/**     IMPORT_CLM_ARRAY(int, IS_LESS_NUM, int_)                            **/
-/**     IMPORT_CLM_ARRAY(double, IS_LESS_NUM, dbl_)                         **/
-/**     IMPORT_CLM_STREE(pair_t, is_less_pair, )                            **/
+/**     IMPORT_CLM_ARRAY(int, LESS_NUM, int_)                               **/
+/**     IMPORT_CLM_ARRAY(double, LESS_NUM, dbl_)                            **/
+/**     IMPORT_CLM_STREE(pair_t, less_pair, )                               **/
 /**                                                                         **/
 /**     int main(void) {                                                    **/
 /**                                                                         **/
@@ -191,8 +191,8 @@
 /**         }                                                               **/
 /**                                                                         **/
 /**         printf("\nINDEPENDENTLY SORTED:\n");                            **/
-/**         int_array_heapsort(A, N);                                       **/
-/**         dbl_array_heapsort(B, N);                                       **/
+/**         int_array_sort(A, N);                                           **/
+/**         dbl_array_sort(B, N);                                           **/
 /**         for (i = 0; i < N; i++) { printf("\t(%d, %f)\n", A[i], B[i]); } **/
 /**                                                                         **/
 /**         free(A);                                                        **/
@@ -208,7 +208,7 @@
   /**                                                                       **/
   /** Contains the version number (= date) of this release of CLM_LIBS.     **/
   /**                                                                       **/
-  #define CLM_LIBS 20200512
+  #define CLM_LIBS 20200516
 
   /** ********************************************************************* **/
   /**                                                                       **/
@@ -1867,7 +1867,7 @@
   /**                                                                       **/
   /** A set of functions to work with arrays.                               **/
   /**                                                                       **/
-  #define IMPORT_CLM_ARRAY(type, is_less, prefix)                               \
+  #define IMPORT_CLM_ARRAY(type, less, prefix)                                  \
                                                                                 \
     /** ******************************************************************* **/ \
     /**                                                                     **/ \
@@ -1967,8 +1967,8 @@
     /**                                                                     **/ \
     /** **Example:** Sort the K biggest elements of MyArray with:           **/ \
     /**                                                                     **/ \
-    /**     array_select(MyArray, N, N-1-K)                                 **/ \
-    /**     array_sort(&MyArray[N-K], N-K);                                 **/ \
+    /**     array_select(MyArray, N, N-K-1)                                 **/ \
+    /**     array_sort(MyArray+N-K, N-K);                                   **/ \
     /**                                                                     **/ \
     static inline void prefix##array_sort(const prefix##array A,                \
                                           const size_t length) {                \
@@ -1994,8 +1994,8 @@
                     pivot = A[rank];                                            \
                     i     = left;                                               \
                     j     = right;                                              \
-                    do {while (is_less(A[i], pivot)) { ++i; }                   \
-                        while (is_less(pivot, A[j])) { --j; }                   \
+                    do {while (less(A[i], pivot)) { ++i; }                      \
+                        while (less(pivot, A[j])) { --j; }                      \
                         if  (i <= j) { t=A[i]; A[i]=A[j]; A[j]=t; ++i; --j; }   \
                     } while (i <= j);                                           \
                     if (j < rank) { left  = i; }                                \
@@ -2007,27 +2007,35 @@
         /* INSERTION SORT (up to MIN_SIZE distances) */                         \
         for(i = 1; i < length; ++i) {                                           \
             t = A[i];                                                           \
-            for (j=i; j>0 && is_less(t, A[j-1]); --j) { A[j] = A[j-1]; }        \
+            for (j = i; j > 0 && less(t, A[j-1]); --j) { A[j] = A[j-1]; }       \
             A[j] = t;                                                           \
         }                                                                       \
     }                                                                           \
                                                                                 \
-    /*  Uniformly Random Shuffles an array in-place in O(length) time.       */ \
-    /*                                                                       */ \
-    /*      WARNING: If the same random seed is used, it generates the same  */ \
-    /*               random permutation than the equivalent clist_shuffle.   */ \
-    /*                                                                       */ \
+    /** ******************************************************************* **/ \
+    /**                                                                     **/ \
+    /** #### array_shuffle                                                  **/ \
+    /**                                                                     **/ \
+    /** Shuffles the first `length` elements of the array `A` in-place      **/ \
+    /** in `O(length)` time.                                                **/ \
+    /**                                                                     **/ \
+    /** **Warning:** The parameter `A` must satisfy: `A != NULL`.           **/ \
+    /**                                                                     **/ \
+    /** **Example:** Shuffle the first N elements of MyArray with:          **/ \
+    /**                                                                     **/ \
+    /**     array_shuffle(MyArray, N);                                      **/ \
+    /**                                                                     **/ \
     static inline void prefix##array_shuffle(const prefix##array A,             \
                                              const size_t length) {             \
                                                                                 \
         /* Precondition */                                                      \
-        assert(length > 0);                                                     \
+        assert(A != NULL);                                                      \
                                                                                 \
         size_t i, j, range;                                                     \
         type   temp;                                                            \
                                                                                 \
         /* Inside-Out Fisher-Yates Shuffle */                                   \
-        for (i = 1; i < length; i++) {                                          \
+        for (i = 1; i < length; ++i) {                                          \
                                                                                 \
             /* Get an unbiased random index in the interval [0, i] */           \
             range = RAND_MAX - (RAND_MAX % (i+1));                              \
@@ -2035,11 +2043,7 @@
             j = j % (i+1);                                                      \
                                                                                 \
             /* Swap A[i] and A[j]: */                                           \
-            if (i != j) {                                                       \
-                temp = A[i];                                                    \
-                A[i] = A[j];                                                    \
-                A[j] = temp;                                                    \
-            }                                                                   \
+            temp = A[i]; A[i] = A[j]; A[j] = temp;                              \
         }                                                                       \
     }                                                                           \
                                                                                 \
@@ -2060,6 +2064,8 @@
     /** are smaller or equal than `A[k]` and `A[k+1:length-1]` will contain **/ \
     /** the `length-k` elements of `A` that are bigger than `A[k]`.         **/ \
     /**                                                                     **/ \
+    /** **Warning:** The parameter `A` must satisfy: `A != NULL`.           **/ \
+    /**                                                                     **/ \
     /** **Warning:** The parameters must satisfy: `rank < length`.          **/ \
     /**                                                                     **/ \
     /** **Example:** Find the median of an unsorted array of doubles with:  **/ \
@@ -2073,32 +2079,28 @@
     /**                                                                     **/ \
     /** **Example:** Sort the K biggest elements of MyArray with:           **/ \
     /**                                                                     **/ \
-    /**     array_select(MyArray, N, N-1-K)                                 **/ \
-    /**     array_sort(&MyArray[N-K], N-K);                                 **/ \
+    /**     array_select(MyArray, N, N-K-1)                                 **/ \
+    /**     array_sort(MyArray+N-K, N-K);                                   **/ \
     /**                                                                     **/ \
     static inline type prefix##array_select(const prefix##array A,              \
                                             const size_t length,                \
                                             const size_t rank) {                \
-        /* Precondition */                                                      \
+        /* Preconditions */                                                     \
+        assert(A != NULL);                                                      \
         assert(rank < length);                                                  \
                                                                                 \
         size_t l, low  = 0;                                                     \
         size_t h, high = length-1;                                              \
-        type temp, pivot;                                                       \
+        type   t, pivot;                                                        \
                                                                                 \
         /* Apply Quickselect in place */                                        \
         while (low < high) {                                                    \
             pivot = A[rank];                                                    \
             l     = low;                                                        \
             h     = high;                                                       \
-            do {while (is_less(A[l], pivot)) { l++; }                           \
-                while (is_less(pivot, A[h])) { h--; }                           \
-                if (l <= h) {                                                   \
-                    temp = A[l];                                                \
-                    A[l] = A[h];                                                \
-                    A[h] = temp;                                                \
-                    l++; h--;                                                   \
-                }                                                               \
+            do {while (less(A[l], pivot)) { ++l; }                              \
+                while (less(pivot, A[h])) { --h; }                              \
+                if (l <= h) { t = A[l]; A[l] = A[h]; A[h] = t; ++l; --h; }      \
             } while (l <= h);                                                   \
             if (h < rank) { low  = l; }                                         \
             if (rank < l) { high = h; }                                         \
@@ -2108,82 +2110,54 @@
         return A[rank];                                                         \
     }                                                                           \
                                                                                 \
-    /*  Find the leftmost insertion point for data in a sorted array in      */ \
-    /*  O(log(length)) time using binary search.                             */ \
-    /*                                                                       */ \
-    /*      WARNING: If "i == array_bisect_l(A, N, data);" then:             */ \
-    /*                                                                       */ \
-    /*                  (1)  data >  A[j]  for all j in [0, i-1]             */ \
-    /*                  (2)  data <= A[j]  for all j in [i, N-1]             */ \
-    /*                                                                       */ \
-    /*      USAGE: Find how many elements are equal to data with:            */ \
-    /*                                                                       */ \
-    /*                  array_heapsort(MyArray, length);                     */ \
-    /*                  size_t count = 0;                                    */ \
-    /*                  count += array_bisect_r(MyArray, length, data);      */ \
-    /*                  count -= array_bisect_l(MyArray, length, data);      */ \
-    /*                                                                       */ \
-    /*             Find the rank of data in a sorted array with:             */ \
-    /*                                                                       */ \
-    /*                  array_heapsort(A, length);                           */ \
-    /*                  size_t rank = array_bisect_l(MyArray, length, data); */ \
-    /*                  if (MyArray[rank] == data) {                         */ \
-    /*                      printf("Rank of data = %zu\n", rank);            */ \
-    /*                  } else {                                             */ \
-    /*                      printf("Data not found!\n");                     */ \
-    /*                  }                                                    */ \
-    /*                                                                       */ \
-    static inline size_t prefix##array_bisect_l(const prefix##array A,          \
-                                                const size_t length,            \
-                                                const type data) {              \
-        size_t pivot;                                                           \
+    /** ******************************************************************* **/ \
+    /**                                                                     **/ \
+    /** #### array_bisect                                                   **/ \
+    /**                                                                     **/ \
+    /** Returns the rightmost insertion point for `data` in the sorted      **/ \
+    /** array `A` in `O(log(length))` time using binary search.             **/ \
+    /**                                                                     **/ \
+    /** In particular:                                                      **/ \
+    /**                                                                     **/ \
+    /** * `data >= A[i]`    in the interval `[0, array_bisect(A, N, data))` **/ \
+    /** * `data <  A[i]`    in the interval `[array_bisect(A, N, data), N)` **/ \
+    /**                                                                     **/ \
+    /** **Warning:** The parameter `A` must satisfy: `A != NULL`.           **/ \
+    /**                                                                     **/ \
+    /** **Warning:** If `A` is not sorted the behavior is undefined.        **/ \
+    /**                                                                     **/ \
+    /** **Example:** Find `MyData` in `MyArray` with:                       **/ \
+    /**                                                                     **/ \
+    /**     size_t i = array_bisect(MyArray, N, MyData);                    **/ \
+    /**     if (i > 0 && MyArray[i-1] == MyData) { printf("Found");     }   **/ \
+    /**     else                                 { printf("Not found"); }   **/ \
+    /**                                                                     **/ \
+    /** **Example:** Insertion-sort `MyArray` with:                         **/ \
+    /**                                                                     **/ \
+    /**     for (size_t i = 1; i < length; ++i) {                           **/ \
+    /**          type   t = MyArray[i];                                     **/ \
+    /**          size_t j = array_bisect(MyArray, N, t);                    **/ \
+    /**          memmove(A+j+1, A+j, (i-j)*sizeof(type));                   **/ \
+    /**          A[j] = t;                                                  **/ \
+    /**     }                                                               **/ \
+    /**                                                                     **/ \
+    static inline size_t prefix##array_bisect(const prefix##array A,            \
+                                              const size_t length,              \
+                                              const type data) {                \
+        /* Preconditions */                                                     \
+        assert(A != NULL);                                                      \
+                                                                                \
         size_t left  = 0;                                                       \
         size_t right = length;                                                  \
+        size_t pivot = length >> 1;                                             \
                                                                                 \
         while (left < right) {                                                  \
+            if (less(data, A[pivot])) { right = pivot;   }                      \
+            else                      { left  = pivot+1; }                      \
             pivot = left + ((right-left) >> 1);                                 \
-            if (is_less(A[pivot], data)) { left  = pivot+1; }                   \
-            else                         { right = pivot;   }                   \
         }                                                                       \
                                                                                 \
-        return left;                                                            \
-    }                                                                           \
-                                                                                \
-    /*  Find the rightmost insertion point for data in a sorted array in     */ \
-    /*  O(log(length)) time using binary search.                             */ \
-    /*                                                                       */ \
-    /*      WARNING: If "i == array_bisect_r(A, N, data);" then:             */ \
-    /*                                                                       */ \
-    /*                  (1)  data >= A[j]  for all j in [0, i-1]             */ \
-    /*                  (2)  data <  A[j]  for all j in [i, N-1]             */ \
-    /*                                                                       */ \
-    /*      USAGE: Find how many elements are equal to data with:            */ \
-    /*                                                                       */ \
-    /*                  array_heapsort(MyArray, length);                     */ \
-    /*                  size_t count = 0;                                    */ \
-    /*                  count += array_bisect_r(MyArray, length, data);      */ \
-    /*                  count -= array_bisect_l(MyArray, length, data);      */ \
-    /*                                                                       */ \
-    /*             Insert a new element in a sorted array with:              */ \
-    /*                                                                       */ \
-    /*                  size_t i = array_bisect_r(A, length, data);          */ \
-    /*                  memmove(&A[i+1], &A[i], (length-i) * sizeof(type));  */ \
-    /*                  A[i] = data;                                         */ \
-    /*                                                                       */ \
-    static inline size_t prefix##array_bisect_r(const prefix##array A,          \
-                                                const size_t length,            \
-                                                const type data) {              \
-        size_t pivot;                                                           \
-        size_t left  = 0;                                                       \
-        size_t right = length;                                                  \
-                                                                                \
-        while (left < right) {                                                  \
-            pivot = left + ((right-left) >> 1);                                 \
-            if (is_less(data, A[pivot])) { right = pivot;   }                   \
-            else                         { left  = pivot+1; }                   \
-        }                                                                       \
-                                                                                \
-        return left;                                                            \
+        return pivot;                                                           \
     }                                                                           \
                                                                                 \
 
@@ -2412,7 +2386,7 @@
   /**   fail unless the `stree` is empty, which is a condition that can be  **/
   /**   checked easily in O(1) time with a `tree != NULL` test.             **/
   /**                                                                       **/
-  #define IMPORT_CLM_STREE(type, is_less, prefix)                               \
+  #define IMPORT_CLM_STREE(type, less, prefix)                                  \
                                                                                 \
     /** ******************************************************************* **/ \
     /**                                                                     **/ \
@@ -2673,8 +2647,8 @@
     /** #### stree_next                                                     **/ \
     /**                                                                     **/ \
     /** If `tree` is empty or the current root is the biggest element it    **/ \
-    /** just returs false. Otherwise, it moves to the root the smallest     **/ \
-    /** element that is bigger than the current root and returns true.      **/ \
+    /** just returs `false`. Otherwise, it moves to the root the smallest   **/ \
+    /** element that is bigger than the current root and returns `true`.    **/ \
     /**                                                                     **/ \
     /** **Example:** Iterate forwards over the elements of `MyTree` with:   **/ \
     /**                                                                     **/ \
@@ -2811,11 +2785,11 @@
         for (;;) {                                                              \
                                                                                 \
             /* Case 1: data < root->data */                                     \
-            if (is_less(data, root->data)) {                                    \
+            if (less(data, root->data)) {                                       \
                                                                                 \
                 /* Rotate Right */                                              \
                 if (root->left == NULL) { break; }                              \
-                if (is_less(data, root->left->data)) {                          \
+                if (less(data, root->left->data)) {                             \
                     temp        = root->left;                                   \
                     root->left  = temp->right;                                  \
                     temp->right = root;                                         \
@@ -2830,11 +2804,11 @@
             }                                                                   \
                                                                                 \
             /* Case 2: data > root->data */                                     \
-            else if (is_less(root->data, data)) {                               \
+            else if (less(root->data, data)) {                                  \
                                                                                 \
                 /* Rotate Left */                                               \
                 if (root->right == NULL) { break; }                             \
-                if (is_less(root->right->data, data)) {                         \
+                if (less(root->right->data, data)) {                            \
                     temp        = root->right;                                  \
                     root->right = temp->left;                                   \
                     temp->left  = root;                                         \
@@ -2892,11 +2866,11 @@
             for (;;) {                                                          \
                                                                                 \
                 /* Case 1: data < root->data */                                 \
-                if (is_less(data, root->data)) {                                \
+                if (less(data, root->data)) {                                   \
                                                                                 \
                     /* Rotate Right */                                          \
                     if (root->left == NULL) { break; }                          \
-                    if (is_less(data, root->left->data)) {                      \
+                    if (less(data, root->left->data)) {                         \
                         temp        = root->left;                               \
                         root->left  = temp->right;                              \
                         temp->right = root;                                     \
@@ -2911,11 +2885,11 @@
                 }                                                               \
                                                                                 \
                 /* Case 2: data > root->data */                                 \
-                else if (is_less(root->data, data)) {                           \
+                else if (less(root->data, data)) {                              \
                                                                                 \
                     /* Rotate Left */                                           \
                     if (root->right == NULL) { break; }                         \
-                    if (is_less(root->right->data, data)) {                     \
+                    if (less(root->right->data, data)) {                        \
                         temp        = root->right;                              \
                         root->right = temp->left;                               \
                         temp->left  = root;                                     \
@@ -2959,7 +2933,7 @@
         if (root == NULL) { new_root->left = new_root->right = NULL; }          \
                                                                                 \
         /* General case */                                                      \
-        else if (is_less(data, root->data)) {                                   \
+        else if (less(data, root->data)) {                                      \
             new_root->right = root;                                             \
             new_root->left  = root->left;                                       \
             root->left      = NULL;                                             \
@@ -3064,7 +3038,7 @@
   /**   but also to get for free the information that other operations over **/
   /**   the same `data` might require.                                      **/
   /**                                                                       **/
-  #define IMPORT_CLM_WTREE(type, is_less, prefix)                               \
+  #define IMPORT_CLM_WTREE(type, less, prefix)                                  \
                                                                                 \
     /** ******************************************************************* **/ \
     /**                                                                     **/ \
@@ -3139,11 +3113,11 @@
                                                                                 \
         /* Find data in the tree */                                             \
         while (node) {                                                          \
-            if (is_less(data, node->data)) { node = node->left; }               \
+            if (less(data, node->data)) { node = node->left; }                  \
             else {                                                              \
-                if (node->left)               { rank += node->left->size;   }   \
-                if (is_less(node->data,data)) { node = node->right; rank++; }   \
-                else                          { return rank;                }   \
+                if (node->left)            { rank += node->left->size;   }      \
+                if (less(node->data,data)) { node = node->right; rank++; }      \
+                else                       { return rank;                }      \
             }                                                                   \
         }                                                                       \
                                                                                 \
@@ -3214,12 +3188,12 @@
         }                                                                       \
                                                                                 \
         /* Case 1: Insert data into node->left */                               \
-        if (is_less(data, node->data)) {                                        \
+        if (less(data, node->data)) {                                           \
             rank = prefix##wtree_insert(&(node->left), data);                   \
         }                                                                       \
                                                                                 \
         /* Case 2: Insert data into node->right */                              \
-        else if (is_less(node->data, data)) {                                   \
+        else if (less(node->data, data)) {                                      \
             rank = prefix##wtree_insert(&(node->right), data);                  \
             is_right = true;                                                    \
         }                                                                       \

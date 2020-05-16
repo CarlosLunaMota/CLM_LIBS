@@ -153,37 +153,37 @@ user to change the name of the functions and data types so they don't
 crash with other user-defined functions/types or with different calls
 of the same macro.
 
-Some of the macros require two mandatory parameters (`type`, `is_less`)
+Some of the macros require two mandatory parameters (`type` & `less`)
 that are used to build generic functions tailored to that data type.
 
 The `type` parameter could be any standard or user-defined data type.
 
-The `is_less` parameter should be the name (NOT A POINTER, JUST THE
-NAME) of a comparing function/macro for the corresponding data type.
+The `less` parameter should be the name (NOT A POINTER, JUST THE NAME)
+of a comparing function/macro for the corresponding data type.
 
-The `bool is_less(const type x, const type y)` function must accept
-two `type` values and return:
+The `bool less(const type x, const type y)` function must accept two
+`type` values and return:
 
- * `is_less(x, y) == true`   if   `x <  y`
- * `is_less(x, y) == false`  if   `x >= y`
+ * `less(x, y) == true`     if   `x <  y`
+ * `less(x, y) == false`    if   `x >= y`
 
 **Example:**
 
 ```c
 #include "CLM_LIBS.h"
 
-#define IS_LESS_NUM(i, j) ((i)<(j))
+#define LESS_NUM(i, j) ((i)<(j))
 
 typedef struct pair { int i; double d; } pair_t;
 
-bool is_less_pair(const pair_t p1, pair_t p2) {
+bool less_pair(const pair_t p1, pair_t p2) {
     return (p1.i < p2.i || (p1.i == p2.i && p1.d < p2.d));
 }
 
 IMPORT_CLM_RAND()
-IMPORT_CLM_ARRAY(int, IS_LESS_NUM, int_)
-IMPORT_CLM_ARRAY(double, IS_LESS_NUM, dbl_)
-IMPORT_CLM_STREE(pair_t, is_less_pair, )
+IMPORT_CLM_ARRAY(int, LESS_NUM, int_)
+IMPORT_CLM_ARRAY(double, LESS_NUM, dbl_)
+IMPORT_CLM_STREE(pair_t, less_pair, )
 
 int main(void) {
 
@@ -213,8 +213,8 @@ int main(void) {
     }
 
     printf("\nINDEPENDENTLY SORTED:\n");
-    int_array_heapsort(A, N);
-    dbl_array_heapsort(B, N);
+    int_array_sort(A, N);
+    dbl_array_sort(B, N);
     for (i = 0; i < N; i++) { printf("\t(%d, %f)\n", A[i], B[i]); }
 
     free(A);
@@ -227,7 +227,7 @@ int main(void) {
 ### CLM\_LIBS
 
 ```c
-#define CLM_LIBS 20200512
+#define CLM_LIBS 20200516
 ```
 
 Contains the version number (= date) of this release of CLM_LIBS.
@@ -1149,7 +1149,7 @@ coordinates in the Hilbert space-filling curve of `bits` levels.
 ### CLM\_ARRAY
 
 ```c
-#define IMPORT_CLM_ARRAY(type, is_less, prefix)
+#define IMPORT_CLM_ARRAY(type, less, prefix)
 ```
 
 A set of functions to work with arrays.
@@ -1256,8 +1256,27 @@ array_sort(MyArray, K-1);
 **Example:** Sort the K biggest elements of MyArray with:
 
 ```c
-array_select(MyArray, N, N-1-K)
-array_sort(&MyArray[N-K], N-K);
+array_select(MyArray, N, N-K-1)
+array_sort(MyArray+N-K, N-K);
+```
+
+*******************************************************************
+
+#### array\_shuffle
+
+```c
+static inline void array_shuffle(const array A, const size_t length);
+```
+
+Shuffles the first `length` elements of the array `A` in-place
+in `O(length)` time.
+
+**Warning:** The parameter `A` must satisfy: `A != NULL`.
+
+**Example:** Shuffle the first N elements of MyArray with:
+
+```c
+array_shuffle(MyArray, N);
 ```
 
 *******************************************************************
@@ -1281,6 +1300,8 @@ Moreover, `A[0:k-1]` will contain the `k-1` elements of `A` that
 are smaller or equal than `A[k]` and `A[k+1:length-1]` will contain
 the `length-k` elements of `A` that are bigger than `A[k]`.
 
+**Warning:** The parameter `A` must satisfy: `A != NULL`.
+
 **Warning:** The parameters must satisfy: `rank < length`.
 
 **Example:** Find the median of an unsorted array of doubles with:
@@ -1299,8 +1320,47 @@ array_sort(MyArray, K-1);
 **Example:** Sort the K biggest elements of MyArray with:
 
 ```c
-array_select(MyArray, N, N-1-K)
-array_sort(&MyArray[N-K], N-K);
+array_select(MyArray, N, N-K-1)
+array_sort(MyArray+N-K, N-K);
+```
+
+*******************************************************************
+
+#### array\_bisect
+
+```c
+static inline size_t array_bisect(const array A, const size_t length, const type data);
+```
+
+Returns the rightmost insertion point for `data` in the sorted
+array `A` in `O(log(length))` time using binary search.
+
+In particular:
+
+* `data >= A[i]`    in the interval `[0, array_bisect(A, N, data))`
+* `data <  A[i]`    in the interval `[array_bisect(A, N, data), N)`
+
+**Warning:** The parameter `A` must satisfy: `A != NULL`.
+
+**Warning:** If `A` is not sorted the behavior is undefined.
+
+**Example:** Find `MyData` in `MyArray` with:
+
+```c
+size_t i = array_bisect(MyArray, N, MyData);
+if (i > 0 && MyArray[i-1] == MyData) { printf("Found");     }
+else                                 { printf("Not found"); }
+```
+
+**Example:** Insertion-sort `MyArray` with:
+
+```c
+for (size_t i = 1; i < length; ++i) {
+     type   t = MyArray[i];
+     size_t j = array_bisect(MyArray, N, t);
+     memmove(A+j+1, A+j, (i-j)*sizeof(type));
+     A[j] = t;
+}
 ```
 
 *********************************************************************
@@ -1451,7 +1511,7 @@ type last = clist_back(&MyList);
 ### CLM\_STREE
 
 ```c
-#define IMPORT_CLM_STREE(type, is_less, prefix)
+#define IMPORT_CLM_STREE(type, less, prefix)
 ```
 
 A set of data types and functions related to the `stree` container.
@@ -1645,8 +1705,8 @@ static inline bool stree_next(stree *tree);
 ```
 
 If `tree` is empty or the current root is the biggest element it
-just returs false. Otherwise, it moves to the root the smallest
-element that is bigger than the current root and returns true.
+just returs `false`. Otherwise, it moves to the root the smallest
+element that is bigger than the current root and returns `true`.
 
 **Example:** Iterate forwards over the elements of `MyTree` with:
 
@@ -1733,7 +1793,7 @@ if (stree_find(&MyTree, data)) {
 ### CLM\_WTREE
 
 ```c
-#define IMPORT_CLM_WTREE(type, is_less, prefix)
+#define IMPORT_CLM_WTREE(type, less, prefix)
 ```
 
 A set of data types and functions related to the `wtree` container.

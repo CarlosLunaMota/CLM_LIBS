@@ -2,7 +2,7 @@
 # CLM\_LIBS CHEAT SHEET
 
 ```c
-#define CLM_LIBS 20200512
+#define CLM_LIBS 20200516
 
 
 #define IMPORT_CLM_TIME(prefix)
@@ -63,7 +63,7 @@
     void    fractal_h_to_coord(size_t dim, size_t bits, size_t *n, size_t *coord);
     void    fractal_coord_to_h(size_t dim, size_t bits, size_t *n, size_t *coord);
 
-#define IMPORT_CLM_ARRAY(type, is_less, prefix)
+#define IMPORT_CLM_ARRAY(type, less, prefix)
 
     typedef type *array;
 
@@ -71,8 +71,7 @@
     void    array_sort(array A, size_t length);
     void    array_shuffle(array A, size_t length);
     type    array_select(array A, size_t length, size_t rank);
-    size_t  array_bisect_l(array A, size_t length, type data);
-    size_t  array_bisect_r(array A, size_t length, type data);
+    size_t  array_bisect(array A, size_t length, type data);
 
 #define IMPORT_CLM_CLIST(type, prefix)
 
@@ -87,7 +86,7 @@
     type    clist_front(clist *list);
     type    clist_back(clist *list);
 
-#define IMPORT_CLM_STREE(type, is_less, prefix)
+#define IMPORT_CLM_STREE(type, less, prefix)
 
     typedef struct stree_s {
         struct stree_s *left;
@@ -104,7 +103,7 @@
     bool    stree_find(stree *tree, type data);
     bool    stree_insert(stree *tree, type data);
 
-#define IMPORT_CLM_WTREE(type, is_less, prefix)
+#define IMPORT_CLM_WTREE(type, less, prefix)
 
     typedef struct wtree_s {
       struct wtree_s *left;
