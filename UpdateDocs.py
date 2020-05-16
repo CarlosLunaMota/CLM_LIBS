@@ -79,10 +79,10 @@ if __name__ == "__main__":
                         line = line[:i]+"["+URL+"](#"+URL.replace(" ","-")+")"+line[j+1:]
 
                 if line.startswith("# "):     line = line.replace("_", "\_")
-                if line.startswith("## "):    line = line.replace("_", "\_"); line += " [⬑](#CLM_LIBS)"
-                if line.startswith("### "):   line = line.replace("_", "\_"); line += " [⬑](#CLM_LIBS)"
-                if line.startswith("#### "):  line = line.replace("_", "\_"); line += " [⬑](#CLM_LIBS)"
-                if line.startswith("##### "): line = line.replace("_", "\_"); line += " [⬑](#CLM_LIBS)"
+                if line.startswith("## "):    line = line.replace("_", "\_"); line += "[ ⬑](#CLM_LIBS)"
+                if line.startswith("### "):   line = line.replace("_", "\_"); line += "[ ⬑](#CLM_LIBS)"
+                if line.startswith("#### "):  line = line.replace("_", "\_"); line += "[ ⬑](#CLM_LIBS)"
+                if line.startswith("##### "): line = line.replace("_", "\_"); line += "[ ⬑](#CLM_LIBS)"
 
                 line += "\n"
 
@@ -111,7 +111,7 @@ if __name__ == "__main__":
                     while not lines[numline+diff].startswith("  #define"): diff += 1
                     define  = lines[numline+diff].strip()
                     define += "\n"
-                    output.write("[⬑](#CLM_LIBS)\n\n\n```c\n"+define+"```\n")
+                    output.write("\n```c\n"+define+"```\n")
 
                 if line.startswith("#### "):
                     diff = 1
@@ -129,7 +129,7 @@ if __name__ == "__main__":
                             proto += "\n"
                             diff  += 1
                         proto = proto.replace("prefix##", "")
-                        output.write("[⬑](#CLM_LIBS)\n\n\n```c\n" + proto + "```\n")
+                        output.write("\n```c\n" + proto + "```\n")
                     else:
                         diff = 1
                         while "{" not in proto:
@@ -139,7 +139,7 @@ if __name__ == "__main__":
                         proto = proto[:proto.index("{")+1]
                         proto = proto.replace(" {", ";")
                         proto += "\n"
-                        output.write("[⬑](#CLM_LIBS)\n\n\n```c\n"+proto+"```\n")
+                        output.write("\n```c\n"+proto+"```\n")
 
     ### Print CHEATSHEET.md ###################################################
 
