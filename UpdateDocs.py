@@ -111,7 +111,7 @@ if __name__ == "__main__":
                     while not lines[numline+diff].startswith("  #define"): diff += 1
                     define  = lines[numline+diff].strip()
                     define += "\n"
-                    output.write("\n```c\n"+define+"```\n")
+                    output.write("[back to top ↩](#CLM_LIBS)\n\n\n```c\n"+define+"```\n")
 
                 if line.startswith("#### "):
                     diff = 1
@@ -168,8 +168,7 @@ if __name__ == "__main__":
                 line = line.replace(" {", ";")
 
                 type_names = ("void", "bool", "int", "size_t", "double", "char",
-                              "iheap", "stree", "clist", "string", "array",
-                              "type", "n_type", "inum", "frac", "bitset")
+                              "stree", "clist", "array", "type", "wtree")
                 tab = max(len(t)+1 for t in type_names)
                 for type_name in type_names:
                     if line.startswith(type_name):

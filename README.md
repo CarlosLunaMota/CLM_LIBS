@@ -225,6 +225,8 @@ int main(void) {
 *********************************************************************
 
 ### CLM\_LIBS
+[back to top ↩](#CLM_LIBS)
+
 
 ```c
 #define CLM_LIBS 20200516
@@ -235,6 +237,8 @@ Contains the version number (= date) of this release of CLM_LIBS.
 *********************************************************************
 
 ### CLM\_TIME
+[back to top ↩](#CLM_LIBS)
+
 
 ```c
 #define IMPORT_CLM_TIME(prefix)
@@ -346,6 +350,8 @@ free(timestamp);
 *********************************************************************
 
 ### CLM\_RAND
+[back to top ↩](#CLM_LIBS)
+
 
 ```c
 #define IMPORT_CLM_RAND(prefix)
@@ -492,6 +498,8 @@ for (size_t i = 0; i < 5; i++) {
 *********************************************************************
 
 ### CLM\_PRINTF
+[back to top ↩](#CLM_LIBS)
+
 
 ```c
 #define IMPORT_CLM_PRINTF(prefix)
@@ -682,6 +690,8 @@ printf_reset();
 *********************************************************************
 
 ### CLM\_ARC4
+[back to top ↩](#CLM_LIBS)
+
 
 ```c
 #define IMPORT_CLM_ARC4(prefix)
@@ -813,6 +823,8 @@ free(txt);
 *********************************************************************
 
 ### CLM\_ITER
+[back to top ↩](#CLM_LIBS)
+
 
 ```c
 #define IMPORT_CLM_ITER(prefix)
@@ -1039,6 +1051,8 @@ static inline void iter_next_comb_rep(size_t **comb, const size_t length, const 
 *********************************************************************
 
 ### CLM\_FRACTAL
+[back to top ↩](#CLM_LIBS)
+
 
 ```c
 #define IMPORT_CLM_FRACTAL(prefix)
@@ -1147,6 +1161,8 @@ coordinates in the Hilbert space-filling curve of `bits` levels.
 *********************************************************************
 
 ### CLM\_ARRAY
+[back to top ↩](#CLM_LIBS)
+
 
 ```c
 #define IMPORT_CLM_ARRAY(type, less, prefix)
@@ -1366,6 +1382,8 @@ for (size_t i = 1; i < length; ++i) {
 *********************************************************************
 
 ### CLM\_CLIST
+[back to top ↩](#CLM_LIBS)
+
 
 ```c
 #define IMPORT_CLM_CLIST(type, prefix)
@@ -1509,6 +1527,8 @@ type last = clist_back(&MyList);
 *********************************************************************
 
 ### CLM\_STREE
+[back to top ↩](#CLM_LIBS)
+
 
 ```c
 #define IMPORT_CLM_STREE(type, less, prefix)
@@ -1791,6 +1811,8 @@ if (stree_find(&MyTree, data)) {
 *********************************************************************
 
 ### CLM\_WTREE
+[back to top ↩](#CLM_LIBS)
+
 
 ```c
 #define IMPORT_CLM_WTREE(type, less, prefix)
