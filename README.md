@@ -6,7 +6,7 @@
 
 **CONTENT:** The CLM_LIBS code-generating macros
 
-**AUTHOR:**  Carlos Luna Mota
+**AUTHOR:**  Carlos Luna-Mota
 
 **SOURCE:**  [https://github.com/CarlosLunaMota/CLM_LIBS](https://github.com/CarlosLunaMota/CLM_LIBS)
 
@@ -164,15 +164,15 @@ of a comparing function/macro for the corresponding data type.
 The `bool less(const type x, const type y)` function must accept two
 `const type` values and return:
 
- * `less(x, y) == true`     if   `x <  y`
- * `less(x, y) == false`    if   `x >= y`
+ * `less(x, y) == true`   if   `x <  y`
+ * `less(x, y) == false`  if   `x >= y`
 
 **Example:**
 
 ```c
 #include "CLM_LIBS.h"
 
-#define LESS_NUM(i, j) ((i)<(j))
+#define LESS_NUM(i, j) ((i) < (j))
 
 typedef struct pair { int i; double d; } pair_t;
 
@@ -181,9 +181,9 @@ bool less_pair(const pair_t p1, pair_t p2) {
 }
 
 IMPORT_CLM_RAND()
-IMPORT_CLM_ARRAY(int, LESS_NUM, int_)
+IMPORT_CLM_ARRAY(int,    LESS_NUM, int_)
 IMPORT_CLM_ARRAY(double, LESS_NUM, dbl_)
-IMPORT_CLM_STREE(pair_t, less_pair, )
+IMPORT_CLM_STREE(pair_t, less_pair,    )
 
 int main(void) {
 
@@ -227,7 +227,7 @@ int main(void) {
 ### CLM\_LIBS [⯅](#CLM_LIBS)
 
 ```c
-#define CLM_LIBS 20200516
+#define CLM_LIBS 20200519
 ```
 
 Contains the version number (= date) of this release of CLM_LIBS.
@@ -440,9 +440,9 @@ double *Y = (double *) malloc(100 * sizeof(double));
 double *Z = (double *) malloc(100 * sizeof(double));
 if (X && Y && Z) {
     for (size_t i = 0; i < 100; i++) {
-        X[i] = x_min + (x_max-x_min)*quasi_rand(2, i);
-        Y[i] = y_min + (y_max-y_min)*quasi_rand(3, i);
-        Z[i] = z_min + (z_max-z_min)*quasi_rand(5, i);
+        X[i] = x_min + (x_max-x_min)*rand_halton(2, i);
+        Y[i] = y_min + (y_max-y_min)*rand_halton(3, i);
+        Z[i] = z_min + (z_max-z_min)*rand_halton(5, i);
     }
 }
 ```
@@ -716,7 +716,7 @@ multiple of 256 as a `drop` (classic ARC4 defaults `drop` to 0).
 
 **Warning:** The `txt` parameter must be a `\0` terminated string.
 
-**Example:** Get N pseudo-random bytes with:
+**Example:** Get `N` pseudo-random bytes with:
 
 ```c
 size_t i, ii;
@@ -765,7 +765,7 @@ the `0 < strlen(key) <= 256` condition.
 
 **Warning:** The `txt` parameter must be a `\0` terminated string.
 
-**Example:** Encrypt "Attack at dawn" using "Secret" as key with:
+**Example:** Encrypt `Attack at dawn` using `Secret` as key with:
 
 ```c
 char *code = arc4_encrypt("Attack at dawn", "Secret", 0);
@@ -801,7 +801,7 @@ the `0 < strlen(key) <= 256` condition.
 
 **Warning:** The `txt` parameter must be a `\0` terminated string.
 
-**Example:** Decrypt the coded message using "Secret" as key with:
+**Example:** Decrypt the coded message using `Secret` as key with:
 
 ```c
 char *code = "45A01F645FC35B383552544B9BF5"
@@ -1182,6 +1182,8 @@ Allocates an `array` of the given `length`.
 
 ```c
 array A = array_new(N);
+do_something(A);
+free(A);
 ```
 
 *******************************************************************
@@ -1212,6 +1214,7 @@ void MedianSort(const array A, const size_t length) {
             QuickSelect(A+low, high-low, step);
         }
     }
+
     if (MIN_SIZE > 1) { InsertionSort(A, length); }
 }
 ```
@@ -1240,20 +1243,20 @@ constant `MIN_SIZE` controls the breaking point and may be tuned.
 
 **Warning:** This sorting algorithm is NOT stable.
 
-**Example:** Sort the first N elements of MyArray with:
+**Example:** Sort the first `N` elements of `MyArray` with:
 
 ```c
 array_sort(MyArray, N);
 ```
 
-**Example:** Sort the K smallest elements of MyArray with:
+**Example:** Sort the `K` smallest elements of `MyArray` with:
 
 ```c
 array_select(MyArray, N, K);
 array_sort(MyArray, K-1);
 ```
 
-**Example:** Sort the K biggest elements of MyArray with:
+**Example:** Sort the `K` biggest elements of `MyArray` with:
 
 ```c
 array_select(MyArray, N, N-K-1)
@@ -1273,7 +1276,7 @@ in `O(length)` time.
 
 **Warning:** The parameter `A` must satisfy: `A != NULL`.
 
-**Example:** Shuffle the first N elements of MyArray with:
+**Example:** Shuffle the first `N` elements of `MyArray` with:
 
 ```c
 array_shuffle(MyArray, N);
@@ -1310,14 +1313,14 @@ the `length-k` elements of `A` that are bigger than `A[k]`.
 double median = array_select(MyArray, N, N/2);
 ```
 
-**Example:** Sort the K smallest elements of MyArray with:
+**Example:** Sort the `K` smallest elements of `MyArray` with:
 
 ```c
 array_select(MyArray, N, K);
 array_sort(MyArray, K-1);
 ```
 
-**Example:** Sort the K biggest elements of MyArray with:
+**Example:** Sort the `K` biggest elements of `MyArray` with:
 
 ```c
 array_select(MyArray, N, N-K-1)
@@ -1337,12 +1340,12 @@ array `A` in `O(log(length))` time using binary search.
 
 In particular:
 
-* `data >= A[i]`    in the interval `[0, array_bisect(A, N, data))`
-* `data <  A[i]`    in the interval `[array_bisect(A, N, data), N)`
+* `data >= A[i]`  in the interval `[0, array_bisect(A, N, data))`
+* `data <  A[i]`  in the interval `[array_bisect(A, N, data), N)`
 
 **Warning:** The parameter `A` must satisfy: `A != NULL`.
 
-**Warning:** If `A` is not sorted the behavior is undefined.
+**Warning:** If `A` is not sorted, the behavior is undefined.
 
 **Example:** Find `MyData` in `MyArray` with:
 
@@ -1408,6 +1411,27 @@ if (MyList) { printf("MyList is not empty"); }
 else        { printf("MyList is empty");     }
 ```
 
+**Example:** Compute the length of `MyList` with:
+
+```c
+size_t size = 0;
+if (MyList) {
+    clist itr = MyList;
+    do { itr = itr->next; size++; } while (itr != MyList);
+}
+```
+
+**Example:** Iterate over all the elements of `MyList` with:
+
+```c
+if (MyList) {
+    clist itr = MyList;
+    do {itr = itr->next;
+        do_something(itr->data);
+    } while (itr != MyList);
+}
+```
+
 *******************************************************************
 
 #### clist\_push\_front [⯅](#CLM_LIBS)
@@ -1416,14 +1440,14 @@ else        { printf("MyList is empty");     }
 static inline bool clist_push_front(clist *list, const type data);
 ```
 
-Adds an elemenet at the beginning of `list` in O(1) time.
+Adds an elemenet at the beginning of `list` in `O(1)` time.
 
 **Warning:** Returns `true` if successful, and `false` otherwise.
 
 **Example:** Add data to the beginning of `MyList` with:
 
 ```c
-int success = clist_push_front(&MyList, data);
+bool success = clist_push_front(&MyList, data);
 if (success) { assert(clist_front(&MyList) == data); }
 ```
 
@@ -1435,14 +1459,14 @@ if (success) { assert(clist_front(&MyList) == data); }
 static inline bool clist_push_back(clist *list, const type data);
 ```
 
-Adds an elemenet at the end of `list` in O(1) time.
+Adds an elemenet at the end of `list` in `O(1)` time.
 
 **Warning:** Returns `true` if successful, and `false` otherwise.
 
 **Example:** Add data to the end of `MyList` with:
 
 ```c
-int success = clist_push_back(&MyList, data);
+bool success = clist_push_back(&MyList, data);
 if (success) { assert(clist_back(&MyList) == data); }
 ```
 
@@ -1454,13 +1478,13 @@ if (success) { assert(clist_back(&MyList) == data); }
 static inline type clist_pop_front(clist *list);
 ```
 
-Removes & returns the first element of `list` in O(1) time.
+Removes and returns the first element of `list` in `O(1)` time.
 
-Although you can add elements to either end of the list they will
-always exit the list from the beginning.
+**Warning:** Although you can add elements to either end of the
+list they will always exit the list from the beginning.
 
 The combination of `push_front` & `pop_front` behaves as a LIFO
-queue whereas `push_back` & `pop_front` behaves as a FIFO queue.
+stack whereas `push_back` & `pop_front` behaves as a FIFO queue.
 
 **Warning:** The parameter `list` must satisfy `*list != NULL`.
 
@@ -1478,7 +1502,7 @@ while (MyList) { free(clist_pop_front(&MyList)); }
 static inline type clist_front(clist *list);
 ```
 
-Returns the first element of a non-empty list in O(1) time.
+Returns the first element of a non-empty list in `O(1)` time.
 
 **Warning:** The parameter `list` must satisfy `*list != NULL`.
 
@@ -1496,7 +1520,7 @@ type next = clist_front(&MyList);
 static inline type clist_back(clist *list);
 ```
 
-Returns the last element of a non-empty list in O(1) time.
+Returns the last element of a non-empty list in `O(1)` time.
 
 **Warning:** The parameter `list` must satisfy `*list != NULL`.
 

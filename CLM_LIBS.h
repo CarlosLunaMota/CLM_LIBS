@@ -6,7 +6,7 @@
 /**                                                                         **/
 /** **CONTENT:** The CLM_LIBS code-generating macros                        **/
 /**                                                                         **/
-/** **AUTHOR:**  Carlos Luna Mota                                           **/
+/** **AUTHOR:**  Carlos Luna-Mota                                           **/
 /**                                                                         **/
 /** **SOURCE:**  <https://github.com/CarlosLunaMota/CLM_LIBS>               **/
 /**                                                                         **/
@@ -143,14 +143,14 @@
 /** The `bool less(const type x, const type y)` function must accept two    **/
 /** `const type` values and return:                                         **/
 /**                                                                         **/
-/**  * `less(x, y) == true`     if   `x <  y`                               **/
-/**  * `less(x, y) == false`    if   `x >= y`                               **/
+/**  * `less(x, y) == true`   if   `x <  y`                                 **/
+/**  * `less(x, y) == false`  if   `x >= y`                                 **/
 /**                                                                         **/
 /** **Example:**                                                            **/
 /**                                                                         **/
 /**     #include "CLM_LIBS.h"                                               **/
 /**                                                                         **/
-/**     #define LESS_NUM(i, j) ((i)<(j))                                    **/
+/**     #define LESS_NUM(i, j) ((i) < (j))                                  **/
 /**                                                                         **/
 /**     typedef struct pair { int i; double d; } pair_t;                    **/
 /**                                                                         **/
@@ -159,9 +159,9 @@
 /**     }                                                                   **/
 /**                                                                         **/
 /**     IMPORT_CLM_RAND()                                                   **/
-/**     IMPORT_CLM_ARRAY(int, LESS_NUM, int_)                               **/
+/**     IMPORT_CLM_ARRAY(int,    LESS_NUM, int_)                            **/
 /**     IMPORT_CLM_ARRAY(double, LESS_NUM, dbl_)                            **/
-/**     IMPORT_CLM_STREE(pair_t, less_pair, )                               **/
+/**     IMPORT_CLM_STREE(pair_t, less_pair,    )                            **/
 /**                                                                         **/
 /**     int main(void) {                                                    **/
 /**                                                                         **/
@@ -208,7 +208,7 @@
   /**                                                                       **/
   /** Contains the version number (= date) of this release of CLM_LIBS.     **/
   /**                                                                       **/
-  #define CLM_LIBS 20200516
+  #define CLM_LIBS 20200519
 
   /** ********************************************************************* **/
   /**                                                                       **/
@@ -425,8 +425,10 @@
     /**                                                                     **/ \
     static inline double prefix##rand_double(const double n) {                  \
                                                                                 \
+        /* Preconditions */                                                     \
         assert(n > DBL_EPSILON);                                                \
                                                                                 \
+        /* Uniformly random generator */                                        \
         return n * ((double) rand() / (double) RAND_MAX);                       \
     }                                                                           \
                                                                                 \
@@ -456,9 +458,9 @@
     /**     double *Z = (double *) malloc(100 * sizeof(double));            **/ \
     /**     if (X && Y && Z) {                                              **/ \
     /**         for (size_t i = 0; i < 100; i++) {                          **/ \
-    /**             X[i] = x_min + (x_max-x_min)*quasi_rand(2, i);          **/ \
-    /**             Y[i] = y_min + (y_max-y_min)*quasi_rand(3, i);          **/ \
-    /**             Z[i] = z_min + (z_max-z_min)*quasi_rand(5, i);          **/ \
+    /**             X[i] = x_min + (x_max-x_min)*rand_halton(2, i);         **/ \
+    /**             Y[i] = y_min + (y_max-y_min)*rand_halton(3, i);         **/ \
+    /**             Z[i] = z_min + (z_max-z_min)*rand_halton(5, i);         **/ \
     /**         }                                                           **/ \
     /**     }                                                               **/ \
     /**                                                                     **/ \
@@ -785,7 +787,7 @@
     /**                                                                     **/ \
     /** **Warning:** The `txt` parameter must be a `\0` terminated string.  **/ \
     /**                                                                     **/ \
-    /** **Example:** Get N pseudo-random bytes with:                        **/ \
+    /** **Example:** Get `N` pseudo-random bytes with:                      **/ \
     /**                                                                     **/ \
     /**     size_t i, ii;                                                   **/ \
     /**     char   c;                                                       **/ \
@@ -880,7 +882,7 @@
     /**                                                                     **/ \
     /** **Warning:** The `txt` parameter must be a `\0` terminated string.  **/ \
     /**                                                                     **/ \
-    /** **Example:** Encrypt "Attack at dawn" using "Secret" as key with:   **/ \
+    /** **Example:** Encrypt `Attack at dawn` using `Secret` as key with:   **/ \
     /**                                                                     **/ \
     /**     char *code = arc4_encrypt("Attack at dawn", "Secret", 0);       **/ \
     /**     if (code != NULL) { printf("Encrypted: '%s'\n", code); }        **/ \
@@ -963,7 +965,7 @@
     /**                                                                     **/ \
     /** **Warning:** The `txt` parameter must be a `\0` terminated string.  **/ \
     /**                                                                     **/ \
-    /** **Example:** Decrypt the coded message using "Secret" as key with:  **/ \
+    /** **Example:** Decrypt the coded message using `Secret` as key with:  **/ \
     /**                                                                     **/ \
     /**     char *code = "45A01F645FC35B383552544B9BF5"                     **/ \
     /**     char *txt  = arc4_decrypt(code, "Secret", 0);                   **/ \
@@ -1890,6 +1892,8 @@
     /** **Example:** Allocate an `array` of length `N` with:                **/ \
     /**                                                                     **/ \
     /**     array A = array_new(N);                                         **/ \
+    /**     do_something(A);                                                **/ \
+    /**     free(A);                                                        **/ \
     /**                                                                     **/ \
     static inline prefix##array prefix##array_new(const size_t length) {        \
                                                                                 \
@@ -1929,6 +1933,7 @@
     /**                 QuickSelect(A+low, high-low, step);                 **/ \
     /**             }                                                       **/ \
     /**         }                                                           **/ \
+    /**                                                                     **/ \
     /**         if (MIN_SIZE > 1) { InsertionSort(A, length); }             **/ \
     /**     }                                                               **/ \
     /**                                                                     **/ \
@@ -1956,16 +1961,16 @@
     /**                                                                     **/ \
     /** **Warning:** This sorting algorithm is NOT stable.                  **/ \
     /**                                                                     **/ \
-    /** **Example:** Sort the first N elements of MyArray with:             **/ \
+    /** **Example:** Sort the first `N` elements of `MyArray` with:         **/ \
     /**                                                                     **/ \
     /**     array_sort(MyArray, N);                                         **/ \
     /**                                                                     **/ \
-    /** **Example:** Sort the K smallest elements of MyArray with:          **/ \
+    /** **Example:** Sort the `K` smallest elements of `MyArray` with:      **/ \
     /**                                                                     **/ \
     /**     array_select(MyArray, N, K);                                    **/ \
     /**     array_sort(MyArray, K-1);                                       **/ \
     /**                                                                     **/ \
-    /** **Example:** Sort the K biggest elements of MyArray with:           **/ \
+    /** **Example:** Sort the `K` biggest elements of `MyArray` with:       **/ \
     /**                                                                     **/ \
     /**     array_select(MyArray, N, N-K-1)                                 **/ \
     /**     array_sort(MyArray+N-K, N-K);                                   **/ \
@@ -1979,7 +1984,7 @@
         assert(A != NULL);                                                      \
         assert(MIN_SIZE > 0);                                                   \
                                                                                 \
-        size_t i, j, left, right, rank, half, step;                             \
+        size_t l, r, left, right, rank, half, step;                             \
         type   t, pivot;                                                        \
                                                                                 \
         /* MEDIAN SORT (down to MIN_SIZE intervals) */                          \
@@ -1990,25 +1995,26 @@
                 right = ((rank+half) > length ? length : (rank+half)) - 1;      \
                                                                                 \
                 /* QUICK_SELECT the element `rank` in `A[left, right)` */       \
-                while (left < right) {                                          \
-                    pivot = A[rank];                                            \
-                    i     = left;                                               \
-                    j     = right;                                              \
-                    do {while (less(A[i], pivot)) { ++i; }                      \
-                        while (less(pivot, A[j])) { --j; }                      \
-                        if  (i <= j) { t=A[i]; A[i]=A[j]; A[j]=t; ++i; --j; }   \
-                    } while (i <= j);                                           \
-                    if (j < rank) { left  = i; }                                \
-                    if (rank < i) { right = j; }                                \
-                }                                                               \
+                do {pivot = A[rank];                                            \
+                    l     = left;                                               \
+                    r     = right;                                              \
+                    do {while (less(A[l], pivot)) { ++l; }                      \
+                        while (less(pivot, A[r])) { --r; }                      \
+                        if  (l <= r) { t=A[l]; A[l]=A[r]; A[r]=t; ++l; --r; }   \
+                    } while (l <= r);                                           \
+                    if (r < rank) { left  = l; }                                \
+                    if (rank < l) { right = r; }                                \
+                } while (left < right);                                         \
             }                                                                   \
         }                                                                       \
                                                                                 \
         /* INSERTION SORT (up to MIN_SIZE distances) */                         \
-        for(i = 1; i < length; ++i) {                                           \
-            t = A[i];                                                           \
-            for (j = i; j > 0 && less(t, A[j-1]); --j) { A[j] = A[j-1]; }       \
-            A[j] = t;                                                           \
+        if (MIN_SIZE > 1) {                                                     \
+            for(r = 1; r < length; ++r) {                                       \
+                t = A[r];                                                       \
+                for (l = r; l > 0 && less(t, A[l-1]); --l) { A[l] = A[l-1]; }   \
+                A[l] = t;                                                       \
+            }                                                                   \
         }                                                                       \
     }                                                                           \
                                                                                 \
@@ -2021,7 +2027,7 @@
     /**                                                                     **/ \
     /** **Warning:** The parameter `A` must satisfy: `A != NULL`.           **/ \
     /**                                                                     **/ \
-    /** **Example:** Shuffle the first N elements of MyArray with:          **/ \
+    /** **Example:** Shuffle the first `N` elements of `MyArray` with:      **/ \
     /**                                                                     **/ \
     /**     array_shuffle(MyArray, N);                                      **/ \
     /**                                                                     **/ \
@@ -2072,12 +2078,12 @@
     /**                                                                     **/ \
     /**     double median = array_select(MyArray, N, N/2);                  **/ \
     /**                                                                     **/ \
-    /** **Example:** Sort the K smallest elements of MyArray with:          **/ \
+    /** **Example:** Sort the `K` smallest elements of `MyArray` with:      **/ \
     /**                                                                     **/ \
     /**     array_select(MyArray, N, K);                                    **/ \
     /**     array_sort(MyArray, K-1);                                       **/ \
     /**                                                                     **/ \
-    /** **Example:** Sort the K biggest elements of MyArray with:           **/ \
+    /** **Example:** Sort the `K` biggest elements of `MyArray` with:       **/ \
     /**                                                                     **/ \
     /**     array_select(MyArray, N, N-K-1)                                 **/ \
     /**     array_sort(MyArray+N-K, N-K);                                   **/ \
@@ -2089,22 +2095,21 @@
         assert(A != NULL);                                                      \
         assert(rank < length);                                                  \
                                                                                 \
-        size_t l, low  = 0;                                                     \
-        size_t h, high = length-1;                                              \
+        size_t l, left  = 0;                                                    \
+        size_t r, right = length-1;                                             \
         type   t, pivot;                                                        \
                                                                                 \
         /* Apply Quickselect in place */                                        \
-        while (low < high) {                                                    \
-            pivot = A[rank];                                                    \
-            l     = low;                                                        \
-            h     = high;                                                       \
+        do {pivot = A[rank];                                                    \
+            l     = left;                                                       \
+            r     = right;                                                      \
             do {while (less(A[l], pivot)) { ++l; }                              \
-                while (less(pivot, A[h])) { --h; }                              \
-                if (l <= h) { t = A[l]; A[l] = A[h]; A[h] = t; ++l; --h; }      \
-            } while (l <= h);                                                   \
-            if (h < rank) { low  = l; }                                         \
-            if (rank < l) { high = h; }                                         \
-        }                                                                       \
+                while (less(pivot, A[r])) { --r; }                              \
+                if  (l <= r) { t = A[l]; A[l] = A[r]; A[r] = t; ++l; --r; }     \
+            } while (l <= r);                                                   \
+            if (r < rank) { left  = l; }                                        \
+            if (rank < l) { right = r; }                                        \
+        } while (left < right);                                                 \
                                                                                 \
         /* Return the requested element */                                      \
         return A[rank];                                                         \
@@ -2119,12 +2124,12 @@
     /**                                                                     **/ \
     /** In particular:                                                      **/ \
     /**                                                                     **/ \
-    /** * `data >= A[i]`    in the interval `[0, array_bisect(A, N, data))` **/ \
-    /** * `data <  A[i]`    in the interval `[array_bisect(A, N, data), N)` **/ \
+    /** * `data >= A[i]`  in the interval `[0, array_bisect(A, N, data))`   **/ \
+    /** * `data <  A[i]`  in the interval `[array_bisect(A, N, data), N)`   **/ \
     /**                                                                     **/ \
     /** **Warning:** The parameter `A` must satisfy: `A != NULL`.           **/ \
     /**                                                                     **/ \
-    /** **Warning:** If `A` is not sorted the behavior is undefined.        **/ \
+    /** **Warning:** If `A` is not sorted, the behavior is undefined.       **/ \
     /**                                                                     **/ \
     /** **Example:** Find `MyData` in `MyArray` with:                       **/ \
     /**                                                                     **/ \
@@ -2193,6 +2198,23 @@
     /**     if (MyList) { printf("MyList is not empty"); }                  **/ \
     /**     else        { printf("MyList is empty");     }                  **/ \
     /**                                                                     **/ \
+    /** **Example:** Compute the length of `MyList` with:                   **/ \
+    /**                                                                     **/ \
+    /**     size_t size = 0;                                                **/ \
+    /**     if (MyList) {                                                   **/ \
+    /**         clist itr = MyList;                                         **/ \
+    /**         do { itr = itr->next; size++; } while (itr != MyList);      **/ \
+    /**     }                                                               **/ \
+    /**                                                                     **/ \
+    /** **Example:** Iterate over all the elements of `MyList` with:        **/ \
+    /**                                                                     **/ \
+    /**     if (MyList) {                                                   **/ \
+    /**         clist itr = MyList;                                         **/ \
+    /**         do {itr = itr->next;                                        **/ \
+    /**             do_something(itr->data);                                **/ \
+    /**         } while (itr != MyList);                                    **/ \
+    /**     }                                                               **/ \
+    /**                                                                     **/ \
     typedef struct prefix##clist_s {                                            \
         struct prefix##clist_s *next;                                           \
         type            data;                                                   \
@@ -2202,13 +2224,13 @@
     /**                                                                     **/ \
     /** #### clist_push_front                                               **/ \
     /**                                                                     **/ \
-    /** Adds an elemenet at the beginning of `list` in O(1) time.           **/ \
+    /** Adds an elemenet at the beginning of `list` in `O(1)` time.         **/ \
     /**                                                                     **/ \
     /** **Warning:** Returns `true` if successful, and `false` otherwise.   **/ \
     /**                                                                     **/ \
     /** **Example:** Add data to the beginning of `MyList` with:            **/ \
     /**                                                                     **/ \
-    /**     int success = clist_push_front(&MyList, data);                  **/ \
+    /**     bool success = clist_push_front(&MyList, data);                 **/ \
     /**     if (success) { assert(clist_front(&MyList) == data); }          **/ \
     /**                                                                     **/ \
     static inline bool prefix##clist_push_front(prefix##clist *list,            \
@@ -2235,13 +2257,13 @@
     /**                                                                     **/ \
     /** #### clist_push_back                                                **/ \
     /**                                                                     **/ \
-    /** Adds an elemenet at the end of `list` in O(1) time.                 **/ \
+    /** Adds an elemenet at the end of `list` in `O(1)` time.               **/ \
     /**                                                                     **/ \
     /** **Warning:** Returns `true` if successful, and `false` otherwise.   **/ \
     /**                                                                     **/ \
     /** **Example:** Add data to the end of `MyList` with:                  **/ \
     /**                                                                     **/ \
-    /**     int success = clist_push_back(&MyList, data);                   **/ \
+    /**     bool success = clist_push_back(&MyList, data);                  **/ \
     /**     if (success) { assert(clist_back(&MyList) == data); }           **/ \
     /**                                                                     **/ \
     static inline bool prefix##clist_push_back(prefix##clist *list,             \
@@ -2269,13 +2291,13 @@
     /**                                                                     **/ \
     /** #### clist_pop_front                                                **/ \
     /**                                                                     **/ \
-    /** Removes & returns the first element of `list` in O(1) time.         **/ \
+    /** Removes and returns the first element of `list` in `O(1)` time.     **/ \
     /**                                                                     **/ \
-    /** Although you can add elements to either end of the list they will   **/ \
-    /** always exit the list from the beginning.                            **/ \
+    /** **Warning:** Although you can add elements to either end of the     **/ \
+    /** list they will always exit the list from the beginning.             **/ \
     /**                                                                     **/ \
     /** The combination of `push_front` & `pop_front` behaves as a LIFO     **/ \
-    /** queue whereas `push_back` & `pop_front` behaves as a FIFO queue.    **/ \
+    /** stack whereas `push_back` & `pop_front` behaves as a FIFO queue.    **/ \
     /**                                                                     **/ \
     /** **Warning:** The parameter `list` must satisfy `*list != NULL`.     **/ \
     /**                                                                     **/ \
@@ -2300,7 +2322,7 @@
     /**                                                                     **/ \
     /** #### clist_front                                                    **/ \
     /**                                                                     **/ \
-    /** Returns the first element of a non-empty list in O(1) time.         **/ \
+    /** Returns the first element of a non-empty list in `O(1)` time.       **/ \
     /**                                                                     **/ \
     /** **Warning:** The parameter `list` must satisfy `*list != NULL`.     **/ \
     /**                                                                     **/ \
@@ -2320,7 +2342,7 @@
     /**                                                                     **/ \
     /** #### clist_back                                                     **/ \
     /**                                                                     **/ \
-    /** Returns the last element of a non-empty list in O(1) time.          **/ \
+    /** Returns the last element of a non-empty list in `O(1)` time.        **/ \
     /**                                                                     **/ \
     /** **Warning:** The parameter `list` must satisfy `*list != NULL`.     **/ \
     /**                                                                     **/ \
@@ -2585,9 +2607,9 @@
         if (old_root->right == NULL) {                                          \
                                                                                 \
             /* Top-down simple splay-max the old_root->left; */                 \
-            root           = old_root->left;                                    \
-            dummy.right    = NULL;                                              \
-            left           = &dummy;                                            \
+            root        = old_root->left;                                       \
+            dummy.right = NULL;                                                 \
+            left        = &dummy;                                               \
             for (;;) {                                                          \
                                                                                 \
                 /* Rotate Left */                                               \

@@ -1909,14 +1909,17 @@ void CLM_ARRAY_TEST(bool verbose) {
 
     /* Test Select */
     for (i = 0; i < 100; i++) {
+        array_shuffle(A, size);
         j = rand_size_t(size);
         assert(array_select(A, size, j) == j);
     }
 
     /* Test sort */
-    array_shuffle(A, size);
-    array_sort(A, size);
-    for (i = 0; i < size-1; i++) { assert(A[i] <= A[i+1]); }
+    for (j = 0; j < 100; j++) {
+        array_shuffle(A, size);
+        array_sort(A, size);
+        for (i = 0; i < size-1; i++) { assert(A[i] <= A[i+1]); }
+    }
 
     /* Test Binary Search */
     assert(size % 4 == 0);
@@ -2067,10 +2070,10 @@ int main (void) {
 
     const bool verbose = true;
 
-    //CLM_TIME_TEST(verbose);
-    //CLM_RAND_TEST(verbose);
-    //CLM_PRINTF_TEST(verbose);
-    //CLM_ARC4_TEST(verbose);
+    CLM_TIME_TEST(verbose);
+    CLM_RAND_TEST(verbose);
+    CLM_PRINTF_TEST(verbose);
+    CLM_ARC4_TEST(verbose);
     //CLM_ITER_TEST(verbose);
     //CLM_FRACTAL_TEST(verbose);
     CLM_ARRAY_TEST(verbose);
