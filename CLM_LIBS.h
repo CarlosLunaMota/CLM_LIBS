@@ -1096,9 +1096,8 @@
   /**                              (1,1,3), (1,2,2), (1,2,3), (1,3,3),      **/
   /**                              (2,2,2), (2,2,3), (2,3,3), (3,3,3)}      **/
   /**                                                                       **/
-  /** For each combinatorial object three functions are provided:           **/
+  /** For each combinatorial object two functions are provided:             **/
   /**                                                                       **/
-  /** * `iter_num_`  returns the number of elements in the object.          **/
   /** * `iter_rand_` returns an uniformly random element of the object.     **/
   /** * `iter_next_` given an element of the object, returns the next one.  **/
   /**                                                                       **/
@@ -1111,17 +1110,83 @@
                                                                                 \
     /** ******************************************************************* **/ \
     /**                                                                     **/ \
-    /** #### iter_num_prod                                                  **/ \
+    /** #### iter_rand_prod                                                 **/ \
     /**                                                                     **/ \
-    /** Returns the number of "length"-sized tuples such that the element   **/ \
-    /** 0 <= tuple[i] < base[i]   for i = 0...length-1.                     **/ \
+    /** Generates an uniformly random `length`-sized tuple such that:       **/ \
+    /**                                                                     **/ \
+    /**     0 <= tuple[i] < base[i]                                         **/ \
+    /**                                                                     **/ \
+    /** If `*prod == NULL` the function tries to allocate a new tuple.      **/ \
+    /** Otherwise, it overwrites the information stored in `prod`.          **/ \
     /**                                                                     **/ \
     /** **Warning:** Parameter `length` must satisfy `lenght > 0`.          **/ \
     /**                                                                     **/ \
     /** **Warning:** Parameter `base` must satisfy `base != NULL` and also  **/ \
-    /** `base[i] > 0` for al `i = 0...length-1`.                            **/ \
+    /** `RAND_MAX >= base[i] > 0` for al `i = 0...length-1`.                **/ \
     /**                                                                     **/ \
-    /** **Example:** Iterate throught all products of [0..4]x[0..2] with:   **/ \
+    /** **Example:** Generates three random elements of `[0,5)x[0,3)` with: **/ \
+    /**                                                                     **/ \
+    /**     size_t length  = 2;                                             **/ \
+    /**     size_t base[2] = {5, 3};                                        **/ \
+    /**     size_t *prod   = NULL;                                          **/ \
+    /**     iter_rand_prod(&prod, length, base);                            **/ \
+    /**     for (size_t i = 0; i < 3; i++) {                                **/ \
+    /**         do_something(prod);                                         **/ \
+    /**         iter_rand_prod(&prod, length, base);                        **/ \
+    /**     }                                                               **/ \
+    /**                                                                     **/ \
+    static void prefix##iter_rand_prod(size_t **prod,                           \
+                                       const size_t length,                     \
+                                       const size_t *base) {                    \
+        size_t i, *P = *prod;                                                   \
+                                                                                \
+        /* Preconditions */                                                     \
+        assert(length > 0);                                                     \
+        assert(base != NULL);                                                   \
+        for (i = 0; i < length; i++) {                                          \
+            assert(base[i] > 0);                                                \
+            assert(RAND_MAX >= base[i]);                                        \
+        }                                                                       \
+                                                                                \
+        /* Allocate memory */                                                   \
+        if (P == NULL) { P = (size_t *) malloc(length * sizeof(size_t)); }      \
+                                                                                \
+        /* Check allocated memory */                                            \
+        if (P == NULL) {                                                        \
+            fprintf(stderr, "ERROR: Unable to allocate random product.\n");     \
+        }                                                                       \
+                                                                                \
+        /* Get random product */                                                \
+        else{                                                                   \
+            size_t r, range;                                                    \
+            for (i = 0; i < length; i++) {                                      \
+                range = RAND_MAX - (RAND_MAX % base[i]);                        \
+                do { r = rand(); } while (r >= range);                          \
+                P[i] = r % base[i];                                             \
+            }                                                                   \
+        }                                                                       \
+                                                                                \
+        /* Store the current product */                                         \
+        *prod = P;                                                              \
+    }                                                                           \
+                                                                                \
+    /** ******************************************************************* **/ \
+    /**                                                                     **/ \
+    /** #### iter_next_prod                                                 **/ \
+    /**                                                                     **/ \
+    /** Updates `*prod` to hold the next `length`-sized tuple such that:    **/ \
+    /**                                                                     **/ \
+    /**     0 <= tuple[i] < base[i]                                         **/ \
+    /**                                                                     **/ \
+    /** If `*prod == NULL` the function tries to allocate the first tuple.  **/ \
+    /** Once it reaches the last tuple, the function frees & nulls `*prod`. **/ \
+    /**                                                                     **/ \
+    /** **Warning:** Parameter `length` must satisfy `lenght > 0`.          **/ \
+    /**                                                                     **/ \
+    /** **Warning:** Parameter `base` must satisfy `base != NULL` and also  **/ \
+    /** `base[i] > 0` for all `i = 0...length-1`.                           **/ \
+    /**                                                                     **/ \
+    /** **Example:** Iterates over all the elements of `[0,5)x[0,3)` with:  **/ \
     /**                                                                     **/ \
     /**     size_t length  = 2;                                             **/ \
     /**     size_t base[2] = {5, 3};                                        **/ \
@@ -1132,119 +1197,15 @@
     /**         iter_next_prod(&prod, length, base);                        **/ \
     /**     }                                                               **/ \
     /**                                                                     **/ \
-    static size_t prefix##iter_num_prod(const size_t length,                    \
-                                               const size_t *base) {            \
-        /* Preconditions */                                                     \
-        assert(length > 0);                                                     \
-        assert(base != NULL);                                                   \
-        for (size_t i = 0; i < length; i++) { assert(base[i] > 0); }            \
-                                                                                \
-        /* Return the product of all bases */                                   \
-        size_t i, num = 1;                                                      \
-        for (i = 0; i < length; i++) { num *= base[i]; }                        \
-        return num;                                                             \
-    }                                                                           \
-                                                                                \
-    /** ******************************************************************* **/ \
-    /**                                                                     **/ \
-    /** #### iter_rand_prod                                                 **/ \
-    /**                                                                     **/ \
-    /*  Returns an uniformly random "length"-sized tuple such that:          */ \
-    /*  0 <= tuple[i] < base[i]   for i = 0...length-1.                      */ \
-    /*                                                                       */ \
-    /*      WARNING: All product-related functions assume that lenght > 0.   */ \
-    /*                                                                       */ \
-    /*               The array "base" must be non-NULL and all its elements  */ \
-    /*               must be at least 1: base[i] > 0   for i = 0...length-1. */ \
-    /*                                                                       */ \
-    /*      USAGE: Iterate throught all products of [0..4]x[0..2] with:      */ \
-    /*                                                                       */ \
-    /*                  size_t *base = (size_t *) malloc(2*sizeof(size_t));  */ \
-    /*                  size_t *prod = NULL;                                 */ \
-    /*                  size_t num;                                          */ \
-    /*                  if (base) {                                          */ \
-    /*                      base[0] = 5; base[1] = 3;                        */ \
-    /*                      size_t *prod = rand_product(2, base);            */ \
-    /*                      size_t  num  = num_product(2, base);             */ \
-    /*                      if (prod) {                                      */ \
-    /*                          do {                                         */ \
-    /*                              do_something(prod);                      */ \
-    /*                          } while (next_prod(prod, 2, base) && --num); */ \
-    /*                          free(prod);                                  */ \
-    /*                      }                                                */ \
-    /*                      free(base);                                      */ \
-    /*                  }                                                    */ \
-    /*                                                                       */ \
-    static size_t *prefix##iter_rand_prod(const size_t length,                  \
-                                                 const size_t *base) {          \
-                                                                                \
-        /* Preconditions */                                                     \
-        assert(length > 0);                                                     \
-        assert(base != NULL);                                                   \
-        for (size_t i = 0; i < length; i++) { assert(base[i] > 0); }            \
-                                                                                \
-        /* Check working memory */                                              \
-        size_t *prod = (size_t *) malloc(length * sizeof(size_t));              \
-        if (prod == NULL) {                                                     \
-            fprintf(stderr, "ERROR: Unable to allocate random product.\n");     \
-            return NULL;                                                        \
-        }                                                                       \
-                                                                                \
-        /* Get random product */                                                \
-        size_t i, r, range;                                                     \
-        for (i = 0; i < length; i++) {                                          \
-            range = RAND_MAX - (RAND_MAX % base[i]);                            \
-            do { r = rand(); } while (r >= range);                              \
-            prod[i] = r % base[i];                                              \
-        }                                                                       \
-                                                                                \
-        /* Return random product */                                             \
-        return prod;                                                            \
-    }                                                                           \
-                                                                                \
-    /** ******************************************************************* **/ \
-    /**                                                                     **/ \
-    /** #### iter_next_prod                                                 **/ \
-    /**                                                                     **/ \
-    /*  Updates "prod" to the next "length"-sized tuple such that:           */ \
-    /*  0 <= tuple[i] < base[i]   for i = 0...length-1.                      */ \
-    /*  It always returns true (updating a product never fails).             */ \
-    /*                                                                       */ \
-    /*      WARNING: All product-related functions assume that lenght > 0.   */ \
-    /*                                                                       */ \
-    /*               The array "base" must be non-NULL and all its elements  */ \
-    /*               must be at least 1: base[i] > 0   for i = 0...length-1. */ \
-    /*                                                                       */ \
-    /*               The array "prod" MUST be a non NULL array returned by   */ \
-    /*               either "first_prod" or "rand_prod".                     */ \
-    /*                                                                       */ \
-    /*      USAGE: Iterate throught all products of [0..4]x[0..2] with:      */ \
-    /*                                                                       */ \
-    /*                  size_t *base = (size_t *) malloc(2*sizeof(size_t));  */ \
-    /*                  size_t *prod = NULL;                                 */ \
-    /*                  size_t num;                                          */ \
-    /*                  if (base) {                                          */ \
-    /*                      base[0] = 5; base[1] = 3;                        */ \
-    /*                      size_t *prod = first_product(2, base);           */ \
-    /*                      size_t  num  = num_product(2, base);             */ \
-    /*                      if (prod) {                                      */ \
-    /*                          do {                                         */ \
-    /*                              do_something(prod);                      */ \
-    /*                          } while (next_prod(prod, 2, base) && --num); */ \
-    /*                          free(prod);                                  */ \
-    /*                      }                                                */ \
-    /*                      free(base);                                      */ \
-    /*                  }                                                    */ \
-    /*                                                                       */ \
     static void prefix##iter_next_prod(size_t **prod,                           \
-                                              const size_t length,              \
-                                              const size_t *base) {             \
+                                       const size_t length,                     \
+                                       const size_t *base) {                    \
+        size_t i, *P = *prod;                                                   \
+                                                                                \
         /* Preconditions */                                                     \
         assert(length > 0);                                                     \
         assert(base != NULL);                                                   \
-        for (size_t i = 0; i < length; i++) { assert(base[i] > 0); }            \
-                                                                                \
-        size_t i, *P = *prod;                                                   \
+        for (i = 0; i < length; i++) { assert(base[i] > 0); }                   \
                                                                                 \
         /* Allocate a new product... */                                         \
         if (P == NULL) {                                                        \
@@ -1268,56 +1229,62 @@
                                                                                 \
     /** ******************************************************************* **/ \
     /**                                                                     **/ \
-    /** #### iter_num_perm                                                  **/ \
-    /**                                                                     **/ \
-    static size_t prefix##iter_num_perm(const size_t length,                    \
-                                                const size_t base) {            \
-        /* Preconditions */                                                     \
-        assert(length > 0);                                                     \
-        assert(length <= base);                                                 \
-                                                                                \
-        /* Compute and return base! / length! */                                \
-        size_t num = 1;                                                         \
-        for (size_t i = base-length; i < base; i++) { num *= i+1; }             \
-        return num;                                                             \
-    }                                                                           \
-                                                                                \
-    /** ******************************************************************* **/ \
-    /**                                                                     **/ \
     /** #### iter_rand_perm                                                 **/ \
     /**                                                                     **/ \
-    static size_t *prefix##iter_rand_perm(const size_t length,                  \
-                                                 const size_t base) {           \
+    static void prefix##iter_rand_perm(size_t **perm,                           \
+                                       const size_t length,                     \
+                                       const size_t base,                       \
+                                       const bool rep) {                        \
         /* Preconditions */                                                     \
         assert(length > 0);                                                     \
-        assert(length <= base);                                                 \
         assert(RAND_MAX >= base);                                               \
+        if (rep) { assert(base > 0);       }                                    \
+        else     { assert(base >= length); }                                    \
                                                                                 \
-        /* Allocate a new permutation... */                                     \
-        size_t i, j, range, *P = (size_t *) malloc(length * sizeof(size_t));    \
+        size_t i, j, range, *P = *perm;                                         \
+                                                                                \
+        /* Allocate memory */                                                   \
+        if (P == NULL) { P = (size_t *) malloc(length * sizeof(size_t)); }      \
+                                                                                \
+        /* Check allocated memory */                                            \
         if (P == NULL) {                                                        \
-            fprintf(stderr, "ERROR: Unable to allocate permutation.\n");        \
-            return NULL;                                                        \
+            fprintf(stderr, "ERROR: Unable to allocate random permutation.\n"); \
         }                                                                       \
                                                                                 \
-        /* Initialize it using the Inside-Out Fisher-Yates Shuffle */           \
-        for (i = 0; i < length; i++) {                                          \
-            range = RAND_MAX - (RAND_MAX % (i+1));                              \
-            do { j = rand(); } while (j >= range);                              \
-            j = j % (i+1);                                                      \
-            if (i != j) { P[i] = P[j]; }                                        \
-            P[j] = i;                                                           \
+        /* Get random permutation with repetition */                            \
+        else if (rep) {                                                         \
+                                                                                \
+            /* Fill it uniformly at random */                                   \
+            range = RAND_MAX - (RAND_MAX % base);                               \
+            for (i = 0; i < length; i++) {                                      \
+                do { j = rand(); } while (j >= range);                          \
+                P[i] = j % base;                                                \
+            }                                                                   \
         }                                                                       \
                                                                                 \
-        /* Now use reservoir sampling for the rest of the elements */           \
-        for (i = length; i < base; i++) {                                       \
-            range = RAND_MAX - (RAND_MAX % (i+1));                              \
-            do { j = rand(); } while (j >= range);                              \
-            j = j % (i+1);                                                      \
-            if (j < length) { P[j] = i; }                                       \
+        /* Get a random permutation without repetition */                       \
+        else {                                                                  \
+                                                                                \
+            /* Initialize it using the Inside-Out Fisher-Yates Shuffle */       \
+            for (i = 0; i < length; i++) {                                      \
+                range = RAND_MAX - (RAND_MAX % (i+1));                          \
+                do { j = rand(); } while (j >= range);                          \
+                j = j % (i+1);                                                  \
+                if (i != j) { P[i] = P[j]; }                                    \
+                P[j] = i;                                                       \
+            }                                                                   \
+                                                                                \
+            /* Now use reservoir sampling for the rest of the elements */       \
+            for (i = length; i < base; i++) {                                   \
+                range = RAND_MAX - (RAND_MAX % (i+1));                          \
+                do { j = rand(); } while (j >= range);                          \
+                j = j % (i+1);                                                  \
+                if (j < length) { P[j] = i; }                                   \
+            }                                                                   \
         }                                                                       \
                                                                                 \
-        return P;                                                               \
+        /* Store the current permutation */                                     \
+        *perm = P;                                                              \
     }                                                                           \
                                                                                 \
     /** ******************************************************************* **/ \
@@ -1325,25 +1292,39 @@
     /** #### iter_next_perm                                                 **/ \
     /**                                                                     **/ \
     static void prefix##iter_next_perm(size_t **perm,                           \
-                                              const size_t length,              \
-                                              const size_t base) {              \
+                                       const size_t length,                     \
+                                       const size_t base,                       \
+                                       const bool rep) {                        \
         /* Preconditions */                                                     \
         assert(length > 0);                                                     \
-        assert(length <= base);                                                 \
+        if (rep) { assert(base > 0);       }                                    \
+        else     { assert(base >= length); }                                    \
                                                                                 \
         size_t i, j, t, *P = *perm;                                             \
                                                                                 \
         /* Allocate a new permutation... */                                     \
         if (P == NULL) {                                                        \
             P = (size_t *) malloc(length * sizeof(size_t));                     \
-            if (P != NULL) { for (i = 0; i < length; i++) { P[i] = i; } }       \
-            else {                                                              \
+            if (P == NULL) {                                                    \
                 fprintf(stderr, "ERROR: Unable to allocate permutation.\n");    \
             }                                                                   \
+            else if (rep) { for (i = 0; i < length; i++) { P[i] = 0; } }        \
+            else          { for (i = 0; i < length; i++) { P[i] = i; } }        \
         }                                                                       \
                                                                                 \
         /* ...or update the current one */                                      \
-        else {                                                                  \
+        else if (rep) {                                                         \
+                                                                                \
+            /* Next permutation with repetition */                              \
+            for (i = length; i > 0; i--) {                                      \
+                P[i-1] += 1;                                                    \
+                if (P[i-1] == base) { P[i-1] = 0; } else { break; }             \
+            }                                                                   \
+            if (i == 0) { free(P); P = NULL; }                                  \
+                                                                                \
+        } else {                                                                \
+                                                                                \
+            /* Next permutation without repetition */                           \
             for (i = length-1; i > 0 && P[i-1] >= P[i]; i--);                   \
             if (i == 0) {                                                       \
                 for (i = 0, j = length-1; i < j; i++, j--) {                    \
@@ -1367,161 +1348,47 @@
                                                                                 \
     /** ******************************************************************* **/ \
     /**                                                                     **/ \
-    /** #### iter_num_perm_rep                                              **/ \
-    /**                                                                     **/ \
-    static size_t prefix##iter_num_perm_rep(const size_t length,                \
-                                                 const size_t base) {           \
-        /* Preconditions */                                                     \
-        assert(length > 0);                                                     \
-        assert(base   > 0);                                                     \
-                                                                                \
-        /* Compute and return base^length */                                    \
-        size_t num = 1;                                                         \
-        for (size_t i = 0; i < length; i++) { num *= base; }                    \
-        return num;                                                             \
-    }                                                                           \
-                                                                                \
-    /** ******************************************************************* **/ \
-    /**                                                                     **/ \
-    /** #### iter_rand_perm_rep                                             **/ \
-    /**                                                                     **/ \
-    static size_t *prefix##iter_rand_perm_rep(const size_t length,              \
-                                                     const size_t base) {       \
-        /* Preconditions */                                                     \
-        assert(length > 0);                                                     \
-        assert(base   > 0);                                                     \
-        assert(RAND_MAX >= base);                                               \
-                                                                                \
-        /* Allocate a new permutation... */                                     \
-        size_t i, j, r, *P = (size_t *) malloc(length * sizeof(size_t));        \
-        if (P == NULL) {                                                        \
-            fprintf(stderr, "ERROR: Unable to allocate permutation.\n");        \
-            return NULL;                                                        \
-        }                                                                       \
-                                                                                \
-        /* Fill it uniformly at random */                                       \
-        r = RAND_MAX - (RAND_MAX % base);                                       \
-        for (i = 0; i < length; i++) {                                          \
-            do { j = rand(); } while (j >= r);                                  \
-            P[i] = j % base;                                                    \
-        }                                                                       \
-                                                                                \
-        return P;                                                               \
-    }                                                                           \
-                                                                                \
-    /** ******************************************************************* **/ \
-    /**                                                                     **/ \
-    /** #### iter_next_perm_rep                                             **/ \
-    /**                                                                     **/ \
-    static void prefix##iter_next_perm_rep(size_t **perm,                       \
-                                                  const size_t length,          \
-                                                  const size_t base) {          \
-        /* Preconditions */                                                     \
-        assert(length > 0);                                                     \
-        assert(base   > 0);                                                     \
-                                                                                \
-        size_t i, *P = *perm;                                                   \
-                                                                                \
-        /* Allocate a new permutation... */                                     \
-        if (P == NULL) {                                                        \
-            P = (size_t *) malloc(length * sizeof(size_t));                     \
-            if (P != NULL) { for (i = 0; i < length; i++) { P[i] = 0; } }       \
-            else {                                                              \
-                fprintf(stderr, "ERROR: Unable to allocate permutation.\n");    \
-            }                                                                   \
-        }                                                                       \
-                                                                                \
-        /* ...or update the current one */                                      \
-        else {                                                                  \
-            for (i = length; i > 0; i--) {                                      \
-                P[i-1] += 1;                                                    \
-                if (P[i-1] == base) { P[i-1] = 0; } else { break; }             \
-            }                                                                   \
-            if (i == 0) { free(P); P = NULL; }                                  \
-        }                                                                       \
-                                                                                \
-        /* Store the current permutation */                                     \
-        *perm = P;                                                              \
-    }                                                                           \
-                                                                                \
-    /** ******************************************************************* **/ \
-    /**                                                                     **/ \
-    /** #### iter_num_comb                                                  **/ \
-    /**                                                                     **/ \
-    static size_t prefix##iter_num_comb(const size_t length,                    \
-                                               const size_t base) {             \
-        /* Preconditions */                                                     \
-        assert(length > 0);                                                     \
-        assert(length <= base);                                                 \
-                                                                                \
-        /* Compute and return `base` over `length` */                           \
-        size_t num = 1;                                                         \
-        size_t k = (length > base-length) ? (base-length) : (length);           \
-        for (size_t i = 0; i < k; i++) {                                        \
-            num *= (base - i);                                                  \
-            num /= (i + 1);                                                     \
-        }                                                                       \
-        return num;                                                             \
-    }                                                                           \
-                                                                                \
-    /** ******************************************************************* **/ \
-    /**                                                                     **/ \
     /** #### iter_rand_comb                                                 **/ \
     /**                                                                     **/ \
-    static size_t *prefix##iter_rand_comb(const size_t length,                  \
-                                                 const size_t base) {           \
+    static void prefix##iter_rand_comb(size_t **comb,                           \
+                                       const size_t length,                     \
+                                       const size_t base,                       \
+                                       const bool rep) {                        \
         /* Preconditions */                                                     \
         assert(length > 0);                                                     \
-        assert(length <= base);                                                 \
         assert(RAND_MAX >= base);                                               \
+        if (rep) { assert(base > 0);       }                                    \
+        else     { assert(base >= length); }                                    \
                                                                                 \
-        size_t i, j, k, range;                                                  \
+        size_t i, j, k, n, range, *C = *comb;                                   \
                                                                                 \
-        /* Allocate a new combination... */                                     \
-        size_t *C = (size_t *) malloc(length * sizeof(size_t));                 \
+        /* Allocate memory */                                                   \
+        if (C == NULL) { C = (size_t *) malloc(length * sizeof(size_t)); }      \
+                                                                                \
+        /* Check allocated memory */                                            \
         if (C == NULL) {                                                        \
-            fprintf(stderr, "ERROR: Unable to allocate combination.\n");        \
-            return NULL;                                                        \
+            fprintf(stderr, "ERROR: Unable to allocate random combination.\n"); \
         }                                                                       \
                                                                                 \
-        /* Fill it uniformly at random */                                       \
-        for (i = k = 0; i < base; i++) {                                        \
-            range = RAND_MAX - (RAND_MAX % (base-i));                           \
-            do { j = rand(); } while (j >= range);                              \
-            j = j % (base-i);                                                   \
-            if (j < length-k) { C[k++] = i; }                                   \
-        }                                                                       \
-                                                                                \
-        return C;                                                               \
-    }                                                                           \
-                                                                                \
-    /** ******************************************************************* **/ \
-    /**                                                                     **/ \
-    /** #### iter_next_comb                                                 **/ \
-    /**                                                                     **/ \
-    static void prefix##iter_next_comb(size_t **comb,                           \
-                                              const size_t length,              \
-                                              const size_t base) {              \
-        /* Preconditions */                                                     \
-        assert(length > 0);                                                     \
-        assert(length <= base);                                                 \
-                                                                                \
-        size_t i, *C = *comb;                                                   \
-                                                                                \
-        /* Allocate a new combination... */                                     \
-        if (C == NULL) {                                                        \
-            C = (size_t *) malloc(length * sizeof(size_t));                     \
-            if (C != NULL) { for (i = 0; i < length; i++) { C[i] = i; } }       \
-            else {                                                              \
-                fprintf(stderr, "ERROR: Unable to allocate combination.\n");    \
+        /* Get random combination with repetition */                            \
+        else if (rep) {                                                         \
+            n = base + length - 1;                                              \
+            for (i = k = 0; i < n; i++) {                                       \
+                range = RAND_MAX - (RAND_MAX % (n-i));                          \
+                do { j = rand(); } while (j >= range);                          \
+                j = j % (n-i);                                                  \
+                if (j < length-k) { C[k] = i-k; k++; }                          \
             }                                                                   \
         }                                                                       \
                                                                                 \
-        /* ...or update the current one */                                      \
+        /* Get a random combination without repetition */                       \
         else {                                                                  \
-            for (i = length; i > 0 && C[i-1] == base-length+i-1; i--);          \
-            if (i == 0) { free(C); C = NULL; }                                  \
-            else { for (C[i-1]++; i < length; i++) { C[i] = C[i-1] + 1; } }     \
+            for (i = k = 0; i < base; i++) {                                    \
+                range = RAND_MAX - (RAND_MAX % (base-i));                       \
+                do { j = rand(); } while (j >= range);                          \
+                j = j % (base-i);                                               \
+                if (j < length-k) { C[k++] = i; }                               \
+            }                                                                   \
         }                                                                       \
                                                                                 \
         /* Store the current combination */                                     \
@@ -1530,84 +1397,43 @@
                                                                                 \
     /** ******************************************************************* **/ \
     /**                                                                     **/ \
-    /** #### iter_num_comb_rep                                              **/ \
+    /** #### iter_next_comb                                                 **/ \
     /**                                                                     **/ \
-    static size_t prefix##iter_num_comb_rep(const size_t length,                \
-                                                   const size_t base) {         \
+    static void prefix##iter_next_comb(size_t **comb,                           \
+                                       const size_t length,                     \
+                                       const size_t base,                       \
+                                       const bool rep) {                        \
         /* Preconditions */                                                     \
         assert(length > 0);                                                     \
-        assert(length <= base);                                                 \
-                                                                                \
-        /* Compute and return `base + length - 1` over `length` */              \
-        size_t num = 1;                                                         \
-        size_t n = base + length - 1;                                           \
-        size_t k = (length > n-length) ? (n-length) : (length);                 \
-        for (size_t i = 0; i < k; i++) {                                        \
-            num *= (n - i);                                                     \
-            num /= (i + 1);                                                     \
-        }                                                                       \
-        return num;                                                             \
-    }                                                                           \
-                                                                                \
-    /** ******************************************************************* **/ \
-    /**                                                                     **/ \
-    /** #### iter_rand_comb_rep                                             **/ \
-    /**                                                                     **/ \
-    static size_t *prefix##iter_rand_comb_rep(const size_t length,              \
-                                                     const size_t base) {       \
-        /* Preconditions */                                                     \
-        assert(length > 0);                                                     \
-        assert(base   > 0);                                                     \
-        assert(RAND_MAX >= base);                                               \
-                                                                                \
-        size_t i, j, k, n, range;                                               \
-                                                                                \
-        /* Allocate a new combination... */                                     \
-        size_t *C = (size_t *) malloc(length * sizeof(size_t));                 \
-        if (C == NULL) {                                                        \
-            fprintf(stderr, "ERROR: Unable to allocate combination.\n");        \
-            return NULL;                                                        \
-        }                                                                       \
-                                                                                \
-        /* Fill it uniformly at random */                                       \
-        n = base + length - 1;                                                  \
-        for (i = k = 0; i < n; i++) {                                           \
-            range = RAND_MAX - (RAND_MAX % (n-i));                              \
-            do { j = rand(); } while (j >= range);                              \
-            j = j % (n-i);                                                      \
-            if (j < length-k) { C[k] = i-k; k++; }                              \
-        }                                                                       \
-                                                                                \
-        return C;                                                               \
-    }                                                                           \
-                                                                                \
-    /** ******************************************************************* **/ \
-    /**                                                                     **/ \
-    /** #### iter_next_comb_rep                                             **/ \
-    /**                                                                     **/ \
-    static void prefix##iter_next_comb_rep(size_t **comb,                       \
-                                                  const size_t length,          \
-                                                  const size_t base) {          \
-        /* Preconditions */                                                     \
-        assert(length > 0);                                                     \
-        assert(base   > 0);                                                     \
+        if (rep) { assert(base > 0);       }                                    \
+        else     { assert(base >= length); }                                    \
                                                                                 \
         size_t i, *C = *comb;                                                   \
                                                                                 \
         /* Allocate a new combination... */                                     \
         if (C == NULL) {                                                        \
             C = (size_t *) malloc(length * sizeof(size_t));                     \
-            if (C != NULL) { for (i = 0; i < length; i++) { C[i] = 0; } }       \
-            else {                                                              \
+            if (C == NULL) {                                                    \
                 fprintf(stderr, "ERROR: Unable to allocate combination.\n");    \
             }                                                                   \
+            else if (rep) { for (i = 0; i < length; i++) { C[i] = 0; } }        \
+            else          { for (i = 0; i < length; i++) { C[i] = i; } }        \
         }                                                                       \
                                                                                 \
         /* ...or update the current one */                                      \
-        else {                                                                  \
+        else if (rep) {                                                         \
+                                                                                \
+            /* Get next combination with repetition */                          \
             for (i = length; i > 0 && C[i-1] == base-1; i--);                   \
             if (i == 0) { free(C); C = NULL; }                                  \
             else { for (C[i-1]++; i < length; i++) { C[i] = C[i-1]; } }         \
+                                                                                \
+        } else {                                                                \
+                                                                                \
+            /* Get next combination without repetition */                       \
+            for (i = length; i > 0 && C[i-1] == base-length+i-1; i--);          \
+            if (i == 0) { free(C); C = NULL; }                                  \
+            else { for (C[i-1]++; i < length; i++) { C[i] = C[i-1] + 1; } }     \
         }                                                                       \
                                                                                 \
         /* Store the current combination */                                     \

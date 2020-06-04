@@ -39,21 +39,12 @@
 
 #define IMPORT_CLM_ITER(prefix)
 
-    size_t  iter_num_prod(size_t length, size_t *base);
-    size_t *iter_rand_prod(size_t length, size_t *base);
+    void    iter_rand_prod(size_t **prod, size_t length, size_t *base);
     void    iter_next_prod(size_t **prod, size_t length, size_t *base);
-    size_t  iter_num_perm(size_t length, size_t base);
-    size_t *iter_rand_perm(size_t length, size_t base);
-    void    iter_next_perm(size_t **perm, size_t length, size_t base);
-    size_t  iter_num_perm_rep(size_t length, size_t base);
-    size_t *iter_rand_perm_rep(size_t length, size_t base);
-    void    iter_next_perm_rep(size_t **perm, size_t length, size_t base);
-    size_t  iter_num_comb(size_t length, size_t base);
-    size_t *iter_rand_comb(size_t length, size_t base);
-    void    iter_next_comb(size_t **comb, size_t length, size_t base);
-    size_t  iter_num_comb_rep(size_t length, size_t base);
-    size_t *iter_rand_comb_rep(size_t length, size_t base);
-    void    iter_next_comb_rep(size_t **comb, size_t length, size_t base);
+    void    iter_rand_perm(size_t **perm, size_t length, size_t base, bool rep);
+    void    iter_next_perm(size_t **perm, size_t length, size_t base, bool rep);
+    void    iter_rand_comb(size_t **comb, size_t length, size_t base, bool rep);
+    void    iter_next_comb(size_t **comb, size_t length, size_t base, bool rep);
 
 #define IMPORT_CLM_FRACTAL(prefix)
 

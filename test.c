@@ -1585,7 +1585,6 @@ void CLM_ITER_TEST(bool verbose) {
     printf("\nTesting CLM_ITER...\n\n");
 
     size_t *tuple   = NULL;
-    size_t  num     = 0;
     size_t  base    = 4;
     size_t  length  = 3;
     size_t  BASE[4] = {2, 3, 4};
@@ -1598,88 +1597,74 @@ void CLM_ITER_TEST(bool verbose) {
         for (j = 0; j < length; j++) { printf("%zu ", BASE[j]); }
         printf("}):\n");
     }
-    num = iter_num_prod(length, BASE);
-    for (i = 0; i < num; i++) {
-        iter_next_prod(&tuple, length, BASE);
-        assert(tuple != NULL);
+    iter_next_prod(&tuple, length, BASE);
+    for (i = 0; tuple; i++) {
         for (j = 0; j < length; j++) { assert(tuple[j] < BASE[j]); }
         if (verbose) {
-            printf("\t\t%2zu/%zu: [ ", i+1, num);
+            printf("\t\t%2zu: [ ", i+1);
             for (j = 0; j < length; j++) { printf("%zu ", tuple[j]); }
             printf("]\n");
         }
+        iter_next_prod(&tuple, length, BASE);
     }
-    iter_next_prod(&tuple, length, BASE);
-    assert(tuple == NULL);
-
+    
     /* Permutations */
     if (verbose) { printf("\n\tPermutations(%zu, %zu):\n", length, base); }
-    num = iter_num_perm(length, base);
-    for (i = 0; i < num; i++) {
-        iter_next_perm(&tuple, length, base);
-        assert(tuple != NULL);
+    iter_next_perm(&tuple, length, base, false);
+    for (i = 0; tuple; i++) {
         for (j = 0; j < length; j++) { assert(tuple[j] < base); }
         for (j = 0; j < length-1; j++) {
             for (k = j+1; k < length; k++) { assert(tuple[j] != tuple[k]); }
         }
         if (verbose) {
-            printf("\t\t%2zu/%zu: [ ", i+1, num);
+            printf("\t\t%2zu: [ ", i+1);
             for (j = 0; j < length; j++) { printf("%zu ", tuple[j]); }
             printf("]\n");
         }
+        iter_next_perm(&tuple, length, base, false);
     }
-    iter_next_perm(&tuple, length, base);
-    assert(tuple == NULL);
 
     /* Permutations with replacement */
     if (verbose) { printf("\n\tPermutations_Replacement(%zu, %zu):\n", length, base); }
-    num = iter_num_perm_rep(length, base);
-    for (i = 0; i < num; i++) {
-        iter_next_perm_rep(&tuple, length, base);
-        assert(tuple != NULL);
+    iter_next_perm(&tuple, length, base, true);
+    for (i = 0; tuple; i++) {
         for (j = 0; j < length; j++) { assert(tuple[j] < base); }
         if (verbose) {
-            printf("\t\t%2zu/%zu: [ ", i+1, num);
+            printf("\t\t%2zu: [ ", i+1);
             for (j = 0; j < length; j++) { printf("%zu ", tuple[j]); }
             printf("]\n");
         }
+        iter_next_perm(&tuple, length, base, true);
     }
-    iter_next_perm_rep(&tuple, length, base);
-    assert(tuple == NULL);
 
     /* Combinations */
     if (verbose) { printf("\n\tCombinations(%zu, %zu):\n", length, base); }
-    num = iter_num_comb(length, base);
-    for (i = 0; i < num; i++) {
-        iter_next_comb(&tuple, length, base);
-        assert(tuple != NULL);
+    iter_next_comb(&tuple, length, base, false);
+    for (i = 0; tuple; i++) {
         for (j = 0; j < length; j++) { assert(tuple[j]   < base);     }
         for (j = 1; j < length; j++) { assert(tuple[j-1] < tuple[j]); }
         if (verbose) {
-            printf("\t\t%2zu/%zu: [ ", i+1, num);
+            printf("\t\t%2zu: [ ", i+1);
             for (j = 0; j < length; j++) { printf("%zu ", tuple[j]); }
             printf("]\n");
         }
+        iter_next_comb(&tuple, length, base, false);
     }
-    iter_next_comb(&tuple, length, base);
-    assert(tuple == NULL);
 
     /* Combinations with replacement */
     if (verbose) { printf("\n\tCombinations_Replacement(%zu, %zu):\n", length, base); }
-    num = iter_num_comb_rep(length, base);
-    for (i = 0; i < num; i++) {
-        iter_next_comb_rep(&tuple, length, base);
-        assert(tuple != NULL);
+    iter_next_comb(&tuple, length, base, true);
+    for (i = 0; tuple; i++) {
         for (j = 0; j < length; j++) { assert(tuple[j]   <  base);     }
         for (j = 1; j < length; j++) { assert(tuple[j-1] <= tuple[j]); }
         if (verbose) {
-            printf("\t\t%2zu/%zu: [ ", i+1, num);
+            printf("\t\t%2zu: [ ", i+1);
             for (j = 0; j < length; j++) { printf("%zu ", tuple[j]); }
             printf("]\n");
         }
+        iter_next_comb(&tuple, length, base, true);
     }
-    iter_next_comb_rep(&tuple, length, base);
-    assert(tuple == NULL);
+
 
     srand(time(NULL));
 
@@ -1690,7 +1675,7 @@ void CLM_ITER_TEST(bool verbose) {
         printf("}):\n");
     }
     for (i = 0; i < sample; i++) {
-        tuple = iter_rand_prod(length, BASE);
+        iter_rand_prod(&tuple, length, BASE);
         assert(tuple != NULL);
         for (j = 0; j < length; j++) { assert(tuple[j] < BASE[j]); }
         if (verbose && i < 10) {
@@ -1699,13 +1684,14 @@ void CLM_ITER_TEST(bool verbose) {
             printf("]\n");
         }
         free(tuple);
+        tuple = NULL;
     }
     if (verbose && sample > 10) { printf("\t\t...\n"); }
 
     /* Random Permutations */
     if (verbose) { printf("\n\tRandom Permutations(%zu, %zu):\n", length, base); }
     for (i = 0; i < sample; i++) {
-        tuple = iter_rand_perm(length, base);
+        iter_rand_perm(&tuple, length, base, false);
         assert(tuple != NULL);
         for (j = 0; j < length; j++) { assert(tuple[j] < base); }
         for (j = 0; j < length-1; j++) {
@@ -1717,13 +1703,14 @@ void CLM_ITER_TEST(bool verbose) {
             printf("]\n");
         }
         free(tuple);
+        tuple = NULL;
     }
     if (verbose && sample > 10) { printf("\t\t...\n"); }
 
     /* Random Permutations with replacement */
     if (verbose) { printf("\n\tRandom Permutations_Replacement(%zu, %zu):\n", length, base); }
     for (i = 0; i < sample; i++) {
-        tuple = iter_rand_perm_rep(length, base);
+        iter_rand_perm(&tuple, length, base, true);
         assert(tuple != NULL);
         for (j = 0; j < length; j++) { assert(tuple[j] < base); }
         if (verbose && i < 10) {
@@ -1732,13 +1719,14 @@ void CLM_ITER_TEST(bool verbose) {
             printf("]\n");
         }
         free(tuple);
+        tuple = NULL;
     }
     if (verbose && sample > 10) { printf("\t\t...\n"); }
 
     /* Random Combinations */
     if (verbose) { printf("\n\tRandom Combinations(%zu, %zu):\n", length, base); }
     for (i = 0; i < sample; i++) {
-        tuple = iter_rand_comb(length, base);
+        iter_rand_comb(&tuple, length, base, false);
         assert(tuple != NULL);
         for (j = 0; j < length; j++) { assert(tuple[j]   < base);     }
         for (j = 1; j < length; j++) { assert(tuple[j-1] < tuple[j]); }
@@ -1748,13 +1736,14 @@ void CLM_ITER_TEST(bool verbose) {
             printf("]\n");
         }
         free(tuple);
+        tuple = NULL;
     }
     if (verbose && sample > 10) { printf("\t\t...\n"); }
 
     /* Random Combinations with replacement */
     if (verbose) { printf("\n\tRandom Combinations_Replacement(%zu, %zu):\n", length, base); }
     for (i = 0; i < sample; i++) {
-        tuple = iter_rand_comb_rep(length, base);
+        iter_rand_comb(&tuple, length, base, true);
         assert(tuple != NULL);
         for (j = 0; j < length; j++) { assert(tuple[j]   <  base);     }
         for (j = 1; j < length; j++) { assert(tuple[j-1] <= tuple[j]); }
@@ -1764,6 +1753,7 @@ void CLM_ITER_TEST(bool verbose) {
             printf("]\n");
         }
         free(tuple);
+        tuple = NULL;
     }
     if (verbose && sample > 10) { printf("\t\t...\n"); }
 }
@@ -2074,7 +2064,7 @@ int main (void) {
     CLM_RAND_TEST(verbose);
     CLM_PRINTF_TEST(verbose);
     CLM_ARC4_TEST(verbose);
-    //CLM_ITER_TEST(verbose);
+    CLM_ITER_TEST(verbose);
     //CLM_FRACTAL_TEST(verbose);
     CLM_ARRAY_TEST(verbose);
     CLM_CLIST_TEST(verbose);

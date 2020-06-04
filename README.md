@@ -884,9 +884,8 @@ whose elements are taken with replacement from a set of size `base`:
                          (2,2,2), (2,2,3), (2,3,3), (3,3,3)}
 ```
 
-For each combinatorial object three functions are provided:
+For each combinatorial object two functions are provided:
 
-* `iter_num_`  returns the number of elements in the object.
 * `iter_rand_` returns an uniformly random element of the object.
 * `iter_next_` given an element of the object, returns the next one.
 
@@ -897,21 +896,62 @@ arbitrary sets of `base` elements.
 
 *******************************************************************
 
-#### iter\_num\_prod [⯅](#CLM_LIBS)
+#### iter\_rand\_prod [⯅](#CLM_LIBS)
 
 ```c
-static size_t iter_num_prod(const size_t length, const size_t *base);
+static void iter_rand_prod(size_t **prod, const size_t length, const size_t *base);
 ```
 
-Returns the number of "length"-sized tuples such that the element
-0 <= tuple[i] < base[i]   for i = 0...length-1.
+Generates an uniformly random `length`-sized tuple such that:
+
+```c
+0 <= tuple[i] < base[i]
+```
+
+If `*prod == NULL` the function tries to allocate a new tuple.
+Otherwise, it overwrites the information stored in `prod`.
 
 **Warning:** Parameter `length` must satisfy `lenght > 0`.
 
 **Warning:** Parameter `base` must satisfy `base != NULL` and also
-`base[i] > 0` for al `i = 0...length-1`.
+`RAND_MAX >= base[i] > 0` for al `i = 0...length-1`.
 
-**Example:** Iterate throught all products of [0..4]x[0..2] with:
+**Example:** Generates three random elements of `[0,5)x[0,3)` with:
+
+```c
+size_t length  = 2;
+size_t base[2] = {5, 3};
+size_t *prod   = NULL;
+iter_rand_prod(&prod, length, base);
+for (size_t i = 0; i < 3; i++) {
+    do_something(prod);
+    iter_rand_prod(&prod, length, base);
+}
+```
+
+*******************************************************************
+
+#### iter\_next\_prod [⯅](#CLM_LIBS)
+
+```c
+static void iter_next_prod(size_t **prod, const size_t length, const size_t *base);
+```
+
+Updates `*prod` to hold the next `length`-sized tuple such that:
+
+```c
+0 <= tuple[i] < base[i]
+```
+
+If `*prod == NULL` the function tries to allocate the first tuple.
+Once it reaches the last tuple, the function frees & nulls `*prod`.
+
+**Warning:** Parameter `length` must satisfy `lenght > 0`.
+
+**Warning:** Parameter `base` must satisfy `base != NULL` and also
+`base[i] > 0` for all `i = 0...length-1`.
+
+**Example:** Iterates over all the elements of `[0,5)x[0,3)` with:
 
 ```c
 size_t length  = 2;
@@ -926,34 +966,10 @@ while (prod) {
 
 *******************************************************************
 
-#### iter\_rand\_prod [⯅](#CLM_LIBS)
-
-```c
-static size_t *iter_rand_prod(const size_t length, const size_t *base);
-```
-
-*******************************************************************
-
-#### iter\_next\_prod [⯅](#CLM_LIBS)
-
-```c
-static void iter_next_prod(size_t **prod, const size_t length, const size_t *base);
-```
-
-*******************************************************************
-
-#### iter\_num\_perm [⯅](#CLM_LIBS)
-
-```c
-static size_t iter_num_perm(const size_t length, const size_t base);
-```
-
-*******************************************************************
-
 #### iter\_rand\_perm [⯅](#CLM_LIBS)
 
 ```c
-static size_t *iter_rand_perm(const size_t length, const size_t base);
+static void iter_rand_perm(size_t **perm, const size_t length, const size_t base, const bool rep);
 ```
 
 *******************************************************************
@@ -961,39 +977,7 @@ static size_t *iter_rand_perm(const size_t length, const size_t base);
 #### iter\_next\_perm [⯅](#CLM_LIBS)
 
 ```c
-static void iter_next_perm(size_t **perm, const size_t length, const size_t base);
-```
-
-*******************************************************************
-
-#### iter\_num\_perm\_rep [⯅](#CLM_LIBS)
-
-```c
-static size_t iter_num_perm_rep(const size_t length, const size_t base);
-```
-
-*******************************************************************
-
-#### iter\_rand\_perm\_rep [⯅](#CLM_LIBS)
-
-```c
-static size_t *iter_rand_perm_rep(const size_t length, const size_t base);
-```
-
-*******************************************************************
-
-#### iter\_next\_perm\_rep [⯅](#CLM_LIBS)
-
-```c
-static void iter_next_perm_rep(size_t **perm, const size_t length, const size_t base);
-```
-
-*******************************************************************
-
-#### iter\_num\_comb [⯅](#CLM_LIBS)
-
-```c
-static size_t iter_num_comb(const size_t length, const size_t base);
+static void iter_next_perm(size_t **perm, const size_t length, const size_t base, const bool rep);
 ```
 
 *******************************************************************
@@ -1001,7 +985,7 @@ static size_t iter_num_comb(const size_t length, const size_t base);
 #### iter\_rand\_comb [⯅](#CLM_LIBS)
 
 ```c
-static size_t *iter_rand_comb(const size_t length, const size_t base);
+static void iter_rand_comb(size_t **comb, const size_t length, const size_t base, const bool rep);
 ```
 
 *******************************************************************
@@ -1009,31 +993,7 @@ static size_t *iter_rand_comb(const size_t length, const size_t base);
 #### iter\_next\_comb [⯅](#CLM_LIBS)
 
 ```c
-static void iter_next_comb(size_t **comb, const size_t length, const size_t base);
-```
-
-*******************************************************************
-
-#### iter\_num\_comb\_rep [⯅](#CLM_LIBS)
-
-```c
-static size_t iter_num_comb_rep(const size_t length, const size_t base);
-```
-
-*******************************************************************
-
-#### iter\_rand\_comb\_rep [⯅](#CLM_LIBS)
-
-```c
-static size_t *iter_rand_comb_rep(const size_t length, const size_t base);
-```
-
-*******************************************************************
-
-#### iter\_next\_comb\_rep [⯅](#CLM_LIBS)
-
-```c
-static void iter_next_comb_rep(size_t **comb, const size_t length, const size_t base);
+static void iter_next_comb(size_t **comb, const size_t length, const size_t base, const bool rep);
 ```
 
 *********************************************************************
