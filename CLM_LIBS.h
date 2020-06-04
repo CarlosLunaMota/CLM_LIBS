@@ -43,9 +43,9 @@
 /** functions and data types when calling a macro to avoid conflicts with   **/
 /** existing code or different calls to the same macro.                     **/
 /**                                                                         **/
-/** All `CLM_LIBS` functions are declared as `static inline` and are        **/
-/** mutually independent (no `CLM_LIBS` function calls any other `CLM_LIBS` **/
-/** function) although some of them are recursive (they call themselves).   **/
+/** All `CLM_LIBS` functions are declared as `static` and are mutually      **/
+/** independent (no `CLM_LIBS` function calls any other `CLM_LIBS`          **/
+/** function) although a few of them are recursive (they call themselves).  **/
 /** This self-imposed constraint hurts modularity and readability but       **/
 /** simplifies the task of versioning and reusing the code: You could erase **/
 /** or substitute any function without worrying about dependencies.         **/
@@ -208,7 +208,7 @@
   /**                                                                       **/
   /** Contains the version number (= date) of this release of CLM_LIBS.     **/
   /**                                                                       **/
-  #define CLM_LIBS 20200519
+  #define CLM_LIBS 20200604
 
   /** ********************************************************************* **/
   /**                                                                       **/
@@ -228,7 +228,7 @@
     /** **Example:** Compare the performance of two functions with:         **/ \
     /**                                                                     **/ \
     /**     clock_t crono = clock();                                        **/ \
-    /**     Funtion_1();                                                    **/ \
+    /**     Function_1();                                                   **/ \
     /**     printf("Function 1 = %.3f sec.\n", time_elapsed(crono));        **/ \
     /**                                                                     **/ \
     /**     crono = clock();                                                **/ \
@@ -318,7 +318,7 @@
     /**     fclose(MyOutput);                                               **/ \
     /**     free(timestamp);                                                **/ \
     /**                                                                     **/ \
-    static inline char *prefix##time_stamp(const int format) {                  \
+    static char *prefix##time_stamp(const int format) {                         \
                                                                                 \
         time_t now = time(NULL);                                                \
         struct tm tm = *localtime(&now);                                        \
@@ -512,7 +512,7 @@
     /**         R[i] = r; G[i] = g; B[i] = b;                               **/ \
     /**     }                                                               **/ \
     /**                                                                     **/ \
-    static inline void prefix##rand_color(int *r, int *g, int *b) {             \
+    static void prefix##rand_color(int *r, int *g, int *b) {                    \
                                                                                 \
         /* Preconditions */                                                     \
         assert(0 <= *r && *r < 256);                                            \
@@ -805,7 +805,7 @@
     /**     }                                                               **/ \
     /**     free(hash);                                                     **/ \
     /**                                                                     **/ \
-    static inline char *prefix##arc4_hash(const char *txt, const size_t length, \
+    static char *prefix##arc4_hash(const char *txt, const size_t length,        \
                                           const size_t drop) {                  \
         /* Preconditions */                                                     \
         assert(CHAR_BIT == 8);                                                  \
@@ -888,7 +888,7 @@
     /**     if (code != NULL) { printf("Encrypted: '%s'\n", code); }        **/ \
     /**     free(code);                                                     **/ \
     /**                                                                     **/ \
-    static inline char *prefix##arc4_encrypt(const char *txt, const char *key,  \
+    static char *prefix##arc4_encrypt(const char *txt, const char *key,         \
                                              const size_t drop) {               \
         /* Preconditions */                                                     \
         assert(CHAR_BIT == 8);                                                  \
@@ -972,7 +972,7 @@
     /**     if (txt != NULL) { printf("Decrypted: '%s'\n", txt); }          **/ \
     /**     free(txt);                                                      **/ \
     /**                                                                     **/ \
-    static inline char *prefix##arc4_decrypt(const char *txt, const char *key,  \
+    static char *prefix##arc4_decrypt(const char *txt, const char *key,         \
                                              const size_t drop) {               \
         /* Preconditions */                                                     \
         assert(CHAR_BIT == 8);                                                  \
@@ -1132,7 +1132,7 @@
     /**         iter_next_prod(&prod, length, base);                        **/ \
     /**     }                                                               **/ \
     /**                                                                     **/ \
-    static inline size_t prefix##iter_num_prod(const size_t length,             \
+    static size_t prefix##iter_num_prod(const size_t length,                    \
                                                const size_t *base) {            \
         /* Preconditions */                                                     \
         assert(length > 0);                                                     \
@@ -1175,7 +1175,7 @@
     /*                      free(base);                                      */ \
     /*                  }                                                    */ \
     /*                                                                       */ \
-    static inline size_t *prefix##iter_rand_prod(const size_t length,           \
+    static size_t *prefix##iter_rand_prod(const size_t length,                  \
                                                  const size_t *base) {          \
                                                                                 \
         /* Preconditions */                                                     \
@@ -1236,7 +1236,7 @@
     /*                      free(base);                                      */ \
     /*                  }                                                    */ \
     /*                                                                       */ \
-    static inline void prefix##iter_next_prod(size_t **prod,                    \
+    static void prefix##iter_next_prod(size_t **prod,                           \
                                               const size_t length,              \
                                               const size_t *base) {             \
         /* Preconditions */                                                     \
@@ -1270,7 +1270,7 @@
     /**                                                                     **/ \
     /** #### iter_num_perm                                                  **/ \
     /**                                                                     **/ \
-    static inline size_t prefix##iter_num_perm(const size_t length,             \
+    static size_t prefix##iter_num_perm(const size_t length,                    \
                                                 const size_t base) {            \
         /* Preconditions */                                                     \
         assert(length > 0);                                                     \
@@ -1286,7 +1286,7 @@
     /**                                                                     **/ \
     /** #### iter_rand_perm                                                 **/ \
     /**                                                                     **/ \
-    static inline size_t *prefix##iter_rand_perm(const size_t length,           \
+    static size_t *prefix##iter_rand_perm(const size_t length,                  \
                                                  const size_t base) {           \
         /* Preconditions */                                                     \
         assert(length > 0);                                                     \
@@ -1324,7 +1324,7 @@
     /**                                                                     **/ \
     /** #### iter_next_perm                                                 **/ \
     /**                                                                     **/ \
-    static inline void prefix##iter_next_perm(size_t **perm,                    \
+    static void prefix##iter_next_perm(size_t **perm,                           \
                                               const size_t length,              \
                                               const size_t base) {              \
         /* Preconditions */                                                     \
@@ -1369,7 +1369,7 @@
     /**                                                                     **/ \
     /** #### iter_num_perm_rep                                              **/ \
     /**                                                                     **/ \
-    static inline size_t prefix##iter_num_perm_rep(const size_t length,         \
+    static size_t prefix##iter_num_perm_rep(const size_t length,                \
                                                  const size_t base) {           \
         /* Preconditions */                                                     \
         assert(length > 0);                                                     \
@@ -1385,7 +1385,7 @@
     /**                                                                     **/ \
     /** #### iter_rand_perm_rep                                             **/ \
     /**                                                                     **/ \
-    static inline size_t *prefix##iter_rand_perm_rep(const size_t length,       \
+    static size_t *prefix##iter_rand_perm_rep(const size_t length,              \
                                                      const size_t base) {       \
         /* Preconditions */                                                     \
         assert(length > 0);                                                     \
@@ -1413,7 +1413,7 @@
     /**                                                                     **/ \
     /** #### iter_next_perm_rep                                             **/ \
     /**                                                                     **/ \
-    static inline void prefix##iter_next_perm_rep(size_t **perm,                \
+    static void prefix##iter_next_perm_rep(size_t **perm,                       \
                                                   const size_t length,          \
                                                   const size_t base) {          \
         /* Preconditions */                                                     \
@@ -1448,7 +1448,7 @@
     /**                                                                     **/ \
     /** #### iter_num_comb                                                  **/ \
     /**                                                                     **/ \
-    static inline size_t prefix##iter_num_comb(const size_t length,             \
+    static size_t prefix##iter_num_comb(const size_t length,                    \
                                                const size_t base) {             \
         /* Preconditions */                                                     \
         assert(length > 0);                                                     \
@@ -1468,7 +1468,7 @@
     /**                                                                     **/ \
     /** #### iter_rand_comb                                                 **/ \
     /**                                                                     **/ \
-    static inline size_t *prefix##iter_rand_comb(const size_t length,           \
+    static size_t *prefix##iter_rand_comb(const size_t length,                  \
                                                  const size_t base) {           \
         /* Preconditions */                                                     \
         assert(length > 0);                                                     \
@@ -1499,7 +1499,7 @@
     /**                                                                     **/ \
     /** #### iter_next_comb                                                 **/ \
     /**                                                                     **/ \
-    static inline void prefix##iter_next_comb(size_t **comb,                    \
+    static void prefix##iter_next_comb(size_t **comb,                           \
                                               const size_t length,              \
                                               const size_t base) {              \
         /* Preconditions */                                                     \
@@ -1532,7 +1532,7 @@
     /**                                                                     **/ \
     /** #### iter_num_comb_rep                                              **/ \
     /**                                                                     **/ \
-    static inline size_t prefix##iter_num_comb_rep(const size_t length,         \
+    static size_t prefix##iter_num_comb_rep(const size_t length,                \
                                                    const size_t base) {         \
         /* Preconditions */                                                     \
         assert(length > 0);                                                     \
@@ -1553,7 +1553,7 @@
     /**                                                                     **/ \
     /** #### iter_rand_comb_rep                                             **/ \
     /**                                                                     **/ \
-    static inline size_t *prefix##iter_rand_comb_rep(const size_t length,       \
+    static size_t *prefix##iter_rand_comb_rep(const size_t length,              \
                                                      const size_t base) {       \
         /* Preconditions */                                                     \
         assert(length > 0);                                                     \
@@ -1585,7 +1585,7 @@
     /**                                                                     **/ \
     /** #### iter_next_comb_rep                                             **/ \
     /**                                                                     **/ \
-    static inline void prefix##iter_next_comb_rep(size_t **comb,                \
+    static void prefix##iter_next_comb_rep(size_t **comb,                       \
                                                   const size_t length,          \
                                                   const size_t base) {          \
         /* Preconditions */                                                     \
@@ -1677,7 +1677,7 @@
     /**                                                                     **/ \
     /** **Warning:** A `size_t` varible must have at least `dim*bits` bits. **/ \
     /**                                                                     **/ \
-    static inline void prefix##fractal_z_to_coord(const size_t dim,             \
+    static void prefix##fractal_z_to_coord(const size_t dim,                    \
                                                   const size_t bits,            \
                                                   size_t *n,                    \
                                                   size_t *coord) {              \
@@ -1714,7 +1714,7 @@
     /**                                                                     **/ \
     /** **Warning:** A `size_t` varible must have at least `dim*bits` bits. **/ \
     /**                                                                     **/ \
-    static inline void prefix##fractal_coord_to_z(const size_t dim,             \
+    static void prefix##fractal_coord_to_z(const size_t dim,                    \
                                                  const size_t bits,             \
                                                  size_t *n,                     \
                                                  size_t *coord) {               \
@@ -1754,7 +1754,7 @@
     /**                                                                     **/ \
     /** **Warning:** A `size_t` varible must have at least `dim*bits` bits. **/ \
     /**                                                                     **/ \
-    static inline void prefix##fractal_h_to_coord(const size_t dim,             \
+    static void prefix##fractal_h_to_coord(const size_t dim,                    \
                                                   const size_t bits,            \
                                                   size_t *n,                    \
                                                   size_t *coord) {              \
@@ -1811,7 +1811,7 @@
     /**                                                                     **/ \
     /** **Warning:** A `size_t` varible must have at least `dim*bits` bits. **/ \
     /**                                                                     **/ \
-    static inline void prefix##fractal_coord_to_h(const size_t dim,             \
+    static void prefix##fractal_coord_to_h(const size_t dim,                    \
                                                   const size_t bits,            \
                                                   size_t *n,                    \
                                                   size_t *coord) {              \
@@ -1895,7 +1895,7 @@
     /**     do_something(A);                                                **/ \
     /**     free(A);                                                        **/ \
     /**                                                                     **/ \
-    static inline prefix##array prefix##array_new(const size_t length) {        \
+    static prefix##array prefix##array_new(const size_t length) {               \
                                                                                 \
         /* Preconditions */                                                     \
         assert(length > 0);                                                     \
@@ -1975,7 +1975,7 @@
     /**     array_select(MyArray, N, N-K-1)                                 **/ \
     /**     array_sort(MyArray+N-K, N-K);                                   **/ \
     /**                                                                     **/ \
-    static inline void prefix##array_sort(const prefix##array A,                \
+    static void prefix##array_sort(const prefix##array A,                       \
                                           const size_t length) {                \
                                                                                 \
         const size_t MIN_SIZE = 1<<7; /* Any power of 2 */                      \
@@ -2031,11 +2031,12 @@
     /**                                                                     **/ \
     /**     array_shuffle(MyArray, N);                                      **/ \
     /**                                                                     **/ \
-    static inline void prefix##array_shuffle(const prefix##array A,             \
+    static void prefix##array_shuffle(const prefix##array A,                    \
                                              const size_t length) {             \
                                                                                 \
-        /* Precondition */                                                      \
+        /* Preconditions */                                                     \
         assert(A != NULL);                                                      \
+        assert(RAND_MAX >= length);                                             \
                                                                                 \
         size_t i, j, range;                                                     \
         type   temp;                                                            \
@@ -2088,7 +2089,7 @@
     /**     array_select(MyArray, N, N-K-1)                                 **/ \
     /**     array_sort(MyArray+N-K, N-K);                                   **/ \
     /**                                                                     **/ \
-    static inline type prefix##array_select(const prefix##array A,              \
+    static type prefix##array_select(const prefix##array A,                     \
                                             const size_t length,                \
                                             const size_t rank) {                \
         /* Preconditions */                                                     \
@@ -2146,7 +2147,7 @@
     /**          A[j] = t;                                                  **/ \
     /**     }                                                               **/ \
     /**                                                                     **/ \
-    static inline size_t prefix##array_bisect(const prefix##array A,            \
+    static size_t prefix##array_bisect(const prefix##array A,                   \
                                               const size_t length,              \
                                               const type data) {                \
         /* Preconditions */                                                     \
@@ -2466,7 +2467,7 @@
     /**                                                                     **/ \
     /**     if (MyTree) { smallest = stree_min(&MyTree); }                  **/ \
     /**                                                                     **/ \
-    static inline type prefix##stree_min(prefix##stree *tree) {                 \
+    static type prefix##stree_min(prefix##stree *tree) {                        \
                                                                                 \
         /* Precondition */                                                      \
         assert(*tree != NULL);                                                  \
@@ -2511,7 +2512,7 @@
     /**                                                                     **/ \
     /**     if (MyTree) { biggest = stree_max(&MyTree); }                   **/ \
     /**                                                                     **/ \
-    static inline type prefix##stree_max(prefix##stree *tree) {                 \
+    static type prefix##stree_max(prefix##stree *tree) {                        \
                                                                                 \
         /* Precondition */                                                      \
         assert(*tree != NULL);                                                  \
@@ -2585,7 +2586,7 @@
     /**         }                                                           **/ \
     /**     }                                                               **/ \
     /**                                                                     **/ \
-    static inline type prefix##stree_pop(prefix##stree *tree) {                 \
+    static type prefix##stree_pop(prefix##stree *tree) {                        \
                                                                                 \
         /* Precondition */                                                      \
         assert(*tree != NULL);                                                  \
@@ -2681,7 +2682,7 @@
     /**         }                                                           **/ \
     /**     }                                                               **/ \
     /**                                                                     **/ \
-    static inline bool prefix##stree_next(prefix##stree *tree) {                \
+    static bool prefix##stree_next(prefix##stree *tree) {                       \
                                                                                 \
         prefix##stree_s dummy, *right, *temp, *root, *old_root = *tree;         \
                                                                                 \
@@ -2737,7 +2738,7 @@
     /**         }                                                           **/ \
     /**     }                                                               **/ \
     /**                                                                     **/ \
-    static inline bool prefix##stree_prev(prefix##stree *tree) {                \
+    static bool prefix##stree_prev(prefix##stree *tree) {                       \
                                                                                 \
         prefix##stree_s dummy, *left, *temp, *root, *old_root = *tree;          \
                                                                                 \
@@ -2792,7 +2793,7 @@
     /**         printf("data is not in MyTree.");                           **/ \
     /**     }                                                               **/ \
     /**                                                                     **/ \
-    static inline bool prefix##stree_find(prefix##stree *tree,                  \
+    static bool prefix##stree_find(prefix##stree *tree,                         \
                                           const type data) {                    \
                                                                                 \
         prefix##stree_s dummy, *left, *right, *temp, *root = *tree;             \
@@ -2875,7 +2876,7 @@
     /**         stree_insert(&MyTree, data);                                **/ \
     /**     }                                                               **/ \
     /**                                                                     **/ \
-    static inline bool prefix##stree_insert(prefix##stree *tree,                \
+    static bool prefix##stree_insert(prefix##stree *tree,                       \
                                             const type data) {                  \
                                                                                 \
         prefix##stree_s dummy, *left, *right, *temp, *new_root, *root = *tree;  \
@@ -3127,7 +3128,7 @@
     /**         printf("data is not in MyTree.");                           **/ \
     /**     }                                                               **/ \
     /**                                                                     **/ \
-    static inline size_t prefix##wtree_find(const prefix##wtree *tree,          \
+    static size_t prefix##wtree_find(const prefix##wtree *tree,                 \
                                             const type data) {                  \
                                                                                 \
         prefix##wtree node = *tree;                                             \
@@ -3177,7 +3178,7 @@
     /**         return rank;                                                **/ \
     /**     }                                                               **/ \
     /**                                                                     **/ \
-    static inline size_t prefix##wtree_insert(prefix##wtree *tree,              \
+    static size_t prefix##wtree_insert(prefix##wtree *tree,                     \
                                               const type data) {                \
                                                                                 \
         /* Rebalancing constants (DELTA, GAMMA)                          */     \
@@ -3338,7 +3339,7 @@
     /**         do_something(wtree_select(&MyTree, i));                     **/ \
     /**     }                                                               **/ \
     /**                                                                     **/ \
-    static inline type prefix##wtree_select(const prefix##wtree *tree,          \
+    static type prefix##wtree_select(const prefix##wtree *tree,                 \
                                             const size_t rank) {                \
                                                                                 \
         prefix##wtree node   = *tree;                                           \
@@ -3387,7 +3388,7 @@
     /**                                                                     **/ \
     /**     while (MyTree) { free(wtree_remove(&MyTree, 1)); }              **/ \
     /**                                                                     **/ \
-    static inline type prefix##wtree_remove(prefix##wtree *tree,                \
+    static type prefix##wtree_remove(prefix##wtree *tree,                       \
                                             const size_t rank) {                \
                                                                                 \
         /* Preconditions */                                                     \

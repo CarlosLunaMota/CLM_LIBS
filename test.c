@@ -1885,7 +1885,7 @@ void CLM_ARRAY_TEST(bool verbose) {
 
     printf("\nTesting CLM_ARRAY...\n\n");
 
-    size_t size = 1000000;
+    size_t size = 100000;
 
     size_t i,j;
     array A = array_new(size);

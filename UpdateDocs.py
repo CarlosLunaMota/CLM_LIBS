@@ -17,7 +17,7 @@ if __name__ == "__main__":
         if "#define CLM_LIBS " in line: date = line[line.index("CLM_LIBS")+9:]
         while "/*" in line:
             line = line[line.index("/*")+2:line.index("/*")+2]
-        if "static inline" in line: functions += 1
+        if "static " in line: functions += 1
         if "#define" in line: macros += 1
         line = line.replace(" ", "")
         if line: LOC += 1
@@ -115,7 +115,7 @@ if __name__ == "__main__":
 
                 if line.startswith("#### "):
                     diff = 1
-                    while (not lines[numline+diff].startswith("    static inline")
+                    while (not lines[numline+diff].startswith("    static ")
                            and not lines[numline+diff].startswith("    typedef")):
                             diff += 1
                     num   = numline + diff
@@ -154,14 +154,15 @@ if __name__ == "__main__":
                 line = "\n" + line + "\n\n"
                 output.write(line)
 
-            elif line.startswith("    static inline"):
+            elif line.startswith("    static "):
                 line = line.strip()
                 diff = 1
                 while "{" not in line:
                     if line.endswith(","): line += " "
                     line += (lines[numline+diff]).strip()
                     diff += 1
-                line = line.replace("static inline ", "")
+                line = line.replace("static ", "")
+                line = line.replace("inline ", "")
                 line = line.replace("prefix##", "")
                 line = line.replace("const ", "")
                 line = line[:line.index("{")+1]
