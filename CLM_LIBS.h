@@ -1480,7 +1480,7 @@
         assert(digits > 0);                                                     \
         assert(base   > 1);                                                     \
                                                                                 \
-        size_t r  = 0;                                                          \
+        size_t r = 0;                                                           \
         while (digits > 0) {                                                    \
             r *= base;                                                          \
             r += n % base;                                                      \
@@ -1492,7 +1492,7 @@
                                                                                 \
     /** ******************************************************************* **/ \
     /**                                                                     **/ \
-    /** #### fractal_z_to_coord                                             **/ \
+    /** #### fractal_lebesgue_coord                                         **/ \
     /**                                                                     **/ \
     /** Returns the `dim` dimensional coordinates of the `n`-th point of    **/ \
     /** the Z-index space-filling curve of `bits` levels.                   **/ \
@@ -1501,35 +1501,37 @@
     /**                                                                     **/ \
     /** **Warning:** Parameter `bits` must satisfy `bits > 0`.              **/ \
     /**                                                                     **/ \
-    /** **Warning:** A `size_t` varible must have at least `dim*bits` bits. **/ \
+    /** **Warning:** A `size_t` varible must have at least `bits` bits.     **/ \
     /**                                                                     **/ \
-    static void prefix##fractal_z_to_coord(const size_t dim,                    \
-                                                  const size_t bits,            \
-                                                  size_t *n,                    \
-                                                  size_t *coord) {              \
+    static void prefix##fractal_lebesgue_coord(const size_t dim,                \
+                                               const size_t bits,               \
+                                               size_t *L) {                     \
         /* Preconditions */                                                     \
-        assert(sizeof(size_t) * CHAR_BIT >= dim*bits);                          \
+        assert(sizeof(size_t) * CHAR_BIT >= bits);                              \
         assert(bits > 0);                                                       \
         assert(dim  > 0);                                                       \
                                                                                 \
-        size_t b, d, mask, bit, Z = *n;                                         \
+        size_t b, d, dd, mask, bit, coord[dim];                                 \
                                                                                 \
         /* Compute coordinates from Z-index */                                  \
         for (d = 0; d < dim; d++) { coord[d] = 0; }                             \
         bit  = 1;                                                               \
         mask = 1;                                                               \
+        dd   = 0;                                                               \
         for (b = 0; b < bits; b++) {                                            \
             for (d = dim; d--> 0; ) {                                           \
-                if (Z & mask) { coord[d] += bit; }                              \
+                if (L[dd] & mask) { coord[d] += bit; }                          \
                 mask <<= 1;                                                     \
+                if (!mask) { mask = 1; dd++; }                                  \
             }                                                                   \
             bit <<= 1;                                                          \
         }                                                                       \
+        for (d = 0; d < dim; d++) { L[d] = coord[d]; }                          \
     }                                                                           \
                                                                                 \
     /** ******************************************************************* **/ \
     /**                                                                     **/ \
-    /** #### fractal_z_to_coord                                             **/ \
+    /** #### fractal_lebesgue_index                                         **/ \
     /**                                                                     **/ \
     /** Returns the index of the `dim` dimensional point of the given       **/ \
     /** coordinates in the Z-index space-filling curve of `bits` levels.    **/ \
@@ -1538,38 +1540,37 @@
     /**                                                                     **/ \
     /** **Warning:** Parameter `bits` must satisfy `bits > 0`.              **/ \
     /**                                                                     **/ \
-    /** **Warning:** A `size_t` varible must have at least `dim*bits` bits. **/ \
+    /** **Warning:** A `size_t` varible must have at least `bits` bits.     **/ \
     /**                                                                     **/ \
-    static void prefix##fractal_coord_to_z(const size_t dim,                    \
-                                                 const size_t bits,             \
-                                                 size_t *n,                     \
-                                                 size_t *coord) {               \
+    static void prefix##fractal_lebesgue_index(const size_t dim,                \
+                                               const size_t bits,               \
+                                               size_t *L) {                     \
         /* Preconditions */                                                     \
-        assert(sizeof(size_t) * CHAR_BIT >= dim*bits);                          \
+        assert(sizeof(size_t) * CHAR_BIT >= bits);                              \
         assert(bits > 0);                                                       \
         assert(dim  > 0);                                                       \
                                                                                 \
-        size_t b, d, mask, bit, Z;                                              \
+        size_t b, d, dd, mask, bit, index[dim];                                 \
                                                                                 \
         /* Compute the Z-index from coordinates */                              \
-        Z    = 0;                                                               \
+        for (d = 0; d < dim; d++) { index[d] = 0; }                             \
         bit  = 1;                                                               \
         mask = 1;                                                               \
+        dd   = 0;                                                               \
         for (b = 0; b < bits; b++) {                                            \
             for (d = dim; d-->0; ) {                                            \
-                if (coord[d] & mask) { Z += bit; }                              \
+                if (L[d] & mask) { index[dd] += bit; }                          \
                 bit <<= 1;                                                      \
             }                                                                   \
             mask <<= 1;                                                         \
+            if (!mask) { mask = 1; dd++; }                                      \
         }                                                                       \
-                                                                                \
-        /* Store Z-index */                                                     \
-        *n = Z;                                                                 \
+        for (d = 0; d < dim; d++) { L[d] = index[d]; }                          \
     }                                                                           \
                                                                                 \
     /** ******************************************************************* **/ \
     /**                                                                     **/ \
-    /** #### fractal_h_to_coord                                             **/ \
+    /** #### fractal_hilbert_coord                                          **/ \
     /**                                                                     **/ \
     /** Returns the `dim` dimensional coordinates of the `n`-th point of    **/ \
     /** the Hilbert space-filling curve of `bits` levels.                   **/ \
@@ -1578,47 +1579,47 @@
     /**                                                                     **/ \
     /** **Warning:** Parameter `bits` must satisfy `bits > 0`.              **/ \
     /**                                                                     **/ \
-    /** **Warning:** A `size_t` varible must have at least `dim*bits` bits. **/ \
+    /** **Warning:** A `size_t` varible must have at least `bits` bits.     **/ \
     /**                                                                     **/ \
-    static void prefix##fractal_h_to_coord(const size_t dim,                    \
-                                                  const size_t bits,            \
-                                                  size_t *n,                    \
-                                                  size_t *coord) {              \
-                                                                                \
-        size_t d, mask, bit, temp, max = 1 << bits;                             \
-        size_t b, H = *n;                                                       \
-                                                                                \
-        /* Sanity checks */                                                     \
+    static void prefix##fractal_hilbert_coord(const size_t dim,                 \
+                                              const size_t bits,                \
+                                              size_t *H) {                      \
+        /* Preconditions */                                                     \
         assert(sizeof(size_t) * CHAR_BIT >= dim*bits);                          \
         assert(bits > 0);                                                       \
         assert(dim  > 0);                                                       \
                                                                                 \
+        size_t b, d, dd, mask, bit, temp, aux[dim], max = 1 << bits;            \
+                                                                                \
         /* Compute transposed representation of H-index */                      \
-        for (d = 0; d < dim; d++) { coord[d] = 0; }                             \
+        for (d = 0; d < dim; d++) { aux[d] = 0; }                               \
         bit  = 1;                                                               \
         mask = 1;                                                               \
+        dd   = 0;                                                               \
         for (b = 0; b < bits; b++) {                                            \
             for (d = dim; d--> 0; ) {                                           \
-                if (H & mask) { coord[d] += bit; }                              \
+                if (H[dd] & mask) { aux[d] += bit; }                            \
                 mask <<= 1;                                                     \
+                if (!mask) { mask = 1; dd++; }                                  \
             }                                                                   \
             bit <<= 1;                                                          \
         }                                                                       \
+        for (d = 0; d < dim; d++) { H[d] = aux[d]; }                            \
                                                                                 \
         /* Gray decode */                                                       \
-        temp = coord[dim-1] >> 1;                                               \
-        for (d = dim; d--> 1; ) { coord[d] ^= coord[d-1]; }                     \
-        coord[0] ^= temp;                                                       \
+        temp = H[dim-1] >> 1;                                                   \
+        for (d = dim; d--> 1; ) { H[d] ^= H[d-1]; }                             \
+        H[0] ^= temp;                                                           \
                                                                                 \
         /* Undo excess work */                                                  \
         for (bit = 2; bit != max; bit <<= 1) {                                  \
             mask = bit - 1;                                                     \
             for (d = dim; d--> 0; ) {                                           \
-                if (coord[d] & bit) { coord[0] ^= mask; }                       \
+                if (H[d] & bit) { H[0] ^= mask; }                               \
                 else {                                                          \
-                    temp      = (coord[0]^coord[d]) & mask;                     \
-                    coord[0] ^= temp;                                           \
-                    coord[d] ^= temp;                                           \
+                    temp  = (H[0]^H[d]) & mask;                                 \
+                    H[0] ^= temp;                                               \
+                    H[d] ^= temp;                                               \
                 }                                                               \
             }                                                                   \
         }                                                                       \
@@ -1637,55 +1638,51 @@
     /**                                                                     **/ \
     /** **Warning:** A `size_t` varible must have at least `dim*bits` bits. **/ \
     /**                                                                     **/ \
-    static void prefix##fractal_coord_to_h(const size_t dim,                    \
-                                                  const size_t bits,            \
-                                                  size_t *n,                    \
-                                                  size_t *coord) {              \
-                                                                                \
-        size_t d, mask, bit, temp, max = 1 << (bits-1);                         \
-        size_t b, H, C[dim];                                                    \
-        for (d = 0; d < dim; d++) { C[d] = coord[d]; }                          \
-                                                                                \
-        /* Sanity checks */                                                     \
-        assert(sizeof(size_t) * CHAR_BIT >= dim*bits);                          \
+    static void prefix##fractal_hilbert_index(const size_t dim,                 \
+                                              const size_t bits,                \
+                                              size_t *H) {                      \
+        /* Preconditions */                                                     \
+        assert(sizeof(size_t) * CHAR_BIT >= bits);                              \
         assert(bits > 0);                                                       \
         assert(dim  > 0);                                                       \
+                                                                                \
+        size_t b, d, dd, mask, bit, temp, aux[dim], max = 1 << (bits-1);        \
                                                                                 \
         /* Reverse undo excess work */                                          \
         for (bit = max; bit > 1; bit >>= 1 ) {                                  \
             mask = bit-1;                                                       \
             for (d = 0; d < dim; d++ ) {                                        \
-                if (C[d] & bit) { C[0] ^= mask; }                               \
+                if (H[d] & bit) { H[0] ^= mask; }                               \
                 else {                                                          \
-                    temp  = (C[0]^C[d]) & mask;                                 \
-                    C[0] ^= temp;                                               \
-                    C[d] ^= temp;                                               \
+                    temp  = (H[0]^H[d]) & mask;                                 \
+                    H[0] ^= temp;                                               \
+                    H[d] ^= temp;                                               \
                 }                                                               \
             }                                                                   \
         }                                                                       \
                                                                                 \
         /* Gray encode */                                                       \
-        for (d = 1; d < dim; d++) { C[d] ^= C[d-1]; }                           \
+        for (d = 1; d < dim; d++) { H[d] ^= H[d-1]; }                           \
         temp = 0;                                                               \
         for (bit = max; bit > 1; bit >>= 1) {                                   \
-            if (C[dim-1] & bit) { temp ^= bit-1; }                              \
+            if (H[dim-1] & bit) { temp ^= bit-1; }                              \
         }                                                                       \
-        for (d = 0; d < dim; d++) { C[d] ^= temp; }                             \
+        for (d = 0; d < dim; d++) { H[d] ^= temp; }                             \
                                                                                 \
         /* Compute the H-index from its tranposed representation */             \
-        H    = 0;                                                               \
+        for (d = 0; d < dim; d++) { aux[d] = 0; }                               \
         bit  = 1;                                                               \
         mask = 1;                                                               \
+        dd   = 0;                                                               \
         for (b = 0; b < bits; b++) {                                            \
             for (d = dim; d-->0; ) {                                            \
-                if (C[d] & mask) { H += bit; }                                  \
+                if (H[d] & mask) { aux[dd] += bit; }                            \
                 bit <<= 1;                                                      \
             }                                                                   \
             mask <<= 1;                                                         \
+            if (!mask) { mask = 1; dd++; }                                      \
         }                                                                       \
-                                                                                \
-        /* Store H-index */                                                     \
-        *n = H;                                                                 \
+        for (d = 0; d < dim; d++) { H[d] = aux[d]; }                            \
     }                                                                           \
                                                                                 \
 

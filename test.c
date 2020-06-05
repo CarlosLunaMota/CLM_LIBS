@@ -1762,113 +1762,83 @@ void CLM_FRACTAL_TEST(bool verbose) {
 
     printf("\nTesting CLM_ITER...\n\n");
 
-    if (verbose) { printf(" "); }
-
     size_t dim  = 3;
     size_t bits = 2;
-    size_t max_coord = 1<<bits;
-    size_t max_H = 1<<(bits*dim);
-    size_t H, HH, coord[dim];
+    size_t MAX  = 1<<(bits*dim);
+    size_t coord[3] = {0, 0, 0};
+    size_t index;
 
-    for (size_t i = 0; i < max_coord; i++) {
-        for (size_t j = 0; j < max_coord; j++) {
-            for (size_t k = 0; k < max_coord; k++) {
+    for (index = 0; index < MAX; index++) {
+        coord[0] = index;
+        fractal_lebesgue_coord(dim, bits, coord);
+        fractal_lebesgue_index(dim, bits, coord);
+        assert(coord[0] == index);
+        assert(coord[1] == 0);
+        assert(coord[2] == 0);
+    }
+
+    for (index = 0; index < MAX; index++) {
+        coord[0] = index;
+        fractal_hilbert_coord(dim, bits, coord);
+        fractal_hilbert_index(dim, bits, coord);
+        assert(coord[0] == index);
+        assert(coord[1] == 0);
+        assert(coord[2] == 0);
+    }
+
+    bits = 10;
+    MAX  = 1<<bits;
+    for (index = 0; index < MAX; index++) {
+        assert(index == fractal_van_der_corput(2, bits, fractal_van_der_corput(2, bits, index)));
+    }
+        
+    if (verbose) {
+
+        printf("\n\tZ-Order:\n");
+
+        dim  = 2;
+        bits = 3;
+        MAX  = 1u<<bits;
+        for (size_t i = 0; i < MAX; i++) {
+            printf("\n\t");
+            for (size_t j = 0; j < MAX; j++) {
                 coord[0] = i;
                 coord[1] = j;
-                coord[2] = k;
-                fractal_coord_to_h(dim, bits, &H, coord);
-                //printf("(%zu, %zu, %zu) -> H(%zu)\n", coord[0], coord[1], coord[2], H);
-                fractal_h_to_coord(dim, bits, &H, coord);
-                assert(i == coord[0]);
-                assert(j == coord[1]);
-                assert(k == coord[2]);
+                fractal_lebesgue_index(dim, bits, coord);
+                printf("%3zu ", coord[0]);
+                assert(coord[1] == 0);
             }
         }
-    }
 
-    for (size_t i = 0; i < max_coord; i++) {
-        for (size_t j = 0; j < max_coord; j++) {
-            for (size_t k = 0; k < max_coord; k++) {
+        printf("\n\n\tHilbert:\n"); 
+
+        dim  = 2;
+        bits = 3;
+        MAX  = 1u<<bits;
+        for (size_t i = 0; i < MAX; i++) {
+            printf("\n\t");
+            for (size_t j = 0; j < MAX; j++) {
                 coord[0] = i;
                 coord[1] = j;
-                coord[2] = k;
-                fractal_coord_to_z(dim, bits, &H, coord);
-                //printf("(%zu, %zu, %zu) -> H(%zu)\n", coord[0], coord[1], coord[2], H);
-                fractal_z_to_coord(dim, bits, &H, coord);
-                assert(i == coord[0]);
-                assert(j == coord[1]);
-                assert(k == coord[2]);
+                fractal_hilbert_index(dim, bits, coord);
+                printf("%3zu ", coord[0]);
+                assert(coord[1] == 0);
             }
         }
-    }
 
-    for (size_t H = 0; H < max_H; H++) {
-        fractal_h_to_coord(dim, bits, &H, coord);
-        //printf("H(%zu) -> (%zu, %zu, %zu)\n", H, coord[0], coord[1], coord[2]);
-        fractal_coord_to_h(dim, bits, &HH, coord);
-        assert(H == HH);
-    }
-
-    for (size_t H = 0; H < max_H; H++) {
-        fractal_z_to_coord(dim, bits, &H, coord);
-        //printf("H(%zu) -> (%zu, %zu, %zu)\n", H, coord[0], coord[1], coord[2]);
-        fractal_coord_to_z(dim, bits, &HH, coord);
-        assert(H == HH);
-    }
-
-    /*printf("\n\n");
-
-    dim = 2;
-    bits = 3;
-    max_coord = 1u<<bits;
-    for (size_t i = 0; i < max_coord; i++) {
-        for (size_t j = 0; j < max_coord; j++) {
-            coord[0] = j;
-            coord[1] = max_coord-i-1;
-            fractal_coord_to_z(dim, bits, &H, coord);
-            printf("%3zu ", H);
+        printf("\n\n\tVan-der-Corput:\n\n\t");
+        bits = 4;
+        MAX  = 1<<bits;
+        for (index = 0; index < MAX; index++) {
+            printf("%3zu ", fractal_van_der_corput(2, bits, fractal_van_der_corput(2, bits, index)));
+            assert(index == fractal_van_der_corput(2, bits, fractal_van_der_corput(2, bits, index)));
         }
-        printf("\n");
-    }
-
-    printf("\n\n"); */
-
-    dim = 2;
-    bits = 3;
-    max_coord = 1u<<bits;
-    for (size_t i = 0; i < max_coord; i++) {
-        for (size_t j = 0; j < max_coord; j++) {
-            coord[0] = j;
-            coord[1] = max_coord-i-1;
-            fractal_coord_to_h(dim, bits, &H, coord);
-            printf("%3zu ", H);
+        printf("\n\t");
+        for (index = 0; index < MAX; index++) {
+            printf("%3zu ", fractal_van_der_corput(2, bits, index));
         }
-        printf("\n");
+        printf("\n\n");
     }
-
-    /*printf("\n\n");
-    bits = 4;
-    max_coord = 1u<<bits;
-    for (size_t i = 0; i < max_coord; i++) {
-        printf("%3zu ", fractal_van_der_corput(2, bits, fractal_van_der_corput(2, bits, i)));
-        assert(i == fractal_van_der_corput(2, bits, fractal_van_der_corput(2, bits, i)));
-    }
-    printf("\n");
-    for (size_t i = 0; i < max_coord; i++) {
-        printf("%3zu ", fractal_van_der_corput(2, bits, i));
-    }
-    printf("\n\n");
-
-
-    bits = 4;
-    max_coord = 1u<<bits;
-    for (size_t i = 0; i < max_coord; i++) {
-        fractal_z_to_coord(1, bits, &i, &H);
-        printf("%3zu ", H);
-    }
-    printf("\n");*/
-
-
 }
 
 void CLM_ARRAY_TEST(bool verbose) {
@@ -2065,7 +2035,7 @@ int main (void) {
     CLM_PRINTF_TEST(verbose);
     CLM_ARC4_TEST(verbose);
     CLM_ITER_TEST(verbose);
-    //CLM_FRACTAL_TEST(verbose);
+    CLM_FRACTAL_TEST(verbose);
     CLM_ARRAY_TEST(verbose);
     CLM_CLIST_TEST(verbose);
     CLM_STREE_TEST(verbose);

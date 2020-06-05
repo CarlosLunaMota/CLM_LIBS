@@ -1038,10 +1038,10 @@ for (size_t N = 0; N < pow; N++) {
 
 *******************************************************************
 
-#### fractal\_z\_to\_coord [⯅](#CLM_LIBS)
+#### fractal\_lebesgue\_coord [⯅](#CLM_LIBS)
 
 ```c
-static void fractal_z_to_coord(const size_t dim, const size_t bits, size_t *n, size_t *coord);
+static void fractal_lebesgue_coord(const size_t dim, const size_t bits, size_t *L);
 ```
 
 Returns the `dim` dimensional coordinates of the `n`-th point of
@@ -1051,14 +1051,14 @@ the Z-index space-filling curve of `bits` levels.
 
 **Warning:** Parameter `bits` must satisfy `bits > 0`.
 
-**Warning:** A `size_t` varible must have at least `dim*bits` bits.
+**Warning:** A `size_t` varible must have at least `bits` bits.
 
 *******************************************************************
 
-#### fractal\_z\_to\_coord [⯅](#CLM_LIBS)
+#### fractal\_lebesgue\_index [⯅](#CLM_LIBS)
 
 ```c
-static void fractal_coord_to_z(const size_t dim, const size_t bits, size_t *n, size_t *coord);
+static void fractal_lebesgue_index(const size_t dim, const size_t bits, size_t *L);
 ```
 
 Returns the index of the `dim` dimensional point of the given
@@ -1068,14 +1068,14 @@ coordinates in the Z-index space-filling curve of `bits` levels.
 
 **Warning:** Parameter `bits` must satisfy `bits > 0`.
 
-**Warning:** A `size_t` varible must have at least `dim*bits` bits.
+**Warning:** A `size_t` varible must have at least `bits` bits.
 
 *******************************************************************
 
-#### fractal\_h\_to\_coord [⯅](#CLM_LIBS)
+#### fractal\_hilbert\_coord [⯅](#CLM_LIBS)
 
 ```c
-static void fractal_h_to_coord(const size_t dim, const size_t bits, size_t *n, size_t *coord);
+static void fractal_hilbert_coord(const size_t dim, const size_t bits, size_t *H);
 ```
 
 Returns the `dim` dimensional coordinates of the `n`-th point of
@@ -1085,14 +1085,14 @@ the Hilbert space-filling curve of `bits` levels.
 
 **Warning:** Parameter `bits` must satisfy `bits > 0`.
 
-**Warning:** A `size_t` varible must have at least `dim*bits` bits.
+**Warning:** A `size_t` varible must have at least `bits` bits.
 
 *******************************************************************
 
 #### fractal\_coord\_to\_h [⯅](#CLM_LIBS)
 
 ```c
-static void fractal_coord_to_h(const size_t dim, const size_t bits, size_t *n, size_t *coord);
+static void fractal_hilbert_index(const size_t dim, const size_t bits, size_t *H);
 ```
 
 Returns the index of the `dim` dimensional point of the given

@@ -49,10 +49,10 @@
 #define IMPORT_CLM_FRACTAL(prefix)
 
     size_t  fractal_van_der_corput(size_t base, size_t digits, size_t n);
-    void    fractal_z_to_coord(size_t dim, size_t bits, size_t *n, size_t *coord);
-    void    fractal_coord_to_z(size_t dim, size_t bits, size_t *n, size_t *coord);
-    void    fractal_h_to_coord(size_t dim, size_t bits, size_t *n, size_t *coord);
-    void    fractal_coord_to_h(size_t dim, size_t bits, size_t *n, size_t *coord);
+    void    fractal_lebesgue_coord(size_t dim, size_t bits, size_t *L);
+    void    fractal_lebesgue_index(size_t dim, size_t bits, size_t *L);
+    void    fractal_hilbert_coord(size_t dim, size_t bits, size_t *H);
+    void    fractal_hilbert_index(size_t dim, size_t bits, size_t *H);
 
 #define IMPORT_CLM_ARRAY(type, less, prefix)
 
