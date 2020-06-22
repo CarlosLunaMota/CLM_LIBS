@@ -43,8 +43,8 @@
 /** functions and data types when calling a macro to avoid conflicts with   **/
 /** existing code or different calls to the same macro.                     **/
 /**                                                                         **/
-/** All `CLM_LIBS` functions are declared as `static` and are mutually      **/
-/** independent (no `CLM_LIBS` function calls any other `CLM_LIBS`          **/
+/** All `CLM_LIBS` functions are declared as `static inline` and are        **/
+/** mutually independent (no `CLM_LIBS` function calls any other `CLM_LIBS` **/
 /** function) although a few of them are recursive (they call themselves).  **/
 /** This self-imposed constraint hurts modularity and readability but       **/
 /** simplifies the task of versioning and reusing the code: You could erase **/
@@ -208,7 +208,7 @@
   /**                                                                       **/
   /** Contains the version number (= date) of this release of CLM_LIBS.     **/
   /**                                                                       **/
-  #define CLM_LIBS 20200604
+  #define CLM_LIBS 20200610
 
   /** ********************************************************************* **/
   /**                                                                       **/
@@ -318,7 +318,7 @@
     /**     fclose(MyOutput);                                               **/ \
     /**     free(timestamp);                                                **/ \
     /**                                                                     **/ \
-    static char *prefix##time_stamp(const int format) {                         \
+    static inline char *prefix##time_stamp(const int format) {                  \
                                                                                 \
         time_t now = time(NULL);                                                \
         struct tm tm = *localtime(&now);                                        \
@@ -512,7 +512,7 @@
     /**         R[i] = r; G[i] = g; B[i] = b;                               **/ \
     /**     }                                                               **/ \
     /**                                                                     **/ \
-    static void prefix##rand_color(int *r, int *g, int *b) {                    \
+    static inline void prefix##rand_color(int *r, int *g, int *b) {             \
                                                                                 \
         /* Preconditions */                                                     \
         assert(0 <= *r && *r < 256);                                            \
@@ -805,7 +805,7 @@
     /**     }                                                               **/ \
     /**     free(hash);                                                     **/ \
     /**                                                                     **/ \
-    static char *prefix##arc4_hash(const char *txt, const size_t length,        \
+    static inline char *prefix##arc4_hash(const char *txt, const size_t length, \
                                           const size_t drop) {                  \
         /* Preconditions */                                                     \
         assert(CHAR_BIT == 8);                                                  \
@@ -888,7 +888,7 @@
     /**     if (code != NULL) { printf("Encrypted: '%s'\n", code); }        **/ \
     /**     free(code);                                                     **/ \
     /**                                                                     **/ \
-    static char *prefix##arc4_encrypt(const char *txt, const char *key,         \
+    static inline char *prefix##arc4_encrypt(const char *txt, const char *key,  \
                                              const size_t drop) {               \
         /* Preconditions */                                                     \
         assert(CHAR_BIT == 8);                                                  \
@@ -972,7 +972,7 @@
     /**     if (txt != NULL) { printf("Decrypted: '%s'\n", txt); }          **/ \
     /**     free(txt);                                                      **/ \
     /**                                                                     **/ \
-    static char *prefix##arc4_decrypt(const char *txt, const char *key,         \
+    static inline char *prefix##arc4_decrypt(const char *txt, const char *key,  \
                                              const size_t drop) {               \
         /* Preconditions */                                                     \
         assert(CHAR_BIT == 8);                                                  \
@@ -1040,7 +1040,7 @@
   /**                                                                       **/
   /** ### CLM_ITER                                                          **/
   /**                                                                       **/
-  /** A set of functions to work with some generic combinatorial objects:   **/
+  /** A set of iterators to work with some generic combinatorial objects:   **/
   /**                                                                       **/
   /** **Products:** all mixed-radix tuples of fixed `length`                **/
   /**                                                                       **/
@@ -1051,8 +1051,8 @@
   /**                               (1,1,0), (1,1,1), (1,1,2), (1,1,3),     **/
   /**                               (1,2,0), (1,2,1), (1,2,2), (1,2,3)}     **/
   /**                                                                       **/
-  /** **Permutations:** all unsorted tuples of fixed `length` whose         **/
-  /** elements are all different and taken from a set of size `base`        **/
+  /** **Permutations:** all tuples of fixed `length` whose elements are     **/
+  /** all different and taken from a set of size `base`                     **/
   /**                                                                       **/
   /**       Permutations(3, 4) = {(0,1,2), (0,2,1), (1,0,2), (1,2,0),       **/
   /**                             (2,0,1), (2,1,0), (0,1,3), (0,3,1),       **/
@@ -1061,9 +1061,8 @@
   /**                             (3,0,2), (3,2,0), (1,2,3), (1,3,2),       **/
   /**                             (2,1,3), (2,3,1), (3,1,2), (3,2,1)}       **/
   /**                                                                       **/
-  /** **Permutations with repetition:** all unsorted tuples of fixed        **/
-  /** `length` whose elements are taken with replacement from a set of      **/
-  /** size `base`                                                           **/
+  /** **Permutations with replacement:** all tuples of fixed `length`       **/
+  /** whose elements are taken with replacement from a set of size `base`   **/
   /**                                                                       **/
   /**       Perm_with_rep(3, 4) = {(0,0,0), (0,0,1), (0,0,2), (0,0,3),      **/
   /**                              (0,1,0), (0,1,1), (0,1,2), (0,1,3),      **/
@@ -1083,12 +1082,13 @@
   /**                              (3,3,0), (3,3,1), (3,3,2), (3,3,3)}      **/
   /**                                                                       **/
   /** **Combinations:** all sorted tuples of fixed `length` whose elements  **/
-  /** are all different and taken from a set of size `base`:                **/
+  /** are all different and taken from a set of size `base`                 **/
   /**                                                                       **/
   /**       Combinations(3, 4) = {(0,1,2), (0,1,3), (0,2,3), (1,2,3)}       **/
   /**                                                                       **/
-  /** **Combinations with repetition:** all sorted tuples of fixed `length` **/
-  /** whose elements are taken with replacement from a set of size `base`:  **/
+  /** **Combinations with replacement:** all sorted tuples of fixed         **/
+  /** `length` whose elements are taken with replacement from a set of      **/
+  /** size `base`                                                           **/
   /**                                                                       **/
   /**       Comb_with_rep(3, 4) = {(0,0,0), (0,0,1), (0,0,2), (0,0,3),      **/
   /**                              (0,1,1), (0,1,2), (0,1,3), (0,2,2),      **/
@@ -1135,9 +1135,9 @@
     /**         iter_rand_prod(&prod, length, base);                        **/ \
     /**     }                                                               **/ \
     /**                                                                     **/ \
-    static void prefix##iter_rand_prod(size_t **prod,                           \
-                                       const size_t length,                     \
-                                       const size_t *base) {                    \
+    static inline void prefix##iter_rand_prod(size_t **prod,                    \
+                                              const size_t length,              \
+                                              const size_t *base) {             \
         size_t i, *P = *prod;                                                   \
                                                                                 \
         /* Preconditions */                                                     \
@@ -1197,9 +1197,9 @@
     /**         iter_next_prod(&prod, length, base);                        **/ \
     /**     }                                                               **/ \
     /**                                                                     **/ \
-    static void prefix##iter_next_prod(size_t **prod,                           \
-                                       const size_t length,                     \
-                                       const size_t *base) {                    \
+    static inline void prefix##iter_next_prod(size_t **prod,                    \
+                                              const size_t length,              \
+                                              const size_t *base) {             \
         size_t i, *P = *prod;                                                   \
                                                                                 \
         /* Preconditions */                                                     \
@@ -1231,10 +1231,10 @@
     /**                                                                     **/ \
     /** #### iter_rand_perm                                                 **/ \
     /**                                                                     **/ \
-    static void prefix##iter_rand_perm(size_t **perm,                           \
-                                       const size_t length,                     \
-                                       const size_t base,                       \
-                                       const bool rep) {                        \
+    static inline void prefix##iter_rand_perm(size_t **perm,                    \
+                                              const size_t length,              \
+                                              const size_t base,                \
+                                              const bool rep) {                 \
         /* Preconditions */                                                     \
         assert(length > 0);                                                     \
         assert(RAND_MAX >= base);                                               \
@@ -1291,10 +1291,10 @@
     /**                                                                     **/ \
     /** #### iter_next_perm                                                 **/ \
     /**                                                                     **/ \
-    static void prefix##iter_next_perm(size_t **perm,                           \
-                                       const size_t length,                     \
-                                       const size_t base,                       \
-                                       const bool rep) {                        \
+    static inline void prefix##iter_next_perm(size_t **perm,                    \
+                                              const size_t length,              \
+                                              const size_t base,                \
+                                              const bool rep) {                 \
         /* Preconditions */                                                     \
         assert(length > 0);                                                     \
         if (rep) { assert(base > 0);       }                                    \
@@ -1350,10 +1350,10 @@
     /**                                                                     **/ \
     /** #### iter_rand_comb                                                 **/ \
     /**                                                                     **/ \
-    static void prefix##iter_rand_comb(size_t **comb,                           \
-                                       const size_t length,                     \
-                                       const size_t base,                       \
-                                       const bool rep) {                        \
+    static inline void prefix##iter_rand_comb(size_t **comb,                    \
+                                              const size_t length,              \
+                                              const size_t base,                \
+                                              const bool rep) {                 \
         /* Preconditions */                                                     \
         assert(length > 0);                                                     \
         assert(RAND_MAX >= base);                                               \
@@ -1399,10 +1399,10 @@
     /**                                                                     **/ \
     /** #### iter_next_comb                                                 **/ \
     /**                                                                     **/ \
-    static void prefix##iter_next_comb(size_t **comb,                           \
-                                       const size_t length,                     \
-                                       const size_t base,                       \
-                                       const bool rep) {                        \
+    static inline void prefix##iter_next_comb(size_t **comb,                    \
+                                              const size_t length,              \
+                                              const size_t base,                \
+                                              const bool rep) {                 \
         /* Preconditions */                                                     \
         assert(length > 0);                                                     \
         if (rep) { assert(base > 0);       }                                    \
@@ -1503,9 +1503,9 @@
     /**                                                                     **/ \
     /** **Warning:** A `size_t` varible must have at least `bits` bits.     **/ \
     /**                                                                     **/ \
-    static void prefix##fractal_lebesgue_coord(const size_t dim,                \
-                                               const size_t bits,               \
-                                               size_t *L) {                     \
+    static inline void prefix##fractal_lebesgue_coord(const size_t dim,         \
+                                                      const size_t bits,        \
+                                                      size_t *L) {              \
         /* Preconditions */                                                     \
         assert(sizeof(size_t) * CHAR_BIT >= bits);                              \
         assert(bits > 0);                                                       \
@@ -1542,9 +1542,9 @@
     /**                                                                     **/ \
     /** **Warning:** A `size_t` varible must have at least `bits` bits.     **/ \
     /**                                                                     **/ \
-    static void prefix##fractal_lebesgue_index(const size_t dim,                \
-                                               const size_t bits,               \
-                                               size_t *L) {                     \
+    static inline void prefix##fractal_lebesgue_index(const size_t dim,         \
+                                                      const size_t bits,        \
+                                                      size_t *L) {              \
         /* Preconditions */                                                     \
         assert(sizeof(size_t) * CHAR_BIT >= bits);                              \
         assert(bits > 0);                                                       \
@@ -1581,9 +1581,9 @@
     /**                                                                     **/ \
     /** **Warning:** A `size_t` varible must have at least `bits` bits.     **/ \
     /**                                                                     **/ \
-    static void prefix##fractal_hilbert_coord(const size_t dim,                 \
-                                              const size_t bits,                \
-                                              size_t *H) {                      \
+    static inline void prefix##fractal_hilbert_coord(const size_t dim,          \
+                                                     const size_t bits,         \
+                                                     size_t *H) {               \
         /* Preconditions */                                                     \
         assert(sizeof(size_t) * CHAR_BIT >= dim*bits);                          \
         assert(bits > 0);                                                       \
@@ -1638,9 +1638,9 @@
     /**                                                                     **/ \
     /** **Warning:** A `size_t` varible must have at least `dim*bits` bits. **/ \
     /**                                                                     **/ \
-    static void prefix##fractal_hilbert_index(const size_t dim,                 \
-                                              const size_t bits,                \
-                                              size_t *H) {                      \
+    static inline void prefix##fractal_hilbert_index(const size_t dim,          \
+                                                     const size_t bits,         \
+                                                     size_t *H) {               \
         /* Preconditions */                                                     \
         assert(sizeof(size_t) * CHAR_BIT >= bits);                              \
         assert(bits > 0);                                                       \
@@ -1718,7 +1718,7 @@
     /**     do_something(A);                                                **/ \
     /**     free(A);                                                        **/ \
     /**                                                                     **/ \
-    static prefix##array prefix##array_new(const size_t length) {               \
+    static inline prefix##array prefix##array_new(const size_t length) {        \
                                                                                 \
         /* Preconditions */                                                     \
         assert(length > 0);                                                     \
@@ -1798,7 +1798,7 @@
     /**     array_select(MyArray, N, N-K-1)                                 **/ \
     /**     array_sort(MyArray+N-K, N-K);                                   **/ \
     /**                                                                     **/ \
-    static void prefix##array_sort(const prefix##array A,                       \
+    static inline void prefix##array_sort(const prefix##array A,                \
                                           const size_t length) {                \
                                                                                 \
         const size_t MIN_SIZE = 1<<7; /* Any power of 2 */                      \
@@ -1854,7 +1854,7 @@
     /**                                                                     **/ \
     /**     array_shuffle(MyArray, N);                                      **/ \
     /**                                                                     **/ \
-    static void prefix##array_shuffle(const prefix##array A,                    \
+    static inline void prefix##array_shuffle(const prefix##array A,             \
                                              const size_t length) {             \
                                                                                 \
         /* Preconditions */                                                     \
@@ -1912,7 +1912,7 @@
     /**     array_select(MyArray, N, N-K-1)                                 **/ \
     /**     array_sort(MyArray+N-K, N-K);                                   **/ \
     /**                                                                     **/ \
-    static type prefix##array_select(const prefix##array A,                     \
+    static inline type prefix##array_select(const prefix##array A,              \
                                             const size_t length,                \
                                             const size_t rank) {                \
         /* Preconditions */                                                     \
@@ -1970,7 +1970,7 @@
     /**          A[j] = t;                                                  **/ \
     /**     }                                                               **/ \
     /**                                                                     **/ \
-    static size_t prefix##array_bisect(const prefix##array A,                   \
+    static inline size_t prefix##array_bisect(const prefix##array A,            \
                                               const size_t length,              \
                                               const type data) {                \
         /* Preconditions */                                                     \
@@ -2200,19 +2200,19 @@
   /** it is advisable to learn about them at Wikipedia or other sources     **/
   /** before using them.                                                    **/
   /**                                                                       **/
-  /** All the stree operations (excluding `stree_root` & `stree_size` that  **/
-  /** always take O(1) and O(size) time respectively) are efficient in an   **/
-  /** amortized sense. This means that a sequence of N of these operations  **/
-  /** is guaranteed to take O(N·log(N)) time to complete, with some of them **/
-  /** requiring as few as O(1) operations and some of them taking O(N) time **/
-  /** to complete depending on the particular sequence of operations and    **/
-  /** the particular values inserted/searched/removed from the `stree`.     **/
+  /** All the stree operations (except `stree_root` that always takes       **/
+  /** `O(1)` time) are efficient in an amortized sense. This means that a   **/
+  /** sequence of N of these operations is guaranteed to take `O(N*log(N))` **/
+  /** time to complete, with some of them requiring as few as `O(1)`        **/
+  /** operations and some of them taking `O(N)` time to complete depending  **/
+  /** on the particular sequence of operations and the particular values    **/
+  /** inserted/searched/removed from the `stree`.                           **/
   /**                                                                       **/
   /** In practice, Splay trees are a little bit slower than the equivalent  **/
   /** AVL tree, Red-Black tree or Weight-Balanced tree implementation but   **/
   /** use less memory and show an adaptive behavior that might benefit the  **/
   /** user in many common applications (e.g. inserting N sorted elements    **/
-  /** takes just O(N) time rather than O(N·log(N)) time).                   **/
+  /** takes just `O(N)` time rather than `O(N*log(N))` time).               **/
   /**                                                                       **/
   /** Incidentaly, Splay Trees also solve the "failed quieries" problem of  **/
   /** type-safe search trees (i.e. what to return when a `find` or `delete` **/
@@ -2222,15 +2222,15 @@
   /**   `data` is in the `stree` with a `stree_find` operation and then     **/
   /**   recover it with a `stree_root` operation. Since `stree_find` puts   **/
   /**   `data` in the `root` of the `stree` the second operation only takes **/
-  /**   O(1) and no time is wasted to gain safety.                          **/
+  /**   `O(1)` and no time is wasted to gain safety.                        **/
   /** * The `next` and `prev` operations are also broken in two steps:      **/
   /**   first move the next/prev element to the `root` and then retrieve it **/
   /**   with a `stree_root` operation. Again, since we are moving the       **/
-  /**   elements to the `root` it just takes O(1) time to retrieve them.    **/
+  /**   elements to the `root` it just takes `O(1)` time to retrieve them.  **/
   /** * All other data-retrieving operations (`pop`, `min` & `max`) also    **/
   /**   end up working with the `root` node of the `stree` and will not     **/
   /**   fail unless the `stree` is empty, which is a condition that can be  **/
-  /**   checked easily in O(1) time with a `tree != NULL` test.             **/
+  /**   checked easily in `O(1)` time with a `tree != NULL` test.           **/
   /**                                                                       **/
   #define IMPORT_CLM_STREE(type, less, prefix)                                  \
                                                                                 \
@@ -2290,7 +2290,7 @@
     /**                                                                     **/ \
     /**     if (MyTree) { smallest = stree_min(&MyTree); }                  **/ \
     /**                                                                     **/ \
-    static type prefix##stree_min(prefix##stree *tree) {                        \
+    static inline type prefix##stree_min(prefix##stree *tree) {                 \
                                                                                 \
         /* Precondition */                                                      \
         assert(*tree != NULL);                                                  \
@@ -2335,7 +2335,7 @@
     /**                                                                     **/ \
     /**     if (MyTree) { biggest = stree_max(&MyTree); }                   **/ \
     /**                                                                     **/ \
-    static type prefix##stree_max(prefix##stree *tree) {                        \
+    static inline type prefix##stree_max(prefix##stree *tree) {                 \
                                                                                 \
         /* Precondition */                                                      \
         assert(*tree != NULL);                                                  \
@@ -2409,7 +2409,7 @@
     /**         }                                                           **/ \
     /**     }                                                               **/ \
     /**                                                                     **/ \
-    static type prefix##stree_pop(prefix##stree *tree) {                        \
+    static inline type prefix##stree_pop(prefix##stree *tree) {                 \
                                                                                 \
         /* Precondition */                                                      \
         assert(*tree != NULL);                                                  \
@@ -2505,7 +2505,7 @@
     /**         }                                                           **/ \
     /**     }                                                               **/ \
     /**                                                                     **/ \
-    static bool prefix##stree_next(prefix##stree *tree) {                       \
+    static inline bool prefix##stree_next(prefix##stree *tree) {                \
                                                                                 \
         prefix##stree_s dummy, *right, *temp, *root, *old_root = *tree;         \
                                                                                 \
@@ -2561,7 +2561,7 @@
     /**         }                                                           **/ \
     /**     }                                                               **/ \
     /**                                                                     **/ \
-    static bool prefix##stree_prev(prefix##stree *tree) {                       \
+    static inline bool prefix##stree_prev(prefix##stree *tree) {                \
                                                                                 \
         prefix##stree_s dummy, *left, *temp, *root, *old_root = *tree;          \
                                                                                 \
@@ -2616,7 +2616,7 @@
     /**         printf("data is not in MyTree.");                           **/ \
     /**     }                                                               **/ \
     /**                                                                     **/ \
-    static bool prefix##stree_find(prefix##stree *tree,                         \
+    static inline bool prefix##stree_find(prefix##stree *tree,                  \
                                           const type data) {                    \
                                                                                 \
         prefix##stree_s dummy, *left, *right, *temp, *root = *tree;             \
@@ -2699,7 +2699,7 @@
     /**         stree_insert(&MyTree, data);                                **/ \
     /**     }                                                               **/ \
     /**                                                                     **/ \
-    static bool prefix##stree_insert(prefix##stree *tree,                       \
+    static inline bool prefix##stree_insert(prefix##stree *tree,                \
                                             const type data) {                  \
                                                                                 \
         prefix##stree_s dummy, *left, *right, *temp, *new_root, *root = *tree;  \
@@ -2914,9 +2914,9 @@
     /**                                                                     **/ \
     /** #### wtree_size                                                     **/ \
     /**                                                                     **/ \
-    /** Returns the number of elements stored in `tree` in O(1) time.       **/ \
+    /** Returns the number of elements stored in `tree` in `O(1)` time.     **/ \
     /**                                                                     **/ \
-    /** **Example:** Put all the elements of `tree` in an array with:       **/ \
+    /** **Example:** Copy all the elements of `tree` into an array with:    **/ \
     /**                                                                     **/ \
     /**     size_t N = wtree_size(&MyTree);                                 **/ \
     /**     type  *A = NULL;                                                **/ \
@@ -2936,7 +2936,7 @@
     /**                                                                     **/ \
     /** #### wtree_find                                                     **/ \
     /**                                                                     **/ \
-    /** Looks for `data` in the `tree` in O(log(size)) time. If `data` is   **/ \
+    /** Looks for `data` in the `tree` in `O(log(size))` time. If `data` is **/ \
     /** in the `tree` it returns its `rank`. Otherwise it returns `0`.      **/ \
     /**                                                                     **/ \
     /** **Warning:** The returned `rank` is 1-based (`1 <= rank <= size`).  **/ \
@@ -2951,7 +2951,7 @@
     /**         printf("data is not in MyTree.");                           **/ \
     /**     }                                                               **/ \
     /**                                                                     **/ \
-    static size_t prefix##wtree_find(const prefix##wtree *tree,                 \
+    static inline size_t prefix##wtree_find(const prefix##wtree *tree,          \
                                             const type data) {                  \
                                                                                 \
         prefix##wtree node = *tree;                                             \
@@ -2961,9 +2961,9 @@
         while (node) {                                                          \
             if (less(data, node->data)) { node = node->left; }                  \
             else {                                                              \
-                if (node->left)            { rank += node->left->size;   }      \
-                if (less(node->data,data)) { node = node->right; rank++; }      \
-                else                       { return rank;                }      \
+                if (node->left)             { rank += node->left->size;    }    \
+                if (less(node->data, data)) { node  = node->right; rank++; }    \
+                else                        { return rank;                 }    \
             }                                                                   \
         }                                                                       \
                                                                                 \
@@ -2975,7 +2975,7 @@
     /**                                                                     **/ \
     /** #### wtree_insert                                                   **/ \
     /**                                                                     **/ \
-    /** Inserts `data` in `tree` in O(log(size)) time.                      **/ \
+    /** Inserts `data` in `tree` in `O(log(size))` time.                    **/ \
     /**                                                                     **/ \
     /** If `tree` already contains `data`, it gets overwritten and the      **/ \
     /** function returns the current `rank` of `data` in the `tree`.        **/ \
@@ -3001,7 +3001,7 @@
     /**         return rank;                                                **/ \
     /**     }                                                               **/ \
     /**                                                                     **/ \
-    static size_t prefix##wtree_insert(prefix##wtree *tree,                     \
+    static inline size_t prefix##wtree_insert(prefix##wtree *tree,              \
                                               const type data) {                \
                                                                                 \
         /* Rebalancing constants (DELTA, GAMMA)                          */     \
@@ -3050,7 +3050,7 @@
             return (node->left) ? (node->left->size + 1) : (1);                 \
         }                                                                       \
                                                                                 \
-        /* REBALANCE (if something changed) */                                  \
+        /*** REBALANCE (if something changed) ********************************/ \
         if (rank) {                                                             \
                                                                                 \
             /* Update node->size */                                             \
@@ -3133,6 +3133,7 @@
                 }                                                               \
             }                                                                   \
         }                                                                       \
+        /** End of REBALANCE *************************************************/ \
                                                                                 \
         /* Report rank of the inserted element */                               \
         return rank;                                                            \
@@ -3162,7 +3163,7 @@
     /**         do_something(wtree_select(&MyTree, i));                     **/ \
     /**     }                                                               **/ \
     /**                                                                     **/ \
-    static type prefix##wtree_select(const prefix##wtree *tree,                 \
+    static inline type prefix##wtree_select(const prefix##wtree *tree,          \
                                             const size_t rank) {                \
                                                                                 \
         prefix##wtree node   = *tree;                                           \
@@ -3211,7 +3212,7 @@
     /**                                                                     **/ \
     /**     while (MyTree) { free(wtree_remove(&MyTree, 1)); }              **/ \
     /**                                                                     **/ \
-    static type prefix##wtree_remove(prefix##wtree *tree,                       \
+    static inline type prefix##wtree_remove(prefix##wtree *tree,                \
                                             const size_t rank) {                \
                                                                                 \
         /* Preconditions */                                                     \
@@ -3262,10 +3263,12 @@
             return data;                                                        \
         }                                                                       \
                                                                                 \
-        /* REBALANCE */                                                         \
+        /* Update node->size */                                                 \
         l_weight   = (node->left)  ? (node->left->size  + 1) : (1);             \
         r_weight   = (node->right) ? (node->right->size + 1) : (1);             \
         node->size = l_weight + r_weight - 1;                                   \
+                                                                                \
+        /*** REBALANCE *******************************************************/ \
                                                                                 \
         /* If node->left has become too big */                                  \
         if (DELTA_NUM*r_weight < DELTA_DEN*l_weight) {                          \
@@ -3338,6 +3341,7 @@
                 *tree        = left;                                            \
             }                                                                   \
         }                                                                       \
+        /*** End of REBALANCE ************************************************/ \
                                                                                 \
         /* Return the data removed from the tree */                             \
         return data;                                                            \

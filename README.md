@@ -62,8 +62,8 @@ The name of all types and functions starts with the name of the library
 functions and data types when calling a macro to avoid conflicts with
 existing code or different calls to the same macro.
 
-All `CLM_LIBS` functions are declared as `static` and are mutually
-independent (no `CLM_LIBS` function calls any other `CLM_LIBS`
+All `CLM_LIBS` functions are declared as `static inline` and are
+mutually independent (no `CLM_LIBS` function calls any other `CLM_LIBS`
 function) although a few of them are recursive (they call themselves).
 This self-imposed constraint hurts modularity and readability but
 simplifies the task of versioning and reusing the code: You could erase
@@ -227,7 +227,7 @@ int main(void) {
 ### CLM\_LIBS [⯅](#CLM_LIBS)
 
 ```c
-#define CLM_LIBS 20200604
+#define CLM_LIBS 20200610
 ```
 
 Contains the version number (= date) of this release of CLM_LIBS.
@@ -295,7 +295,7 @@ show_more_results();
 #### time\_stamp [⯅](#CLM_LIBS)
 
 ```c
-static char *time_stamp(const int format);
+static inline char *time_stamp(const int format);
 ```
 
 Returns a `\0` ended string with a timestamp formated as follows:
@@ -452,7 +452,7 @@ if (X && Y && Z) {
 #### rand\_color [⯅](#CLM_LIBS)
 
 ```c
-static void rand_color(int *r, int *g, int *b);
+static inline void rand_color(int *r, int *g, int *b);
 ```
 
 Returns a random RGB color with the same Saturation and Brightness
@@ -699,7 +699,7 @@ in systems where that condition is not satisfied.
 #### arc4\_hash [⯅](#CLM_LIBS)
 
 ```c
-static char *arc4_hash(const char *txt, const size_t length, const size_t drop);
+static inline char *arc4_hash(const char *txt, const size_t length, const size_t drop);
 ```
 
 Returns a hash of the `txt` string.
@@ -741,7 +741,7 @@ free(hash);
 #### arc4\_encrypt [⯅](#CLM_LIBS)
 
 ```c
-static char *arc4_encrypt(const char *txt, const char *key, const size_t drop);
+static inline char *arc4_encrypt(const char *txt, const char *key, const size_t drop);
 ```
 
 Encrypts the `txt` string using the `key` string.
@@ -778,7 +778,7 @@ free(code);
 #### arc4\_decrypt [⯅](#CLM_LIBS)
 
 ```c
-static char *arc4_decrypt(const char *txt, const char *key, const size_t drop);
+static inline char *arc4_decrypt(const char *txt, const char *key, const size_t drop);
 ```
 
 Decrypts the `txt` string using the `key` string.
@@ -818,7 +818,7 @@ free(txt);
 #define IMPORT_CLM_ITER(prefix)
 ```
 
-A set of functions to work with some generic combinatorial objects:
+A set of iterators to work with some generic combinatorial objects:
 
 **Products:** all mixed-radix tuples of fixed `length`
 
@@ -831,8 +831,8 @@ A set of functions to work with some generic combinatorial objects:
                           (1,2,0), (1,2,1), (1,2,2), (1,2,3)}
 ```
 
-**Permutations:** all unsorted tuples of fixed `length` whose
-elements are all different and taken from a set of size `base`
+**Permutations:** all tuples of fixed `length` whose elements are
+all different and taken from a set of size `base`
 
 ```c
   Permutations(3, 4) = {(0,1,2), (0,2,1), (1,0,2), (1,2,0),
@@ -843,9 +843,8 @@ elements are all different and taken from a set of size `base`
                         (2,1,3), (2,3,1), (3,1,2), (3,2,1)}
 ```
 
-**Permutations with repetition:** all unsorted tuples of fixed
-`length` whose elements are taken with replacement from a set of
-size `base`
+**Permutations with replacement:** all tuples of fixed `length`
+whose elements are taken with replacement from a set of size `base`
 
 ```c
   Perm_with_rep(3, 4) = {(0,0,0), (0,0,1), (0,0,2), (0,0,3),
@@ -867,14 +866,15 @@ size `base`
 ```
 
 **Combinations:** all sorted tuples of fixed `length` whose elements
-are all different and taken from a set of size `base`:
+are all different and taken from a set of size `base`
 
 ```c
   Combinations(3, 4) = {(0,1,2), (0,1,3), (0,2,3), (1,2,3)}
 ```
 
-**Combinations with repetition:** all sorted tuples of fixed `length`
-whose elements are taken with replacement from a set of size `base`:
+**Combinations with replacement:** all sorted tuples of fixed
+`length` whose elements are taken with replacement from a set of
+size `base`
 
 ```c
   Comb_with_rep(3, 4) = {(0,0,0), (0,0,1), (0,0,2), (0,0,3),
@@ -899,7 +899,7 @@ arbitrary sets of `base` elements.
 #### iter\_rand\_prod [⯅](#CLM_LIBS)
 
 ```c
-static void iter_rand_prod(size_t **prod, const size_t length, const size_t *base);
+static inline void iter_rand_prod(size_t **prod, const size_t length, const size_t *base);
 ```
 
 Generates an uniformly random `length`-sized tuple such that:
@@ -934,7 +934,7 @@ for (size_t i = 0; i < 3; i++) {
 #### iter\_next\_prod [⯅](#CLM_LIBS)
 
 ```c
-static void iter_next_prod(size_t **prod, const size_t length, const size_t *base);
+static inline void iter_next_prod(size_t **prod, const size_t length, const size_t *base);
 ```
 
 Updates `*prod` to hold the next `length`-sized tuple such that:
@@ -969,7 +969,7 @@ while (prod) {
 #### iter\_rand\_perm [⯅](#CLM_LIBS)
 
 ```c
-static void iter_rand_perm(size_t **perm, const size_t length, const size_t base, const bool rep);
+static inline void iter_rand_perm(size_t **perm, const size_t length, const size_t base, const bool rep);
 ```
 
 *******************************************************************
@@ -977,7 +977,7 @@ static void iter_rand_perm(size_t **perm, const size_t length, const size_t base
 #### iter\_next\_perm [⯅](#CLM_LIBS)
 
 ```c
-static void iter_next_perm(size_t **perm, const size_t length, const size_t base, const bool rep);
+static inline void iter_next_perm(size_t **perm, const size_t length, const size_t base, const bool rep);
 ```
 
 *******************************************************************
@@ -985,7 +985,7 @@ static void iter_next_perm(size_t **perm, const size_t length, const size_t base
 #### iter\_rand\_comb [⯅](#CLM_LIBS)
 
 ```c
-static void iter_rand_comb(size_t **comb, const size_t length, const size_t base, const bool rep);
+static inline void iter_rand_comb(size_t **comb, const size_t length, const size_t base, const bool rep);
 ```
 
 *******************************************************************
@@ -993,7 +993,7 @@ static void iter_rand_comb(size_t **comb, const size_t length, const size_t base
 #### iter\_next\_comb [⯅](#CLM_LIBS)
 
 ```c
-static void iter_next_comb(size_t **comb, const size_t length, const size_t base, const bool rep);
+static inline void iter_next_comb(size_t **comb, const size_t length, const size_t base, const bool rep);
 ```
 
 *********************************************************************
@@ -1041,7 +1041,7 @@ for (size_t N = 0; N < pow; N++) {
 #### fractal\_lebesgue\_coord [⯅](#CLM_LIBS)
 
 ```c
-static void fractal_lebesgue_coord(const size_t dim, const size_t bits, size_t *L);
+static inline void fractal_lebesgue_coord(const size_t dim, const size_t bits, size_t *L);
 ```
 
 Returns the `dim` dimensional coordinates of the `n`-th point of
@@ -1058,7 +1058,7 @@ the Z-index space-filling curve of `bits` levels.
 #### fractal\_lebesgue\_index [⯅](#CLM_LIBS)
 
 ```c
-static void fractal_lebesgue_index(const size_t dim, const size_t bits, size_t *L);
+static inline void fractal_lebesgue_index(const size_t dim, const size_t bits, size_t *L);
 ```
 
 Returns the index of the `dim` dimensional point of the given
@@ -1075,7 +1075,7 @@ coordinates in the Z-index space-filling curve of `bits` levels.
 #### fractal\_hilbert\_coord [⯅](#CLM_LIBS)
 
 ```c
-static void fractal_hilbert_coord(const size_t dim, const size_t bits, size_t *H);
+static inline void fractal_hilbert_coord(const size_t dim, const size_t bits, size_t *H);
 ```
 
 Returns the `dim` dimensional coordinates of the `n`-th point of
@@ -1092,7 +1092,7 @@ the Hilbert space-filling curve of `bits` levels.
 #### fractal\_coord\_to\_h [⯅](#CLM_LIBS)
 
 ```c
-static void fractal_hilbert_index(const size_t dim, const size_t bits, size_t *H);
+static inline void fractal_hilbert_index(const size_t dim, const size_t bits, size_t *H);
 ```
 
 Returns the index of the `dim` dimensional point of the given
@@ -1129,7 +1129,7 @@ Definition of the `array` data type.
 #### array\_new [⯅](#CLM_LIBS)
 
 ```c
-static array array_new(const size_t length);
+static inline array array_new(const size_t length);
 ```
 
 Allocates an `array` of the given `length`.
@@ -1151,7 +1151,7 @@ free(A);
 #### array\_sort [⯅](#CLM_LIBS)
 
 ```c
-static void array_sort(const array A, const size_t length);
+static inline void array_sort(const array A, const size_t length);
 ```
 
 Sorts the first `length` elements of the array `A` in-place.
@@ -1228,7 +1228,7 @@ array_sort(MyArray+N-K, N-K);
 #### array\_shuffle [⯅](#CLM_LIBS)
 
 ```c
-static void array_shuffle(const array A, const size_t length);
+static inline void array_shuffle(const array A, const size_t length);
 ```
 
 Shuffles the first `length` elements of the array `A` in-place
@@ -1247,7 +1247,7 @@ array_shuffle(MyArray, N);
 #### array\_select [⯅](#CLM_LIBS)
 
 ```c
-static type array_select(const array A, const size_t length, const size_t rank);
+static inline type array_select(const array A, const size_t length, const size_t rank);
 ```
 
 Uses Quickselect to find and return the `rank`-th element of an
@@ -1292,7 +1292,7 @@ array_sort(MyArray+N-K, N-K);
 #### array\_bisect [⯅](#CLM_LIBS)
 
 ```c
-static size_t array_bisect(const array A, const size_t length, const type data);
+static inline size_t array_bisect(const array A, const size_t length, const type data);
 ```
 
 Returns the rightmost insertion point for `data` in the sorted
@@ -1511,19 +1511,19 @@ Splay trees are quite different from other binary search trees so,
 it is advisable to learn about them at Wikipedia or other sources
 before using them.
 
-All the stree operations (excluding `stree_root` & `stree_size` that
-always take O(1) and O(size) time respectively) are efficient in an
-amortized sense. This means that a sequence of N of these operations
-is guaranteed to take O(N·log(N)) time to complete, with some of them
-requiring as few as O(1) operations and some of them taking O(N) time
-to complete depending on the particular sequence of operations and
-the particular values inserted/searched/removed from the `stree`.
+All the stree operations (except `stree_root` that always takes
+`O(1)` time) are efficient in an amortized sense. This means that a
+sequence of N of these operations is guaranteed to take `O(N*log(N))`
+time to complete, with some of them requiring as few as `O(1)`
+operations and some of them taking `O(N)` time to complete depending
+on the particular sequence of operations and the particular values
+inserted/searched/removed from the `stree`.
 
 In practice, Splay trees are a little bit slower than the equivalent
 AVL tree, Red-Black tree or Weight-Balanced tree implementation but
 use less memory and show an adaptive behavior that might benefit the
 user in many common applications (e.g. inserting N sorted elements
-takes just O(N) time rather than O(N·log(N)) time).
+takes just `O(N)` time rather than `O(N*log(N))` time).
 
 Incidentaly, Splay Trees also solve the "failed quieries" problem of
 type-safe search trees (i.e. what to return when a `find` or `delete`
@@ -1533,15 +1533,15 @@ query fails) in a very natural way:
   `data` is in the `stree` with a `stree_find` operation and then
   recover it with a `stree_root` operation. Since `stree_find` puts
   `data` in the `root` of the `stree` the second operation only takes
-  O(1) and no time is wasted to gain safety.
+  `O(1)` and no time is wasted to gain safety.
 * The `next` and `prev` operations are also broken in two steps:
   first move the next/prev element to the `root` and then retrieve it
   with a `stree_root` operation. Again, since we are moving the
-  elements to the `root` it just takes O(1) time to retrieve them.
+  elements to the `root` it just takes `O(1)` time to retrieve them.
 * All other data-retrieving operations (`pop`, `min` & `max`) also
   end up working with the `root` node of the `stree` and will not
   fail unless the `stree` is empty, which is a condition that can be
-  checked easily in O(1) time with a `tree != NULL` test.
+  checked easily in `O(1)` time with a `tree != NULL` test.
 
 *******************************************************************
 
@@ -1596,7 +1596,7 @@ if (MyTree) { root = stree_root(&MyTree); }
 #### stree\_min [⯅](#CLM_LIBS)
 
 ```c
-static type stree_min(stree *tree);
+static inline type stree_min(stree *tree);
 ```
 
 Moves the smallest element to the root of `tree` and returns it.
@@ -1614,7 +1614,7 @@ if (MyTree) { smallest = stree_min(&MyTree); }
 #### stree\_max [⯅](#CLM_LIBS)
 
 ```c
-static type stree_max(stree *tree);
+static inline type stree_max(stree *tree);
 ```
 
 Moves the biggest element to the root of `tree` and returns it.
@@ -1632,7 +1632,7 @@ if (MyTree) { biggest = stree_max(&MyTree); }
 #### stree\_pop [⯅](#CLM_LIBS)
 
 ```c
-static type stree_pop(stree *tree);
+static inline type stree_pop(stree *tree);
 ```
 
 Removes the current root node from `tree` and returns its content.
@@ -1685,7 +1685,7 @@ if (MyTree) {
 #### stree\_next [⯅](#CLM_LIBS)
 
 ```c
-static bool stree_next(stree *tree);
+static inline bool stree_next(stree *tree);
 ```
 
 If `tree` is empty or the current root is the biggest element it
@@ -1708,7 +1708,7 @@ if (MyTree) {
 #### stree\_prev [⯅](#CLM_LIBS)
 
 ```c
-static bool stree_prev(stree *tree);
+static inline bool stree_prev(stree *tree);
 ```
 
 If `tree` is empty or the current root is the smallest element it
@@ -1731,7 +1731,7 @@ if (MyTree) {
 #### stree\_find [⯅](#CLM_LIBS)
 
 ```c
-static bool stree_find(stree *tree, const type data);
+static inline bool stree_find(stree *tree, const type data);
 ```
 
 Looks for `data` in the `tree`. If `data` is in the `tree` it moves
@@ -1753,7 +1753,7 @@ if (stree_find(&MyTree, data)) {
 #### stree\_insert [⯅](#CLM_LIBS)
 
 ```c
-static bool stree_insert(stree *tree, const type data);
+static inline bool stree_insert(stree *tree, const type data);
 ```
 
 Inserts `data` in `tree`.
@@ -1902,9 +1902,9 @@ else        { printf("MyTree is empty");     }
 static inline size_t wtree_size(const wtree *tree);
 ```
 
-Returns the number of elements stored in `tree` in O(1) time.
+Returns the number of elements stored in `tree` in `O(1)` time.
 
-**Example:** Put all the elements of `tree` in an array with:
+**Example:** Copy all the elements of `tree` into an array with:
 
 ```c
 size_t N = wtree_size(&MyTree);
@@ -1922,10 +1922,10 @@ if (A != NULL) {
 #### wtree\_find [⯅](#CLM_LIBS)
 
 ```c
-static size_t wtree_find(const wtree *tree, const type data);
+static inline size_t wtree_find(const wtree *tree, const type data);
 ```
 
-Looks for `data` in the `tree` in O(log(size)) time. If `data` is
+Looks for `data` in the `tree` in `O(log(size))` time. If `data` is
 in the `tree` it returns its `rank`. Otherwise it returns `0`.
 
 **Warning:** The returned `rank` is 1-based (`1 <= rank <= size`).
@@ -1947,10 +1947,10 @@ if (rank) {
 #### wtree\_insert [⯅](#CLM_LIBS)
 
 ```c
-static size_t wtree_insert(wtree *tree, const type data);
+static inline size_t wtree_insert(wtree *tree, const type data);
 ```
 
-Inserts `data` in `tree` in O(log(size)) time.
+Inserts `data` in `tree` in `O(log(size))` time.
 
 If `tree` already contains `data`, it gets overwritten and the
 function returns the current `rank` of `data` in the `tree`.
@@ -1980,12 +1980,13 @@ size_t wtree_bisect(wtree *tree, type data) {
 }
 ```
 
+End of REBALANCE *************************************************/
 *******************************************************************
 
 #### wtree\_select [⯅](#CLM_LIBS)
 
 ```c
-static type wtree_select(const wtree *tree, const size_t rank);
+static inline type wtree_select(const wtree *tree, const size_t rank);
 ```
 
 Returns the element of the `tree` that has a given `rank` in
@@ -2019,7 +2020,7 @@ for (size_t i = 1; i <= size; i++) {
 #### wtree\_remove [⯅](#CLM_LIBS)
 
 ```c
-static type wtree_remove(wtree *tree, const size_t rank);
+static inline type wtree_remove(wtree *tree, const size_t rank);
 ```
 
 Removes and returns the element of the `tree` that has a given
