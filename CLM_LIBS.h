@@ -3131,7 +3131,7 @@
                 }                                                               \
             }                                                                   \
         }                                                                       \
-        /** End of REBALANCE *************************************************/ \
+        /*** End of REBALANCE ************************************************/ \
                                                                                 \
         /* Report rank of the inserted element */                               \
         return rank;                                                            \
