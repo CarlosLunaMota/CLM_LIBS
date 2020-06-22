@@ -2,8 +2,6 @@
 /**                                                                         **/
 /** # CLM_LIBS                                                              **/
 /**                                                                         **/
-/** *********************************************************************** **/
-/**                                                                         **/
 /** **CONTENT:** The CLM_LIBS code-generating macros                        **/
 /**                                                                         **/
 /** **AUTHOR:**  Carlos Luna-Mota                                           **/
@@ -208,7 +206,7 @@
   /**                                                                       **/
   /** Contains the version number (= date) of this release of CLM_LIBS.     **/
   /**                                                                       **/
-  #define CLM_LIBS 20200610
+  #define CLM_LIBS 20200622
 
   /** ********************************************************************* **/
   /**                                                                       **/

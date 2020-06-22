@@ -2,8 +2,6 @@
 
 # CLM\_LIBS
 
-***********************************************************************
-
 **CONTENT:** The CLM_LIBS code-generating macros
 
 **AUTHOR:**  Carlos Luna-Mota
@@ -17,7 +15,7 @@
 * [CODE DEPENDENCIES](#CODE-DEPENDENCIES-)
 * [CODE LICENSE](#CODE-LICENSE-)
 * [THE MACROS](#THE-MACROS-)
-    * [CLM\_LIBS](#CLM_LIBS-1-)
+    * [CLM\_LIBS](#CLM_LIBS-)
     * [CLM\_TIME](#CLM_TIME-)
     * [CLM\_RAND](#CLM_RAND-)
     * [CLM\_PRINTF](#CLM_PRINTF-)
@@ -227,7 +225,7 @@ int main(void) {
 ### CLM\_LIBS [⯅](#CLM_LIBS)
 
 ```c
-#define CLM_LIBS 20200610
+#define CLM_LIBS 20200622
 ```
 
 Contains the version number (= date) of this release of CLM_LIBS.

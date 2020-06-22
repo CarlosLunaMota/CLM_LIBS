@@ -103,7 +103,6 @@ if __name__ == "__main__":
                                 row = row.replace("_", "\_")
                                 row = row.replace("* ", "* [")
                                 row = row.replace(" *", "    *")
-                                if URL == "CLM_LIBS": URL += "-1"
                                 output.write(row+"](#"+URL+"-)\n")
 
                 if line.startswith("### "):
