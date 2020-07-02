@@ -1798,14 +1798,26 @@
     /**                                                                     **/ \
     /** #### fractal_lebesgue_coord                                         **/ \
     /**                                                                     **/ \
-    /** Returns the `dim` dimensional coordinates of the `n`-th point of    **/ \
-    /** the Z-index space-filling curve of `bits` levels.                   **/ \
+    /** Returns the `dim` dimensional coordinates of the `N`-th point of    **/ \
+    /** the Lebesgue (Z-index) space-filling curve of `bits` levels.        **/ \
+    /**                                                                     **/ \
+    /** The 64 less significant bits of `N` should be stored in `L[0]`,     **/ \
+    /** the next 64 less significant bits in `L[1]`, and so on.             **/ \
     /**                                                                     **/ \
     /** **Warning:** Parameter `dim` must satisfy `dim > 0`.                **/ \
     /**                                                                     **/ \
     /** **Warning:** Parameter `bits` must satisfy `bits > 0`.              **/ \
     /**                                                                     **/ \
     /** **Warning:** A `size_t` varible must have at least `bits` bits.     **/ \
+    /**                                                                     **/ \
+    /** **Example:** Visit the 4096 points of the `[0,16)^3` 3D cube with:  **/ \
+    /**                                                                     **/ \
+    /**     size_t coord[3];                                                **/ \
+    /**     for (size_t i = 0; i < 4096; i++) {                             **/ \
+    /**         coord[0] = i; coord[1] = coord[2] = 0;                      **/ \
+    /**         fractal_lebesgue_coord(3, 4, coord);                        **/ \
+    /**         do_something(coord);                                        **/ \
+    /**     }                                                               **/ \
     /**                                                                     **/ \
     static inline void prefix##fractal_lebesgue_coord(const size_t dim,         \
                                                       const size_t bits,        \
@@ -1838,13 +1850,26 @@
     /** #### fractal_lebesgue_index                                         **/ \
     /**                                                                     **/ \
     /** Returns the index of the `dim` dimensional point of the given       **/ \
-    /** coordinates in the Z-index space-filling curve of `bits` levels.    **/ \
+    /** coordinates in a Lebesgue (Z-index) space-filling curve of `bits`   **/ \
+    /** levels.                                                             **/ \
+    /**                                                                     **/ \
+    /** The 64 less significant bits of the index will be stored in `L[0]`, **/ \
+    /** the next 64 less significant bits in `L[1]`, and so on.             **/ \
     /**                                                                     **/ \
     /** **Warning:** Parameter `dim` must satisfy `dim > 0`.                **/ \
     /**                                                                     **/ \
     /** **Warning:** Parameter `bits` must satisfy `bits > 0`.              **/ \
     /**                                                                     **/ \
     /** **Warning:** A `size_t` varible must have at least `bits` bits.     **/ \
+    /**                                                                     **/ \
+    /** **Example:** Compare two points of the `[0,16)^3` 3D cube with:     **/ \
+    /**                                                                     **/ \
+    /**     size_t P[3] = {5, 3, 14};                                       **/ \
+    /**     size_t Q[3] = {3, 5, 14};                                       **/ \
+    /**     fractal_lebesgue_index(3, 4, P);                                **/ \
+    /**     fractal_lebesgue_index(3, 4, Q);                                **/ \
+    /**     if (P[0] < Q[0]) { printf("P goes before Q.\n"); }              **/ \
+    /**     else             { printf("Q goes before P.\n"); }              **/ \
     /**                                                                     **/ \
     static inline void prefix##fractal_lebesgue_index(const size_t dim,         \
                                                       const size_t bits,        \
@@ -1876,8 +1901,11 @@
     /**                                                                     **/ \
     /** #### fractal_hilbert_coord                                          **/ \
     /**                                                                     **/ \
-    /** Returns the `dim` dimensional coordinates of the `n`-th point of    **/ \
+    /** Returns the `dim` dimensional coordinates of the `N`-th point of    **/ \
     /** the Hilbert space-filling curve of `bits` levels.                   **/ \
+    /**                                                                     **/ \
+    /** The 64 less significant bits of `N` should be stored in `L[0]`,     **/ \
+    /** the next 64 less significant bits in `L[1]`, and so on.             **/ \
     /**                                                                     **/ \
     /** **Warning:** Parameter `dim` must satisfy `dim > 0`.                **/ \
     /**                                                                     **/ \
@@ -1885,11 +1913,20 @@
     /**                                                                     **/ \
     /** **Warning:** A `size_t` varible must have at least `bits` bits.     **/ \
     /**                                                                     **/ \
+    /** **Example:** Visit the 4096 points of the `[0,16)^3` 3D cube with:  **/ \
+    /**                                                                     **/ \
+    /**     size_t coord[3];                                                **/ \
+    /**     for (size_t i = 0; i < 4096; i++) {                             **/ \
+    /**         coord[0] = i; coord[1] = coord[2] = 0;                      **/ \
+    /**         fractal_hilbert_coord(3, 4, coord);                         **/ \
+    /**         do_something(coord);                                        **/ \
+    /**     }                                                               **/ \
+    /**                                                                     **/ \
     static inline void prefix##fractal_hilbert_coord(const size_t dim,          \
                                                      const size_t bits,         \
                                                      size_t *H) {               \
         /* Preconditions */                                                     \
-        assert(sizeof(size_t) * CHAR_BIT >= dim*bits);                          \
+        assert(sizeof(size_t) * CHAR_BIT >= bits);                              \
         assert(bits > 0);                                                       \
         assert(dim  > 0);                                                       \
                                                                                 \
@@ -1934,13 +1971,25 @@
     /** #### fractal_coord_to_h                                             **/ \
     /**                                                                     **/ \
     /** Returns the index of the `dim` dimensional point of the given       **/ \
-    /** coordinates in the Hilbert space-filling curve of `bits` levels.    **/ \
+    /** coordinates in a Hilbert space-filling curve of `bits` levels.      **/ \
+    /**                                                                     **/ \
+    /** The 64 less significant bits of the index will be stored in `L[0]`, **/ \
+    /** the next 64 less significant bits in `L[1]`, and so on.             **/ \
     /**                                                                     **/ \
     /** **Warning:** Parameter `dim` must satisfy `dim > 0`.                **/ \
     /**                                                                     **/ \
     /** **Warning:** Parameter `bits` must satisfy `bits > 0`.              **/ \
     /**                                                                     **/ \
-    /** **Warning:** A `size_t` varible must have at least `dim*bits` bits. **/ \
+    /** **Warning:** A `size_t` varible must have at least `bits` bits.     **/ \
+    /**                                                                     **/ \
+    /** **Example:** Compare two points of the `[0,16)^3` 3D cube with:     **/ \
+    /**                                                                     **/ \
+    /**     size_t P[3] = {5, 3, 14};                                       **/ \
+    /**     size_t Q[3] = {3, 5, 14};                                       **/ \
+    /**     fractal_hilbert_index(3, 4, P);                                 **/ \
+    /**     fractal_hilbert_index(3, 4, Q);                                 **/ \
+    /**     if (P[0] < Q[0]) { printf("P goes before Q.\n"); }              **/ \
+    /**     else             { printf("Q goes before P.\n"); }              **/ \
     /**                                                                     **/ \
     static inline void prefix##fractal_hilbert_index(const size_t dim,          \
                                                      const size_t bits,         \
