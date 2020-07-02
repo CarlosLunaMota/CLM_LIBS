@@ -22,11 +22,11 @@
 #define IMPORT_CLM_PRINTF(prefix)
 
     void    printf_reset();
+    void    printf_delete();
     void    printf_set_bold();
     void    printf_set_light();
     void    printf_set_strike();
     void    printf_set_underline();
-    void    printf_delete();
     void    printf_move(int dx, int dy);
     void    printf_set_text_grey(int grey);
     void    printf_set_back_grey(int grey);

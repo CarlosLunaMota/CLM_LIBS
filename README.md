@@ -518,6 +518,32 @@ printf_set_text_color(0x33, 0xFF, 0x00);
 
 *******************************************************************
 
+#### printf\_delete [⯅](#CLM_LIBS)
+
+```c
+static inline void printf_delete();
+```
+
+Deletes everything from the cursor position to the end of the line.
+
+**Example:** Remove the last 2 lines with:
+
+```c
+printf_move(0,-1);
+printf_delete();
+printf_move(0,-1);
+printf_delete();
+```
+
+**Example:** Erase the last 5 characters with:
+
+```c
+printf_move(-5,0);
+printf_delete();
+```
+
+*******************************************************************
+
 #### printf\_set\_bold [⯅](#CLM_LIBS)
 
 ```c
@@ -586,32 +612,6 @@ Sets the printf function in underline mode.
 printf_set_underline();
 printf("%s", txt);
 printf_reset();
-```
-
-*******************************************************************
-
-#### printf\_delete [⯅](#CLM_LIBS)
-
-```c
-static inline void printf_delete();
-```
-
-Deletes everything from the cursor position to the end of the line.
-
-**Example:** Remove the last 2 lines with:
-
-```c
-printf_move(0,-1);
-printf_delete();
-printf_move(0,-1);
-printf_delete();
-```
-
-**Example:** Erase the last 5 characters with:
-
-```c
-printf_move(-5,0);
-printf_delete();
 ```
 
 *******************************************************************
@@ -950,53 +950,53 @@ A set of iterators to work with some generic combinatorial objects:
 **Products:** all mixed-radix tuples of fixed `length`
 
 ```c
-  Products(3, (2,3,4)) = {(0,0,0), (0,0,1), (0,0,2), (0,0,3),
-                          (0,1,0), (0,1,1), (0,1,2), (0,1,3),
-                          (0,2,0), (0,2,1), (0,2,2), (0,2,3),
-                          (1,0,0), (1,0,1), (1,0,2), (1,0,3),
-                          (1,1,0), (1,1,1), (1,1,2), (1,1,3),
-                          (1,2,0), (1,2,1), (1,2,2), (1,2,3)}
+  prod(3, (2,3,4)) = {(0,0,0), (0,0,1), (0,0,2), (0,0,3),
+                      (0,1,0), (0,1,1), (0,1,2), (0,1,3),
+                      (0,2,0), (0,2,1), (0,2,2), (0,2,3),
+                      (1,0,0), (1,0,1), (1,0,2), (1,0,3),
+                      (1,1,0), (1,1,1), (1,1,2), (1,1,3),
+                      (1,2,0), (1,2,1), (1,2,2), (1,2,3)}
 ```
 
 **Permutations:** all tuples of fixed `length` whose elements are
 all different and taken from a set of size `base`
 
 ```c
-  Permutations(3, 4) = {(0,1,2), (0,2,1), (1,0,2), (1,2,0),
-                        (2,0,1), (2,1,0), (0,1,3), (0,3,1),
-                        (1,0,3), (1,3,0), (3,0,1), (3,1,0),
-                        (0,2,3), (0,3,2), (2,0,3), (2,3,0),
-                        (3,0,2), (3,2,0), (1,2,3), (1,3,2),
-                        (2,1,3), (2,3,1), (3,1,2), (3,2,1)}
+  perm(3, 4, false) = {(0,1,2), (0,2,1), (1,0,2), (1,2,0),
+                       (2,0,1), (2,1,0), (0,1,3), (0,3,1),
+                       (1,0,3), (1,3,0), (3,0,1), (3,1,0),
+                       (0,2,3), (0,3,2), (2,0,3), (2,3,0),
+                       (3,0,2), (3,2,0), (1,2,3), (1,3,2),
+                       (2,1,3), (2,3,1), (3,1,2), (3,2,1)}
 ```
 
 **Permutations with replacement:** all tuples of fixed `length`
 whose elements are taken with replacement from a set of size `base`
 
 ```c
-  Perm_with_rep(3, 4) = {(0,0,0), (0,0,1), (0,0,2), (0,0,3),
-                         (0,1,0), (0,1,1), (0,1,2), (0,1,3),
-                         (0,2,0), (0,2,1), (0,2,2), (0,2,3),
-                         (0,3,0), (0,3,1), (0,3,2), (0,3,3),
-                         (1,0,0), (1,0,1), (1,0,2), (1,0,3),
-                         (1,1,0), (1,1,1), (1,1,2), (1,1,3),
-                         (1,2,0), (1,2,1), (1,2,2), (1,2,3),
-                         (1,3,0), (1,3,1), (1,3,2), (1,3,3),
-                         (2,0,0), (2,0,1), (2,0,2), (2,0,3),
-                         (2,1,0), (2,1,1), (2,1,2), (2,1,3),
-                         (2,2,0), (2,2,1), (2,2,2), (2,2,3),
-                         (2,3,0), (2,3,1), (2,3,2), (2,3,3),
-                         (3,0,0), (3,0,1), (3,0,2), (3,0,3),
-                         (3,1,0), (3,1,1), (3,1,2), (3,1,3),
-                         (3,2,0), (3,2,1), (3,2,2), (3,2,3),
-                         (3,3,0), (3,3,1), (3,3,2), (3,3,3)}
+  perm(3, 4, true) = {(0,0,0), (0,0,1), (0,0,2), (0,0,3),
+                      (0,1,0), (0,1,1), (0,1,2), (0,1,3),
+                      (0,2,0), (0,2,1), (0,2,2), (0,2,3),
+                      (0,3,0), (0,3,1), (0,3,2), (0,3,3),
+                      (1,0,0), (1,0,1), (1,0,2), (1,0,3),
+                      (1,1,0), (1,1,1), (1,1,2), (1,1,3),
+                      (1,2,0), (1,2,1), (1,2,2), (1,2,3),
+                      (1,3,0), (1,3,1), (1,3,2), (1,3,3),
+                      (2,0,0), (2,0,1), (2,0,2), (2,0,3),
+                      (2,1,0), (2,1,1), (2,1,2), (2,1,3),
+                      (2,2,0), (2,2,1), (2,2,2), (2,2,3),
+                      (2,3,0), (2,3,1), (2,3,2), (2,3,3),
+                      (3,0,0), (3,0,1), (3,0,2), (3,0,3),
+                      (3,1,0), (3,1,1), (3,1,2), (3,1,3),
+                      (3,2,0), (3,2,1), (3,2,2), (3,2,3),
+                      (3,3,0), (3,3,1), (3,3,2), (3,3,3)}
 ```
 
 **Combinations:** all sorted tuples of fixed `length` whose elements
 are all different and taken from a set of size `base`
 
 ```c
-  Combinations(3, 4) = {(0,1,2), (0,1,3), (0,2,3), (1,2,3)}
+  comb(3, 4, false) = {(0,1,2), (0,1,3), (0,2,3), (1,2,3)}
 ```
 
 **Combinations with replacement:** all sorted tuples of fixed
@@ -1004,11 +1004,11 @@ are all different and taken from a set of size `base`
 size `base`
 
 ```c
-  Comb_with_rep(3, 4) = {(0,0,0), (0,0,1), (0,0,2), (0,0,3),
-                         (0,1,1), (0,1,2), (0,1,3), (0,2,2),
-                         (0,2,3), (0,3,3), (1,1,1), (1,1,2),
-                         (1,1,3), (1,2,2), (1,2,3), (1,3,3),
-                         (2,2,2), (2,2,3), (2,3,3), (3,3,3)}
+  comb(3, 4, true) = {(0,0,0), (0,0,1), (0,0,2), (0,0,3),
+                      (0,1,1), (0,1,2), (0,1,3), (0,2,2),
+                      (0,2,3), (0,3,3), (1,1,1), (1,1,2),
+                      (1,1,3), (1,2,2), (1,2,3), (1,3,3),
+                      (2,2,2), (2,2,3), (2,3,3), (3,3,3)}
 ```
 
 For each combinatorial object two functions are provided:
@@ -1032,7 +1032,7 @@ static inline void iter_rand_prod(size_t **prod, const size_t length, const size
 Generates an uniformly random `length`-sized tuple such that:
 
 ```c
-0 <= tuple[i] < base[i]
+0 <= prod[i] < base[i]
 ```
 
 If `*prod == NULL` the function tries to allocate a new tuple.
@@ -1043,7 +1043,7 @@ Otherwise, it overwrites the information stored in `prod`.
 **Warning:** Parameter `base` must satisfy `base != NULL` and also
 `RAND_MAX >= base[i] > 0` for al `i = 0...length-1`.
 
-**Example:** Generates three random elements of `[0,5)x[0,3)` with:
+**Example:** Generate three random elements of `[0,5)x[0,3)` with:
 
 ```c
 size_t length  = 2;
@@ -1067,7 +1067,7 @@ static inline void iter_next_prod(size_t **prod, const size_t length, const size
 Updates `*prod` to hold the next `length`-sized tuple such that:
 
 ```c
-0 <= tuple[i] < base[i]
+0 <= prod[i] < base[i]
 ```
 
 If `*prod == NULL` the function tries to allocate the first tuple.
@@ -1078,7 +1078,7 @@ Once it reaches the last tuple, the function frees & nulls `*prod`.
 **Warning:** Parameter `base` must satisfy `base != NULL` and also
 `base[i] > 0` for all `i = 0...length-1`.
 
-**Example:** Iterates over all the elements of `[0,5)x[0,3)` with:
+**Example:** Iterate over all the elements of `[0,5)x[0,3)` with:
 
 ```c
 size_t length  = 2;
@@ -1099,12 +1099,84 @@ while (prod) {
 static inline void iter_rand_perm(size_t **perm, const size_t length, const size_t base, const bool rep);
 ```
 
+Generates an uniformly random `length`-sized tuple such that:
+
+```c
+0 <= perm[i] < base
+```
+
+If `*perm == NULL` the function tries to allocate a new tuple.
+Otherwise, it overwrites the information stored in `perm`.
+
+If `rep == false` all the elements of the tuple will be different.
+
+**Warning:** Parameter `length` must satisfy `lenght > 0`.
+
+**Warning:** Parameter `base` must satisfy `base <= RAND_MAX`.
+
+**Warning:** If `rep == true` then `base > 0` is required.
+
+**Warning:** If `rep == false` then `base >= length` is required.
+
+**Example:** Get a random element of `[0,5)^3` with:
+
+```c
+size_t *perm = NULL;
+iter_rand_perm(&perm, 3, 5, true);
+```
+
+**Example:** Get a random 3-permutation of `[0,5)` with:
+
+```c
+size_t *perm = NULL;
+iter_rand_perm(&perm, 3, 5, false);
+```
+
 *******************************************************************
 
 #### iter\_next\_perm [⯅](#CLM_LIBS)
 
 ```c
 static inline void iter_next_perm(size_t **perm, const size_t length, const size_t base, const bool rep);
+```
+
+Updates `*perm` to hold the next `length`-sized tuple such that:
+
+```c
+0 <= perm[i] < base[i]
+```
+
+If `*perm == NULL` the function tries to allocate the first tuple.
+Once it reaches the last tuple, the function frees & nulls `*perm`.
+
+If `rep == false` all the elements of the tuple will be different.
+
+**Warning:** Parameter `length` must satisfy `lenght > 0`.
+
+**Warning:** If `rep == true` then `base > 0` is required.
+
+**Warning:** If `rep == false` then `base >= length` is required.
+
+**Example:** Iterate over all the elements of `[0,5)^3` with:
+
+```c
+size_t *perm = NULL;
+iter_next_perm(&perm, 3, 5, true);
+while (perm) {
+    do_something(perm);
+    iter_next_perm(&perm, 3, 5, true);
+}
+```
+
+**Example:** Iterate over all the 3-permutations of `[0,5)` with:
+
+```c
+size_t *perm = NULL;
+iter_next_perm(&perm, 3, 5, false);
+while (perm) {
+    do_something(perm);
+    iter_next_perm(&perm, 3, 5, false);
+}
 ```
 
 *******************************************************************
@@ -1115,12 +1187,84 @@ static inline void iter_next_perm(size_t **perm, const size_t length, const size
 static inline void iter_rand_comb(size_t **comb, const size_t length, const size_t base, const bool rep);
 ```
 
+Generates an uniformly random `length`-sized tuple such that:
+
+```c
+0 <= comb[i] < base    &&    comb[i] <= comb[i+1]
+```
+
+If `*comb == NULL` the function tries to allocate a new tuple.
+Otherwise, it overwrites the information stored in `comb`.
+
+If `rep == false` all the elements of the tuple will be different.
+
+**Warning:** Parameter `length` must satisfy `lenght > 0`.
+
+**Warning:** Parameter `base` must satisfy `base <= RAND_MAX`.
+
+**Warning:** If `rep == true` then `base > 0` is required.
+
+**Warning:** If `rep == false` then `base >= length` is required.
+
+**Example:** Get a random 3-combination of `[0,5)` with:
+
+```c
+size_t *comb = NULL;
+iter_rand_comb(&comb, 3, 5, false);
+```
+
+**Example:** Get a random 3-comb-with-rep of `[0,5)` with:
+
+```c
+size_t *comb = NULL;
+iter_rand_comb(&comb, 3, 5, true);
+```
+
 *******************************************************************
 
 #### iter\_next\_comb [⯅](#CLM_LIBS)
 
 ```c
 static inline void iter_next_comb(size_t **comb, const size_t length, const size_t base, const bool rep);
+```
+
+Updates `*comb` to hold the next `length`-sized tuple such that:
+
+```c
+0 <= comb[i] < base    &&    comb[i] <= comb[i+1]
+```
+
+If `*comb == NULL` the function tries to allocate the first tuple.
+Once it reaches the last tuple, the function frees & nulls `*comb`.
+
+If `rep == false` all the elements of the tuple will be different.
+
+**Warning:** Parameter `length` must satisfy `lenght > 0`.
+
+**Warning:** If `rep == true` then `base > 0` is required.
+
+**Warning:** If `rep == false` then `base >= length` is required.
+
+**Example:** Iterate over all the 3-combinations of `[0,5)` with:
+
+```c
+size_t *comb  = NULL;
+iter_next_comb(&comb, 3, 5, false);
+while (comb) {
+    do_something(comb);
+    iter_next_comb(&comb, 3, 5, false);
+}
+```
+
+**Example:** Iterate over all the 3-comb-with-rep of `[0,5)` with:
+
+```c
+size_t *comb  = NULL;
+iter_next_comb(&comb, 3, 5, true);
+while (comb) {
+    do_something(comb);
+    iter_next_comb(&comb, 3, 5, true);
+}
 ```
 
 *********************************************************************
