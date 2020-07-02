@@ -94,6 +94,17 @@ Finally, regarding data types:
 
 ## CODE DEPENDENCIES [⯅](#CLM_LIBS)
 
+The file `CLM_LIBS.h` contains the code, the documentation and the
+license. The other files that you may find in the repository are used
+for the developement of `CLM_LIBS.h` and are not needed in practice:
+
+ * `README.md` - Contains the documentation in GitHub's MarkDown format
+ * `CHEATSHEET.md` - Contains a quick-reference cheatsheet
+ * `UpdateDocs.py` - Contains a script for generating the documentation
+ * `LICENSE` - Contains another copy of the same license (see below)
+ * `makefile` - Contains a script for automating the test process
+ * `test.c` - Contains a unit-test suite for each library
+
 `CLM_LIBS.h` relies only on the C standard library and compiles without
 warnings using the GCC parameters `-std=c99 -Wall -Wextra -pedantic`.
 More over, the code has been tested using `valgrind --leak-check=full`
