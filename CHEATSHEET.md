@@ -2,7 +2,7 @@
 # CLM\_LIBS CHEAT SHEET
 
 ```c
-#define CLM_LIBS 20200622
+#define CLM_LIBS 20200702
 
 
 #define IMPORT_CLM_TIME(prefix)
@@ -26,10 +26,17 @@
     void    printf_set_light();
     void    printf_set_strike();
     void    printf_set_underline();
+    void    printf_delete();
+    void    printf_move(int dx, int dy);
     void    printf_set_text_grey(int grey);
     void    printf_set_back_grey(int grey);
     void    printf_set_text_color(int r, int g, int b);
     void    printf_set_back_color(int r, int g, int b);
+
+#define IMPORT_CLM_DAMM(prefix)
+
+    char    damm_dec(char *txt);
+    char    damm_hex(char *txt);
 
 #define IMPORT_CLM_ARC4(prefix)
 

@@ -19,6 +19,7 @@
     * [CLM\_TIME](#CLM_TIME-)
     * [CLM\_RAND](#CLM_RAND-)
     * [CLM\_PRINTF](#CLM_PRINTF-)
+    * [CLM\_DAMM](#CLM_DAMM-)
     * [CLM\_ARC4](#CLM_ARC4-)
     * [CLM\_ITER](#CLM_ITER-)
     * [CLM\_FRACTAL](#CLM_FRACTAL-)
@@ -42,8 +43,8 @@ libraries because I wanted to provide generic data structures without
 using `void` pointers.
 
 Although this is a personal project, I am trying to document everything
-so others can use this code too. For the same reason I release the code
-into the Public Domain using the Unlicense (see LICENSE section below).
+so others can use this code too. For the same reason, I release the
+code into the Public Domain using the Unlicense (see LICENSE below).
 
 ***********************************************************************
 
@@ -96,7 +97,7 @@ Finally, regarding data types:
 `CLM_LIBS.h` relies only on the C standard library and compiles without
 warnings using the GCC parameters `-std=c99 -Wall -Wextra -pedantic`.
 More over, the code has been tested using `valgrind --leak-check=full`
-reporting no memory leak.
+reporting no memory leaks.
 
 The standard libraries used are (in alphabetical order):
 
@@ -149,7 +150,7 @@ Each macro generates a collection of related functions and typedefs.
 All the macros have an optional parameter `prefix` that allows the
 user to change the name of the functions and data types so they don't
 crash with other user-defined functions/types or with different calls
-of the same macro.
+to the same macro.
 
 Some of the macros require two mandatory parameters (`type` & `less`)
 that are used to build generic functions tailored to that data type.
@@ -225,7 +226,7 @@ int main(void) {
 ### CLM\_LIBS [⯅](#CLM_LIBS)
 
 ```c
-#define CLM_LIBS 20200622
+#define CLM_LIBS 20200702
 ```
 
 Contains the version number (= date) of this release of CLM_LIBS.
@@ -589,6 +590,62 @@ printf_reset();
 
 *******************************************************************
 
+#### printf\_delete [⯅](#CLM_LIBS)
+
+```c
+static inline void printf_delete();
+```
+
+Deletes everything from the cursor position to the end of the line.
+
+**Example:** Remove the last 2 lines with:
+
+```c
+printf_move(0,-1);
+printf_delete();
+printf_move(0,-1);
+printf_delete();
+```
+
+**Example:** Erase the last 5 characters with:
+
+```c
+printf_move(-5,0);
+printf_delete();
+```
+
+*******************************************************************
+
+#### printf\_move [⯅](#CLM_LIBS)
+
+```c
+static inline void printf_move(const int dx, const int dy);
+```
+
+Moves the cursor to the relative position defined by `(dx,dy)`.
+
+**Warning:** Text will be overwritten from that position.
+
+**Warning:** Negative movement goes towards the upper-left corner.
+
+**Example:** Remove the last 2 lines with:
+
+```c
+printf_move(0,-1);
+printf_delete();
+printf_move(0,-1);
+printf_delete();
+```
+
+**Example:** Erase the last 5 characters with:
+
+```c
+printf_move(-5,0);
+printf_delete();
+```
+
+*******************************************************************
+
 #### printf\_set\_text\_grey [⯅](#CLM_LIBS)
 
 ```c
@@ -675,6 +732,78 @@ in the web-safe palette: `[0x00, 0x33, 0x66, 0x99, 0xCC, 0xFF]^3`
 printf_set_back_color(0, 0, 255);
 printf("%s", txt);
 printf_reset();
+```
+
+*********************************************************************
+
+### CLM\_DAMM [⯅](#CLM_LIBS)
+
+```c
+#define IMPORT_CLM_DAMM(prefix)
+```
+
+A set of check digit functions using the Damm algorithm.
+
+*******************************************************************
+
+#### damm\_dec [⯅](#CLM_LIBS)
+
+```c
+static inline char damm_dec(const char *txt);
+```
+
+Returns a the checksum character of the `\0`-terminated numeric
+string `txt`.
+
+The algorithm guarantees that:
+
+```c
+damm_dec(txt ++ damm_dec(txt)) == '0'
+```
+
+where `txt ++ c` is the concatenation of `txt` and `c`.
+
+**Warning:** All non-numeric characters will be ignored.
+
+**Example:** Add a checksum character to the string `s` with:
+
+```c
+size_t length    = strlen(s);
+char *s_checksum = (char *) malloc((length+2) * sizeof(char));
+sprintf(s_checksum, "%s%c", txt, damm_dec(txt));
+assert(damm_dec(s_checksum) == '0');
+```
+
+*******************************************************************
+
+#### damm\_hex [⯅](#CLM_LIBS)
+
+```c
+static inline char damm_hex(const char *txt);
+```
+
+Returns a the checksum character of the `\0`-terminated hexadecimal
+string `txt`.
+
+The algorithm guarantees that:
+
+```c
+damm_hex(txt ++ damm_hex(txt)) == '0'
+```
+
+where `txt ++ c` is the concatenation of `txt` and `c`.
+
+**Warning:** All non-hexadecimal characters will be ignored.
+
+**Warning:** The algorithm is case insensitive.
+
+**Example:** Add a checksum character to the string `s` with:
+
+```c
+size_t length    = strlen(s);
+char *s_checksum = (char *) malloc((length+2) * sizeof(char));
+sprintf(s_checksum, "%s%c", txt, damm_hex(txt));
+assert(damm_hex(s_checksum) == '0');
 ```
 
 *********************************************************************

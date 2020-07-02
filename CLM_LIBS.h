@@ -23,8 +23,8 @@
 /** using `void` pointers.                                                  **/
 /**                                                                         **/
 /** Although this is a personal project, I am trying to document everything **/
-/** so others can use this code too. For the same reason I release the code **/
-/** into the Public Domain using the Unlicense (see LICENSE section below). **/
+/** so others can use this code too. For the same reason, I release the     **/
+/** code into the Public Domain using the Unlicense (see LICENSE below).    **/
 /**                                                                         **/
 /** *********************************************************************** **/
 /**                                                                         **/
@@ -77,7 +77,7 @@
 /** `CLM_LIBS.h` relies only on the C standard library and compiles without **/
 /** warnings using the GCC parameters `-std=c99 -Wall -Wextra -pedantic`.   **/
 /** More over, the code has been tested using `valgrind --leak-check=full`  **/
-/** reporting no memory leak.                                               **/
+/** reporting no memory leaks.                                              **/
 /**                                                                         **/
 /** The standard libraries used are (in alphabetical order):                **/
 /**                                                                         **/
@@ -128,7 +128,7 @@
 /** All the macros have an optional parameter `prefix` that allows the      **/
 /** user to change the name of the functions and data types so they don't   **/
 /** crash with other user-defined functions/types or with different calls   **/
-/** of the same macro.                                                      **/
+/** to the same macro.                                                      **/
 /**                                                                         **/
 /** Some of the macros require two mandatory parameters (`type` & `less`)   **/
 /** that are used to build generic functions tailored to that data type.    **/
@@ -206,7 +206,7 @@
   /**                                                                       **/
   /** Contains the version number (= date) of this release of CLM_LIBS.     **/
   /**                                                                       **/
-  #define CLM_LIBS 20200622
+  #define CLM_LIBS 20200702
 
   /** ********************************************************************* **/
   /**                                                                       **/
@@ -647,6 +647,55 @@
                                                                                 \
     /** ******************************************************************* **/ \
     /**                                                                     **/ \
+    /** #### printf_delete                                                  **/ \
+    /**                                                                     **/ \
+    /** Deletes everything from the cursor position to the end of the line. **/ \
+    /**                                                                     **/ \
+    /** **Example:** Remove the last 2 lines with:                          **/ \
+    /**                                                                     **/ \
+    /**     printf_move(0,-1);                                              **/ \
+    /**     printf_delete();                                                **/ \
+    /**     printf_move(0,-1);                                              **/ \
+    /**     printf_delete();                                                **/ \
+    /**                                                                     **/ \
+    /** **Example:** Erase the last 5 characters with:                      **/ \
+    /**                                                                     **/ \
+    /**     printf_move(-5,0);                                              **/ \
+    /**     printf_delete();                                                **/ \
+    /**                                                                     **/ \
+    static inline void prefix##printf_delete() { printf("\033[K"); }            \
+                                                                                \
+    /** ******************************************************************* **/ \
+    /**                                                                     **/ \
+    /** #### printf_move                                                    **/ \
+    /**                                                                     **/ \
+    /** Moves the cursor to the relative position defined by `(dx,dy)`.     **/ \
+    /**                                                                     **/ \
+    /** **Warning:** Text will be overwritten from that position.           **/ \
+    /**                                                                     **/ \
+    /** **Warning:** Negative movement goes towards the upper-left corner.  **/ \
+    /**                                                                     **/ \
+    /** **Example:** Remove the last 2 lines with:                          **/ \
+    /**                                                                     **/ \
+    /**     printf_move(0,-1);                                              **/ \
+    /**     printf_delete();                                                **/ \
+    /**     printf_move(0,-1);                                              **/ \
+    /**     printf_delete();                                                **/ \
+    /**                                                                     **/ \
+    /** **Example:** Erase the last 5 characters with:                      **/ \
+    /**                                                                     **/ \
+    /**     printf_move(-5,0);                                              **/ \
+    /**     printf_delete();                                                **/ \
+    /**                                                                     **/ \
+    static inline void prefix##printf_move(const int dx, const int dy) {        \
+        if (dy < 0) { printf("\033[%dA", -dy); }                                \
+        if (dy > 0) { printf("\033[%dB",  dy); }                                \
+        if (dx > 0) { printf("\033[%dC",  dx); }                                \
+        if (dx < 0) { printf("\033[%dD", -dx); }                                \
+    }                                                                           \
+                                                                                \
+    /** ******************************************************************* **/ \
+    /**                                                                     **/ \
     /** #### printf_set_text_grey                                           **/ \
     /**                                                                     **/ \
     /** Sets a greyscale text color for the printf function.                **/ \
@@ -753,6 +802,132 @@
         printf("\033[48;5;%dm", (rr*36) + (gg*6) + bb + 16);                    \
     }                                                                           \
                                                                                 \
+
+  /** ********************************************************************* **/
+  /**                                                                       **/
+  /** ### CLM_DAMM                                                          **/
+  /**                                                                       **/
+  /** A set of check digit functions using the Damm algorithm.              **/
+  /**                                                                       **/
+  #define IMPORT_CLM_DAMM(prefix)                                               \
+                                                                                \
+    /** ******************************************************************* **/ \
+    /**                                                                     **/ \
+    /** #### damm_dec                                                       **/ \
+    /**                                                                     **/ \
+    /** Returns a the checksum character of the `\0`-terminated numeric     **/ \
+    /** string `txt`.                                                       **/ \
+    /**                                                                     **/ \
+    /** The algorithm guarantees that:                                      **/ \
+    /**                                                                     **/ \
+    /**     damm_dec(txt ++ damm_dec(txt)) == '0'                           **/ \
+    /**                                                                     **/ \
+    /** where `txt ++ c` is the concatenation of `txt` and `c`.             **/ \
+    /**                                                                     **/ \
+    /** **Warning:** All non-numeric characters will be ignored.            **/ \
+    /**                                                                     **/ \
+    /** **Example:** Add a checksum character to the string `s` with:       **/ \
+    /**                                                                     **/ \
+    /**     size_t length    = strlen(s);                                   **/ \
+    /**     char *s_checksum = (char *) malloc((length+2) * sizeof(char));  **/ \
+    /**     sprintf(s_checksum, "%s%c", txt, damm_dec(txt));                **/ \
+    /**     assert(damm_dec(s_checksum) == '0');                            **/ \
+    /**                                                                     **/ \
+    static inline char prefix##damm_dec(const char *txt) {                      \
+                                                                                \
+        /* Preconditions */                                                     \
+        assert('9'-'0' == 9);                                                   \
+                                                                                \
+        /* Base 10 Tables for the Damm algorithm */                             \
+        const char DEC[11]   = "0123456789";                                    \
+        const char T[10][10] = {{0, 3, 1, 7, 5, 9, 8, 6, 4, 2},                 \
+                                {7, 0, 9, 2, 1, 5, 4, 8, 6, 3},                 \
+                                {4, 2, 0, 6, 8, 7, 1, 3, 5, 9},                 \
+                                {1, 7, 5, 0, 9, 8, 3, 4, 2, 6},                 \
+                                {6, 1, 2, 3, 0, 4, 5, 9, 7, 8},                 \
+                                {3, 6, 7, 4, 2, 0, 9, 5, 8, 1},                 \
+                                {5, 8, 6, 9, 7, 2, 0, 1, 3, 4},                 \
+                                {8, 9, 4, 5, 3, 6, 2, 0, 1, 7},                 \
+                                {9, 4, 3, 8, 6, 1, 7, 2, 0, 5},                 \
+                                {2, 5, 8, 1, 4, 3, 6, 7, 9, 0}};                \
+                                                                                \
+        /* Compute the checksum character */                                    \
+        char   number = 0;                                                      \
+        size_t length = strlen(txt);                                            \
+        for (size_t i = 0; i < length; i++) {                                   \
+            if (txt[i] < '0' || txt[i] > '9') { continue; }                     \
+            number = T[(size_t) number][(size_t) (txt[i] - '0')];               \
+        }                                                                       \
+                                                                                \
+        /* Return the checksum character */                                     \
+        return DEC[(size_t) number];                                            \
+    }                                                                           \
+                                                                                \
+    /** ******************************************************************* **/ \
+    /**                                                                     **/ \
+    /** #### damm_hex                                                       **/ \
+    /**                                                                     **/ \
+    /** Returns a the checksum character of the `\0`-terminated hexadecimal **/ \
+    /** string `txt`.                                                       **/ \
+    /**                                                                     **/ \
+    /** The algorithm guarantees that:                                      **/ \
+    /**                                                                     **/ \
+    /**     damm_hex(txt ++ damm_hex(txt)) == '0'                           **/ \
+    /**                                                                     **/ \
+    /** where `txt ++ c` is the concatenation of `txt` and `c`.             **/ \
+    /**                                                                     **/ \
+    /** **Warning:** All non-hexadecimal characters will be ignored.        **/ \
+    /**                                                                     **/ \
+    /** **Warning:** The algorithm is case insensitive.                     **/ \
+    /**                                                                     **/ \
+    /** **Example:** Add a checksum character to the string `s` with:       **/ \
+    /**                                                                     **/ \
+    /**     size_t length    = strlen(s);                                   **/ \
+    /**     char *s_checksum = (char *) malloc((length+2) * sizeof(char));  **/ \
+    /**     sprintf(s_checksum, "%s%c", txt, damm_hex(txt));                **/ \
+    /**     assert(damm_hex(s_checksum) == '0');                            **/ \
+    /**                                                                     **/ \
+    static inline char prefix##damm_hex(const char *txt) {                      \
+                                                                                \
+        /* Preconditions */                                                     \
+        assert('9'-'0' == 9);                                                   \
+        assert('f'-'a' == 5);                                                   \
+        assert('F'-'A' == 5);                                                   \
+                                                                                \
+        /* Base 16 Tables for the Damm algorithm */                             \
+        const char HEX[17]   = "0123456789ABCDEF";                              \
+        const char T[16][16] = {                                                \
+            { 0,  2,  4,  6,  8, 10, 12, 14,  3,  1,  7,  5, 11,  9, 15, 13},   \
+            { 2,  0,  6,  4, 10,  8, 14, 12,  1,  3,  5,  7,  9, 11, 13, 15},   \
+            { 4,  6,  0,  2, 12, 14,  8, 10,  7,  5,  3,  1, 15, 13, 11,  9},   \
+            { 6,  4,  2,  0, 14, 12, 10,  8,  5,  7,  1,  3, 13, 15,  9, 11},   \
+            { 8, 10, 12, 14,  0,  2,  4,  6, 11,  9, 15, 13,  3,  1,  7,  5},   \
+            {10,  8, 14, 12,  2,  0,  6,  4,  9, 11, 13, 15,  1,  3,  5,  7},   \
+            {12, 14,  8, 10,  4,  6,  0,  2, 15, 13, 11,  9,  7,  5,  3,  1},   \
+            {14, 12, 10,  8,  6,  4,  2,  0, 13, 15,  9, 11,  5,  7,  1,  3},   \
+            { 3,  1,  7,  5, 11,  9, 15, 13,  0,  2,  4,  6,  8, 10, 12, 14},   \
+            { 1,  3,  5,  7,  9, 11, 13, 15,  2,  0,  6,  4, 10,  8, 14, 12},   \
+            { 7,  5,  3,  1, 15, 13, 11,  9,  4,  6,  0,  2, 12, 14,  8, 10},   \
+            { 5,  7,  1,  3, 13, 15,  9, 11,  6,  4,  2,  0, 14, 12, 10,  8},   \
+            {11,  9, 15, 13,  3,  1,  7,  5,  8, 10, 12, 14,  0,  2,  4,  6},   \
+            { 9, 11, 13, 15,  1,  3,  5,  7, 10,  8, 14, 12,  2,  0,  6,  4},   \
+            {15, 13, 11,  9,  7,  5,  3,  1, 12, 14,  8, 10,  4,  6,  0,  2},   \
+            {13, 15,  9, 11,  5,  7,  1,  3, 14, 12, 10,  8,  6,  4,  2,  0}};  \
+                                                                                \
+        /* Compute the checksum character */                                    \
+        char   h, number = 0;                                                   \
+        size_t i, length = strlen(txt);                                         \
+        for (i = 0; i < length; i++) {                                          \
+            if      ('0' <= txt[i] && txt[i] <= '9') { h = txt[i] - '0';      } \
+            else if ('A' <= txt[i] && txt[i] <= 'F') { h = txt[i] - 'A' + 10; } \
+            else if ('a' <= txt[i] && txt[i] <= 'f') { h = txt[i] - 'a' + 10; } \
+            else { continue; }                                                  \
+            number = T[(size_t) number][(size_t) h];                            \
+        }                                                                       \
+                                                                                \
+        /* Return the checksum character */                                     \
+        return HEX[(size_t) number];                                            \
+    }                                                                           \
 
   /** ********************************************************************* **/
   /**                                                                       **/

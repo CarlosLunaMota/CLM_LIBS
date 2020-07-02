@@ -49,6 +49,7 @@
 
 IMPORT_CLM_TIME()
 IMPORT_CLM_RAND()
+IMPORT_CLM_DAMM()
 IMPORT_CLM_ARC4()
 IMPORT_CLM_ITER()
 IMPORT_CLM_PRINTF()
@@ -364,7 +365,6 @@ void CLM_RAND_TEST(bool verbose) {
 
 void CLM_PRINTF_TEST(bool verbose) {
 
-
     printf("\nTesting CLM_PRINTF...\n\n");
 
     if (verbose) {
@@ -509,7 +509,71 @@ void CLM_PRINTF_TEST(bool verbose) {
 
         printf_reset();
         printf("\n");
+
+        for (size_t times = 0; times < 3; times++) {
+            printf("\t");
+            for (size_t i = 0; i < 18; i++) {
+                for (size_t j = 0; j < 18; j++) {
+                    printf_set_back_color(R[M[i][j]], G[M[i][j]], B[M[i][j]]);
+                    printf("  ");
+                }
+                printf_reset(); printf("\n\t");
+            }
+            time_pause("\n\t>> Program paused. Press return to resume <<\n");
+            for (size_t i = 0; i < 21; i++) {
+                printf_move(0,-1);
+                printf_delete();
+            }
+            printf("\t");
+            for (size_t i = 0; i < 18; i++) {
+                for (size_t j = 0; j < 18; j++) {
+                    printf_set_back_color(R[N[i][j]], G[N[i][j]], B[N[i][j]]);
+                    printf("  ");
+                }
+                printf_reset(); printf("\n\t");
+            }
+            time_pause("\n\t>> Program paused. Press return to resume <<\n");
+            for (size_t i = 0; i < 21; i++) {
+                printf_move(0,-1);
+                printf_delete();
+            }            
+        }            
     }
+}
+
+void CLM_DAMM_TEST(bool verbose) {
+
+    printf("\nTesting CLM_DAMM...\n\n");    
+
+    char ALPHANUM[23] = "0123456789ABCDEFabcdef";
+    char q[62] = "";
+    char t[62] = "";
+    char r[62] = "";
+    char s[62] = "";
+
+    /* Test damm_dec */
+    if (verbose) { printf("\n\tTesting damm_dec:\n\n"); }
+    assert(damm_dec("") == '0');
+    for (size_t i = 0; i < 60; i++) {
+        sprintf(r, "%s",   t);
+        sprintf(t, "%s%c", r, ALPHANUM[rand_size_t(10)]);
+        sprintf(s, "%s%c", t, damm_dec(t));
+        if (verbose) { printf("\t\"%s\" ++ \'%c\'\n", t, damm_dec(t)); }
+        assert(damm_dec(s) == '0');
+    } if (verbose) { printf("\n"); }
+    sprintf(t, "%s", q); 
+
+    /* Test damm_hex */
+    if (verbose) { printf("\n\tTesting damm_hex:\n\n"); }
+    assert(damm_hex("") == '0');
+    for (size_t i = 0; i < 60; i++) {
+        sprintf(r, "%s",   t);
+        sprintf(t, "%s%c", r, ALPHANUM[rand_size_t(22)]);
+        sprintf(s, "%s%c", t, damm_hex(t));
+        if (verbose) { printf("\t\"%s\" ++ \'%c\'\n", t, damm_hex(t)); }
+        assert(damm_hex(s) == '0');
+    } if (verbose) { printf("\n"); }
+    sprintf(t, "%s", q);
 }
 
 void CLM_ARC4_TEST(bool verbose) {
@@ -2033,6 +2097,7 @@ int main (void) {
     CLM_TIME_TEST(verbose);
     CLM_RAND_TEST(verbose);
     CLM_PRINTF_TEST(verbose);
+    CLM_DAMM_TEST(verbose);
     CLM_ARC4_TEST(verbose);
     CLM_ITER_TEST(verbose);
     CLM_FRACTAL_TEST(verbose);
