@@ -29,7 +29,6 @@ if __name__ == "__main__":
     print("\tLOC/total: "+str(LOC)+" / "+str(n_lines)+" ("
                          +str(round(100*LOC/float(n_lines),2))+"%)\n")
 
-
     ### Preprocess CLM_LIBS ###################################################
 
     #with open("CLM_LIBS.h", "r") as source: lines = source.readlines()

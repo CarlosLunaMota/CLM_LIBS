@@ -19,6 +19,7 @@
     * [CLM\_TIME](#CLM_TIME-)
     * [CLM\_RAND](#CLM_RAND-)
     * [CLM\_PRINTF](#CLM_PRINTF-)
+    * [CLM\_HASH](#CLM_HASH-)
     * [CLM\_DAMM](#CLM_DAMM-)
     * [CLM\_ARC4](#CLM_ARC4-)
     * [CLM\_ITER](#CLM_ITER-)
@@ -117,6 +118,7 @@ The standard libraries used are (in alphabetical order):
 #include <float.h>
 #include <limits.h>
 #include <stdbool.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -237,7 +239,7 @@ int main(void) {
 ### CLM\_LIBS [⯅](#CLM_LIBS)
 
 ```c
-#define CLM_LIBS 20200702
+#define CLM_LIBS 20200823
 ```
 
 Contains the version number (= date) of this release of CLM_LIBS.
@@ -743,6 +745,144 @@ in the web-safe palette: `[0x00, 0x33, 0x66, 0x99, 0xCC, 0xFF]^3`
 printf_set_back_color(0, 0, 255);
 printf("%s", txt);
 printf_reset();
+```
+
+*********************************************************************
+
+### CLM\_HASH [⯅](#CLM_LIBS)
+
+```c
+#define IMPORT_CLM_HASH(prefix)
+```
+
+A set of reversible bit-mixer functions for unsigned integers.
+
+*******************************************************************
+
+#### hash\_mix32 [⯅](#CLM_LIBS)
+
+```c
+static inline uint32_t hash_mix32(uint32_t h);
+```
+
+Given a `uint32_t` value returns another `uint32_t` value that can
+be used as a (non-cryptographic) hash of the first value.
+
+On average, changing a single bit in the input changes each bit of
+the output with probability 1/2, so, this deterministic function
+could be used as a non-cryptographic pseudorandom number generator.
+
+This function is based on `triple32` by Chris Wellons, see:
+https://nullprogram.com/blog/2018/07/31/
+
+**Warning:** Zero is a fixed point by design.
+
+**Warning:** This function is reversible by design.
+
+**Example:** Find the index of `elem` in a `2^K` hash table with:
+
+```c
+int index = hash_mix32(elem) & ((1 << K)-1);
+```
+
+**Example:** Generate 5 pseudorandom `uint32_t` numbers with:
+
+```c
+uint32_t N[5];
+uint32_t SEED   = (uint32_t) 314159285;         // change it!
+uint32_t PHI_32 = (uint32_t) 0x9e3779b9;        // 2^32 * Phi
+for (int i = 0; i < 5; i++) {
+    N[i] = hash_mix32(SEED + (i+1) * PHI_32);
+}
+```
+
+*******************************************************************
+
+#### hash\_unmix32 [⯅](#CLM_LIBS)
+
+```c
+static inline uint32_t hash_unmix32(uint32_t h);
+```
+
+Given a `uint32_t` value returns another `uint32_t` value that can
+be used as a (non-cryptographic) hash of the first value.
+
+This function is the inverse of `hash_mix32` and has the very same
+properties. See `hash_mix32` documentation for the details.
+
+**Warning:** Zero is a fixed point by design.
+
+**Warning:** This function is reversible by design.
+
+**Example:** Reverse a hash operation with:
+
+```c
+assert(hash_unmix32(hash_mix32(i)) == i);
+assert(hash_mix32(hash_unmix32(i)) == i);
+```
+
+*******************************************************************
+
+#### hash\_mix64 [⯅](#CLM_LIBS)
+
+```c
+static inline uint64_t hash_mix64(uint64_t h);
+```
+
+Given a `uint64_t` value returns another `uint64_t` value that can
+be used as a (non-cryptographic) hash of the first value.
+
+On average, changing a single bit in the input changes each bit of
+the output with probability 1/2, so, this deterministic function
+could be used as a non-cryptographic pseudorandom number generator.
+
+This function is based on `splitmix64` by Sebastiano Vigna, see:
+http://xoshiro.di.unimi.it/splitmix64.c
+
+**Warning:** Zero is a fixed point by design.
+
+**Warning:** This function is reversible by design.
+
+**Example:** Find the index of `elem` in a `2^K` hash table with:
+
+```c
+size_t index = hash_mix64(elem) & ((1 << K)-1);
+```
+
+**Example:** Generate 5 pseudorandom `uint64_t` numbers with:
+
+```c
+uint64_t N[5];
+uint64_t SEED   = (uint64_t) 314159285;          // change it!
+uint64_t PHI_64 = (uint64_t) 0x9e3779b97f4a7c15; // 2^64 * Phi
+for (int i = 0; i < 5; i++) {
+    N[i] = hash_mix64(SEED + (i+1) * PHI_64);
+}
+```
+
+*******************************************************************
+
+#### hash\_unmix64 [⯅](#CLM_LIBS)
+
+```c
+static inline uint64_t hash_unmix64(uint64_t h);
+```
+
+Given a `uint64_t` value returns another `uint64_t` value that can
+be used as a (non-cryptographic) hash of the first value.
+
+This function is the inverse of `hash_mix64` and has the very same
+properties. See `hash_mix64` documentation for the details.
+
+**Warning:** Zero is a fixed point by design.
+
+**Warning:** This function is reversible by design.
+
+**Example:** Reverse a hash operation with:
+
+```c
+assert(hash_unmix64(hash_mix64(i)) == i);
+assert(hash_mix64(hash_unmix64(i)) == i);
 ```
 
 *********************************************************************

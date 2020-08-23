@@ -2,7 +2,7 @@
 # CLM\_LIBS CHEAT SHEET
 
 ```c
-#define CLM_LIBS 20200702
+#define CLM_LIBS 20200823
 
 
 #define IMPORT_CLM_TIME(prefix)
@@ -32,6 +32,13 @@
     void    printf_set_back_grey(int grey);
     void    printf_set_text_color(int r, int g, int b);
     void    printf_set_back_color(int r, int g, int b);
+
+#define IMPORT_CLM_HASH(prefix)
+
+    uint32_t hash_mix32(uint32_t h);
+    uint32_t hash_unmix32(uint32_t h);
+    uint64_t hash_mix64(uint64_t h);
+    uint64_t hash_unmix64(uint64_t h);
 
 #define IMPORT_CLM_DAMM(prefix)
 

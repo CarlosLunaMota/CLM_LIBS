@@ -49,6 +49,7 @@
 
 IMPORT_CLM_TIME()
 IMPORT_CLM_RAND()
+IMPORT_CLM_HASH()
 IMPORT_CLM_DAMM()
 IMPORT_CLM_ARC4()
 IMPORT_CLM_ITER()
@@ -574,6 +575,56 @@ void CLM_DAMM_TEST(bool verbose) {
         assert(damm_hex(s) == '0');
     } if (verbose) { printf("\n"); }
     sprintf(t, "%s", q);
+}
+
+void CLM_HASH_TEST(bool verbose) {
+
+    printf("\nTesting CLM_HASH...\n\n");    
+
+    uint32_t i, A, B;
+    uint32_t SEED_32 = (uint32_t) 3141592853;           // whatever you want! 
+    uint32_t PHI_32  = (uint32_t) 0x9e3779b9;           // 2^32 * Phi 
+
+    uint64_t j, X, Y;
+    uint64_t SEED_64 = (uint64_t) 3141592653589793238;  // whatever you want! 
+    uint64_t PHI_64  = (uint64_t) 0x9e3779b97f4a7c15;   // 2^64 * Phi 
+
+    if (verbose) { printf("\n\tGenerating 10 pseudorandom uint32_t:\n\n"); }
+    for (i = 1; i <= 10; i++) {
+        A = SEED_32 + (i * PHI_32);
+        B = hash_mix32(A);
+        if (verbose) { printf("\t\t%08x -> %08x\n", A, B); }
+        assert(A == hash_unmix32(B));
+    }                                                             
+
+    if (verbose) {
+        printf("\n\tChanging a single bit in the input:\n\n");   
+        printf("\t\t%08x -> %08x\n", SEED_32, hash_mix32(SEED_32));
+        for (i = 0; i < 32; i++) {
+            if (!(i&3)) { printf("\n"); }
+            A = SEED_32 ^ ((uint32_t) 1 << i);
+            printf("\t\t%08x -> %08x\n", A, hash_mix32(A));
+        }                                                             
+    }
+    
+    if (verbose) { printf("\n\tGenerating 10 pseudorandom uint64_t:\n\n"); }
+    for (j = 1; j <= 10; j++) {
+        X = SEED_64 + (j * PHI_64);
+        Y = hash_mix64(X);
+        if (verbose) { printf("\t\t%016lx -> %016lx\n", X, Y); }
+        assert(X == hash_unmix64(Y));
+    }
+
+    if (verbose) {
+        printf("\n\tChanging a single bit in the input:\n\n");   
+        printf("\t\t%016lx -> %016lx\n", SEED_64, hash_mix64(SEED_64));
+        for (j = 0; j < 64; j++) {
+            if (!(j&3)) { printf("\n"); }
+            X = SEED_64 ^ ((uint64_t) 1 << j);
+            printf("\t\t%016lx -> %016lx\n", X, hash_mix64(X));
+        }                                                             
+    }
+                                                             
 }
 
 void CLM_ARC4_TEST(bool verbose) {
@@ -2098,6 +2149,7 @@ int main (void) {
     CLM_RAND_TEST(verbose);
     CLM_PRINTF_TEST(verbose);
     CLM_DAMM_TEST(verbose);
+    CLM_HASH_TEST(verbose);
     CLM_ARC4_TEST(verbose);
     CLM_ITER_TEST(verbose);
     CLM_FRACTAL_TEST(verbose);

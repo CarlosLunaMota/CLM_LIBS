@@ -96,6 +96,7 @@
 #include <float.h>      /* Floating point limits.                            */
 #include <limits.h>     /* Integer limits.                                   */
 #include <stdbool.h>    /* Bool type and {true, false} values.               */
+#include <stdint.h>     /* Fixed width integer types.                        */
 #include <stdio.h>      /* Input and output functions.                       */
 #include <stdlib.h>     /* Memory allocation and random functions.           */
 #include <string.h>     /* The size_t type and string functions.             */
@@ -217,7 +218,7 @@
   /**                                                                       **/
   /** Contains the version number (= date) of this release of CLM_LIBS.     **/
   /**                                                                       **/
-  #define CLM_LIBS 20200702
+  #define CLM_LIBS 20200823
 
   /** ********************************************************************* **/
   /**                                                                       **/
@@ -811,6 +812,163 @@
         int gg = (g+25) / 51;                                                   \
         int bb = (b+25) / 51;                                                   \
         printf("\033[48;5;%dm", (rr*36) + (gg*6) + bb + 16);                    \
+    }                                                                           \
+                                                                                \
+
+  /** ********************************************************************* **/
+  /**                                                                       **/
+  /** ### CLM_HASH                                                          **/
+  /**                                                                       **/
+  /** A set of reversible bit-mixer functions for unsigned integers.        **/
+  /**                                                                       **/
+  #define IMPORT_CLM_HASH(prefix)                                               \
+                                                                                \
+    /** ******************************************************************* **/ \
+    /**                                                                     **/ \
+    /** #### hash_mix32                                                     **/ \
+    /**                                                                     **/ \
+    /** Given a `uint32_t` value returns another `uint32_t` value that can  **/ \
+    /** be used as a (non-cryptographic) hash of the first value.           **/ \
+    /**                                                                     **/ \
+    /** On average, changing a single bit in the input changes each bit of  **/ \
+    /** the output with probability 1/2, so, this deterministic function    **/ \
+    /** could be used as a non-cryptographic pseudorandom number generator. **/ \
+    /**                                                                     **/ \
+    /** This function is based on `triple32` by Chris Wellons, see:         **/ \
+    /** https://nullprogram.com/blog/2018/07/31/                            **/ \
+    /**                                                                     **/ \
+    /** **Warning:** Zero is a fixed point by design.                       **/ \
+    /**                                                                     **/ \
+    /** **Warning:** This function is reversible by design.                 **/ \
+    /**                                                                     **/ \
+    /** **Example:** Find the index of `elem` in a `2^K` hash table with:   **/ \
+    /**                                                                     **/ \
+    /**     int index = hash_mix32(elem) & ((1 << K)-1);                    **/ \
+    /**                                                                     **/ \
+    /** **Example:** Generate 5 pseudorandom `uint32_t` numbers with:       **/ \
+    /**                                                                     **/ \
+    /**     uint32_t N[5];                                                  **/ \
+    /**     uint32_t SEED   = (uint32_t) 314159285;         // change it!   **/ \
+    /**     uint32_t PHI_32 = (uint32_t) 0x9e3779b9;        // 2^32 * Phi   **/ \
+    /**     for (int i = 0; i < 5; i++) {                                   **/ \
+    /**         N[i] = hash_mix32(SEED + (i+1) * PHI_32);                   **/ \
+    /**     }                                                               **/ \
+    /**                                                                     **/ \
+    static inline uint32_t prefix##hash_mix32(uint32_t h) {                     \
+                                                                                \
+        h ^= (h >> 17);                                                         \
+        h *= (uint32_t) 0xed5ad4bb;                                             \
+        h ^= (h >> 11);                                                         \
+        h *= (uint32_t) 0xac4c1b51;                                             \
+        h ^= (h >> 15);                                                         \
+        h *= (uint32_t) 0x31848bab;                                             \
+        h ^= (h >> 14);                                                         \
+                                                                                \
+        return h;                                                               \
+    }                                                                           \
+                                                                                \
+    /** ******************************************************************* **/ \
+    /**                                                                     **/ \
+    /** #### hash_unmix32                                                   **/ \
+    /**                                                                     **/ \
+    /** Given a `uint32_t` value returns another `uint32_t` value that can  **/ \
+    /** be used as a (non-cryptographic) hash of the first value.           **/ \
+    /**                                                                     **/ \
+    /** This function is the inverse of `hash_mix32` and has the very same  **/ \
+    /** properties. See `hash_mix32` documentation for the details.         **/ \
+    /**                                                                     **/ \
+    /** **Warning:** Zero is a fixed point by design.                       **/ \
+    /**                                                                     **/ \
+    /** **Warning:** This function is reversible by design.                 **/ \
+    /**                                                                     **/ \
+    /** **Example:** Reverse a hash operation with:                         **/ \
+    /**                                                                     **/ \
+    /**     assert(hash_unmix32(hash_mix32(i)) == i);                       **/ \
+    /**     assert(hash_mix32(hash_unmix32(i)) == i);                       **/ \
+    /**                                                                     **/ \
+    static inline uint32_t prefix##hash_unmix32(uint32_t h) {                   \
+                                                                                \
+        h ^= (h >> 14) ^ (h >> 28);                                             \
+        h *= (uint32_t) 0x32b21703;                                             \
+        h ^= (h >> 15) ^ (h >> 30);                                             \
+        h *= (uint32_t) 0x469e0db1;                                             \
+        h ^= (h >> 11) ^ (h >> 22);                                             \
+        h *= (uint32_t) 0x79a85073;                                             \
+        h ^= (h >> 17);                                                         \
+                                                                                \
+        return h;                                                               \
+    }                                                                           \
+                                                                                \
+    /** ******************************************************************* **/ \
+    /**                                                                     **/ \
+    /** #### hash_mix64                                                     **/ \
+    /**                                                                     **/ \
+    /** Given a `uint64_t` value returns another `uint64_t` value that can  **/ \
+    /** be used as a (non-cryptographic) hash of the first value.           **/ \
+    /**                                                                     **/ \
+    /** On average, changing a single bit in the input changes each bit of  **/ \
+    /** the output with probability 1/2, so, this deterministic function    **/ \
+    /** could be used as a non-cryptographic pseudorandom number generator. **/ \
+    /**                                                                     **/ \
+    /** This function is based on `splitmix64` by Sebastiano Vigna, see:    **/ \
+    /** http://xoshiro.di.unimi.it/splitmix64.c                             **/ \
+    /**                                                                     **/ \
+    /** **Warning:** Zero is a fixed point by design.                       **/ \
+    /**                                                                     **/ \
+    /** **Warning:** This function is reversible by design.                 **/ \
+    /**                                                                     **/ \
+    /** **Example:** Find the index of `elem` in a `2^K` hash table with:   **/ \
+    /**                                                                     **/ \
+    /**     size_t index = hash_mix64(elem) & ((1 << K)-1);                 **/ \
+    /**                                                                     **/ \
+    /** **Example:** Generate 5 pseudorandom `uint64_t` numbers with:       **/ \
+    /**                                                                     **/ \
+    /**     uint64_t N[5];                                                  **/ \
+    /**     uint64_t SEED   = (uint64_t) 314159285;          // change it!  **/ \
+    /**     uint64_t PHI_64 = (uint64_t) 0x9e3779b97f4a7c15; // 2^64 * Phi  **/ \
+    /**     for (int i = 0; i < 5; i++) {                                   **/ \
+    /**         N[i] = hash_mix64(SEED + (i+1) * PHI_64);                   **/ \
+    /**     }                                                               **/ \
+    /**                                                                     **/ \
+    static inline uint64_t prefix##hash_mix64(uint64_t h) {                     \
+                                                                                \
+        h ^= (h >> 30);                                                         \
+        h *= (uint64_t) 0xbf58476d1ce4e5b9;                                     \
+        h ^= (h >> 27);                                                         \
+        h *= (uint64_t) 0x94d049bb133111eb;                                     \
+        h ^= (h >> 31);                                                         \
+                                                                                \
+        return h;                                                               \
+    }                                                                           \
+                                                                                \
+    /** ******************************************************************* **/ \
+    /**                                                                     **/ \
+    /** #### hash_unmix64                                                   **/ \
+    /**                                                                     **/ \
+    /** Given a `uint64_t` value returns another `uint64_t` value that can  **/ \
+    /** be used as a (non-cryptographic) hash of the first value.           **/ \
+    /**                                                                     **/ \
+    /** This function is the inverse of `hash_mix64` and has the very same  **/ \
+    /** properties. See `hash_mix64` documentation for the details.         **/ \
+    /**                                                                     **/ \
+    /** **Warning:** Zero is a fixed point by design.                       **/ \
+    /**                                                                     **/ \
+    /** **Warning:** This function is reversible by design.                 **/ \
+    /**                                                                     **/ \
+    /** **Example:** Reverse a hash operation with:                         **/ \
+    /**                                                                     **/ \
+    /**     assert(hash_unmix64(hash_mix64(i)) == i);                       **/ \
+    /**     assert(hash_mix64(hash_unmix64(i)) == i);                       **/ \
+    /**                                                                     **/ \
+    static inline uint64_t prefix##hash_unmix64(uint64_t h) {                   \
+                                                                                \
+        h ^= (h >> 31) ^ (h >> 62);                                             \
+        h *= (uint64_t) 0x319642b2d24d8ec3;                                     \
+        h ^= (h >> 27) ^ (h >> 54);                                             \
+        h *= (uint64_t) 0x96de1b173f119089;                                     \
+        h ^= (h >> 30) ^ (h >> 60);                                             \
+                                                                                \
+        return h;                                                               \
     }                                                                           \
                                                                                 \
 
