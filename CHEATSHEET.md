@@ -2,7 +2,7 @@
 # CLM\_LIBS CHEAT SHEET
 
 ```c
-#define CLM_LIBS 20200823
+#define CLM_LIBS 20200907
 
 
 #define IMPORT_CLM_TIME(prefix)
@@ -67,6 +67,12 @@
     void    fractal_lebesgue_index(size_t dim, size_t bits, size_t *L);
     void    fractal_hilbert_coord(size_t dim, size_t bits, size_t *H);
     void    fractal_hilbert_index(size_t dim, size_t bits, size_t *H);
+
+#define IMPORT_CLM_DISJOINT(prefix)
+
+    size_t *disjoint_new(size_t max_size);
+    size_t  disjoint_root(size_t *sets, size_t i);
+    size_t  disjoint_merge(size_t *sets, size_t i, size_t j);
 
 #define IMPORT_CLM_ARRAY(type, less, prefix)
 

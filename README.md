@@ -24,6 +24,7 @@
     * [CLM\_ARC4](#CLM_ARC4-)
     * [CLM\_ITER](#CLM_ITER-)
     * [CLM\_FRACTAL](#CLM_FRACTAL-)
+    * [CLM\_DISJOINT](#CLM_DISJOINT-)
     * [CLM\_ARRAY](#CLM_ARRAY-)
     * [CLM\_CLIST](#CLM_CLIST-)
     * [CLM\_STREE](#CLM_STREE-)
@@ -239,7 +240,7 @@ int main(void) {
 ### CLM\_LIBS [⯅](#CLM_LIBS)
 
 ```c
-#define CLM_LIBS 20200823
+#define CLM_LIBS 20200907
 ```
 
 Contains the version number (= date) of this release of CLM_LIBS.
@@ -1581,6 +1582,107 @@ fractal_hilbert_index(3, 4, P);
 fractal_hilbert_index(3, 4, Q);
 if (P[0] < Q[0]) { printf("P goes before Q.\n"); }
 else             { printf("Q goes before P.\n"); }
+```
+
+*********************************************************************
+
+### CLM\_DISJOINT [⯅](#CLM_LIBS)
+
+```c
+#define IMPORT_CLM_DISJOINT(prefix)
+```
+
+A disjoint-sets (union-find) data structure implemented as a `size_t`
+array of indices that represents a rooted forest (each element points
+to its parent, roots point to themselves).
+
+Merging and root-finding trigger path compressions but the algorithm
+does not keep track of sizes, heights or ranks and always merges by
+pointing the root with the larger index to the root with the smallest
+index. This merging strategy is fast enough for pretty much all known
+applications and requires half of the space.
+
+Path compressions are performed using a double leaf-to-root pass. The
+first pass is used to find the root of the set and the second one is
+used to make all the elements in the path point directly to the root.
+
+*******************************************************************
+
+#### disjoint\_new [⯅](#CLM_LIBS)
+
+```c
+static inline size_t *disjoint_new(const size_t max_size);
+```
+
+Allocates `max_size` disjoint sets in a `size_t` array.
+
+**Warning:** Parameter `max_size` must satisfy `max_size > 0`.
+
+**Warning:** It might return `NULL` if there is not enough memory.
+
+**Example:** Allocate `N` disjoint sets with:
+
+```c
+size_t *sets = disjoint_new(N);
+do_something(sets);
+free(sets);
+```
+
+**Example:** Determine the number of disjoint sets with:
+
+```c
+size_t i, num_sets = 0;
+for (i = 0; i < N; i++) { if (sets[i] == i) { num_sets++; } }
+```
+
+*******************************************************************
+
+#### disjoint\_root [⯅](#CLM_LIBS)
+
+```c
+static inline size_t disjoint_root(size_t *sets, size_t i);
+```
+
+Returns the root of the set that contains the element `i`.
+
+**Warning:** User must ensure that `i < max_size`.
+
+**Example:** Determine if `i` and `j` belong to the same set with:
+
+```c
+if (disjoint_root(sets, i) == disjoint_root(sets, j)) {
+    printf("%zu and %zu belong to the same set!\n", i, j);
+} else {
+    printf("%zu and %zu belong to different sets!\n", i, j);
+}
+```
+
+*******************************************************************
+
+#### disjoint\_merge [⯅](#CLM_LIBS)
+
+```c
+static inline size_t disjoint_merge(size_t *sets, size_t i, size_t j);
+```
+
+Merges the sets that contain the elements `i` and `j`.
+
+Returns `0` if `i` and `j` belonged to the same set before calling
+this function and `1` otherwise (so you can easily keep track of
+the current number of sets).
+
+**Warning:** User must ensure that `i < max_size` & `j < max_size`.
+
+**Example:** Make `K` random merges with:
+
+```c
+size_t *sets = disjoint_new(N);
+size_t i, j, num_sets = N;
+while (num_sets > N-K) {
+    i = rand_size_t(N);
+    j = rand_size_t(N);
+    num_sets -= disjoint_merge(sets, i, j);
+}
 ```
 
 *********************************************************************

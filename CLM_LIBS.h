@@ -218,7 +218,7 @@
   /**                                                                       **/
   /** Contains the version number (= date) of this release of CLM_LIBS.     **/
   /**                                                                       **/
-  #define CLM_LIBS 20200823
+  #define CLM_LIBS 20200907
 
   /** ********************************************************************* **/
   /**                                                                       **/
@@ -2194,6 +2194,139 @@
             if (!mask) { mask = 1; dd++; }                                      \
         }                                                                       \
         for (d = 0; d < dim; d++) { H[d] = aux[d]; }                            \
+    }                                                                           \
+                                                                                \
+
+  /** ********************************************************************* **/
+  /**                                                                       **/
+  /** ### CLM_DISJOINT                                                      **/
+  /**                                                                       **/
+  /** A disjoint-sets (union-find) data structure implemented as a `size_t` **/
+  /** array of indices that represents a rooted forest (each element points **/
+  /** to its parent, roots point to themselves).                            **/
+  /**                                                                       **/
+  /** Merging and root-finding trigger path compressions but the algorithm  **/
+  /** does not keep track of sizes, heights or ranks and always merges by   **/
+  /** pointing the root with the larger index to the root with the smallest **/
+  /** index. This merging strategy is fast enough for pretty much all known **/
+  /** applications and requires half of the space.                          **/
+  /**                                                                       **/
+  /** Path compressions are performed using a double leaf-to-root pass. The **/
+  /** first pass is used to find the root of the set and the second one is  **/
+  /** used to make all the elements in the path point directly to the root. **/
+  /**                                                                       **/
+  #define IMPORT_CLM_DISJOINT(prefix)                                           \
+                                                                                \
+    /** ******************************************************************* **/ \
+    /**                                                                     **/ \
+    /** #### disjoint_new                                                   **/ \
+    /**                                                                     **/ \
+    /** Allocates `max_size` disjoint sets in a `size_t` array.             **/ \
+    /**                                                                     **/ \
+    /** **Warning:** Parameter `max_size` must satisfy `max_size > 0`.      **/ \
+    /**                                                                     **/ \
+    /** **Warning:** It might return `NULL` if there is not enough memory.  **/ \
+    /**                                                                     **/ \
+    /** **Example:** Allocate `N` disjoint sets with:                       **/ \
+    /**                                                                     **/ \
+    /**     size_t *sets = disjoint_new(N);                                 **/ \
+    /**     do_something(sets);                                             **/ \
+    /**     free(sets);                                                     **/ \
+    /**                                                                     **/ \
+    /** **Example:** Determine the number of disjoint sets with:            **/ \
+    /**                                                                     **/ \
+    /**     size_t i, num_sets = 0;                                         **/ \
+    /**     for (i = 0; i < N; i++) { if (sets[i] == i) { num_sets++; } }   **/ \
+    /**                                                                     **/ \
+    static inline size_t *prefix##disjoint_new(const size_t max_size) {         \
+                                                                                \
+        /* Preconditions */                                                     \
+        assert(max_size > 0);                                                   \
+                                                                                \
+        /* Allocate memory */                                                   \
+        size_t *sets = (size_t *) malloc((max_size+1) * sizeof(size_t));        \
+                                                                                \
+        /* Initialize memory */                                                 \
+        if (sets) { for (size_t i = 0; i < max_size; i++) { sets[i] = i; } }    \
+        else { fprintf(stderr, "ERROR: Unable to allocate disjoint-sets.\n"); } \
+                                                                                \
+        /* Return the new disjoint-sets */                                      \
+        return sets;                                                            \
+    }                                                                           \
+                                                                                \
+    /** ******************************************************************* **/ \
+    /**                                                                     **/ \
+    /** #### disjoint_root                                                  **/ \
+    /**                                                                     **/ \
+    /** Returns the root of the set that contains the element `i`.          **/ \
+    /**                                                                     **/ \
+    /** **Warning:** User must ensure that `i < max_size`.                  **/ \
+    /**                                                                     **/ \
+    /** **Example:** Determine if `i` and `j` belong to the same set with:  **/ \
+    /**                                                                     **/ \
+    /**     if (disjoint_root(sets, i) == disjoint_root(sets, j)) {         **/ \
+    /**         printf("%zu and %zu belong to the same set!\n", i, j);      **/ \
+    /**     } else {                                                        **/ \
+    /**         printf("%zu and %zu belong to different sets!\n", i, j);    **/ \
+    /**     }                                                               **/ \
+    /**                                                                     **/ \
+    static inline size_t prefix##disjoint_root(size_t *sets, size_t i) {        \
+                                                                                \
+        /* Find root */                                                         \
+        size_t Ri = i;                                                          \
+        while (Ri != sets[Ri]) { Ri = sets[Ri]; }                               \
+                                                                                \
+        /* Path compression */                                                  \
+        size_t temp;                                                            \
+        while (i != Ri) { temp = sets[i]; sets[i] = Ri; i = temp; }             \
+                                                                                \
+        /* Return the root of this component */                                 \
+        return Ri;                                                              \
+    }                                                                           \
+                                                                                \
+    /** ******************************************************************* **/ \
+    /**                                                                     **/ \
+    /** #### disjoint_merge                                                 **/ \
+    /**                                                                     **/ \
+    /** Merges the sets that contain the elements `i` and `j`.              **/ \
+    /**                                                                     **/ \
+    /** Returns `0` if `i` and `j` belonged to the same set before calling  **/ \
+    /** this function and `1` otherwise (so you can easily keep track of    **/ \
+    /** the current number of sets).                                        **/ \
+    /**                                                                     **/ \
+    /** **Warning:** User must ensure that `i < max_size` & `j < max_size`. **/ \
+    /**                                                                     **/ \
+    /** **Example:** Make `K` random merges with:                           **/ \
+    /**                                                                     **/ \
+    /**     size_t *sets = disjoint_new(N);                                 **/ \
+    /**     size_t i, j, num_sets = N;                                      **/ \
+    /**     while (num_sets > N-K) {                                        **/ \
+    /**         i = rand_size_t(N);                                         **/ \
+    /**         j = rand_size_t(N);                                         **/ \
+    /**         num_sets -= disjoint_merge(sets, i, j);                     **/ \
+    /**     }                                                               **/ \
+    /**                                                                     **/ \
+    static inline size_t prefix##disjoint_merge(size_t *sets, size_t i,         \
+                                                              size_t j) {       \
+        /* Find roots */                                                        \
+        size_t Ri = i;                                                          \
+        size_t Rj = j;                                                          \
+        while (Ri != sets[Ri]) { Ri = sets[Ri]; }                               \
+        while (Rj != sets[Rj]) { Rj = sets[Rj]; }                               \
+                                                                                \
+        /* Merge */                                                             \
+        size_t merges = 1;                                                      \
+        if      (Ri == Rj) { merges   = 0;           }                          \
+        else if (Ri <  Rj) { sets[Rj] = Ri; Rj = Ri; }                          \
+        else               { sets[Ri] = Rj; Ri = Rj; }                          \
+                                                                                \
+        /* Path compression */                                                  \
+        size_t temp;                                                            \
+        while (i != Ri) { temp = sets[i]; sets[i] = Ri; i = temp; }             \
+        while (j != Rj) { temp = sets[j]; sets[j] = Ri; j = temp; }             \
+                                                                                \
+        /* Return the number of merges */                                       \
+        return merges;                                                          \
     }                                                                           \
                                                                                 \
 

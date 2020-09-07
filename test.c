@@ -55,6 +55,7 @@ IMPORT_CLM_ARC4()
 IMPORT_CLM_ITER()
 IMPORT_CLM_PRINTF()
 IMPORT_CLM_FRACTAL()
+IMPORT_CLM_DISJOINT()
 IMPORT_CLM_CLIST(size_t, )
 IMPORT_CLM_ARRAY(size_t, LESS_THAN, )
 IMPORT_CLM_STREE(size_t, LESS_THAN, )
@@ -1956,6 +1957,62 @@ void CLM_FRACTAL_TEST(bool verbose) {
     }
 }
 
+void CLM_DISJOINT_TEST(bool verbose) {
+
+    printf("\nTesting CLM_DISJOINT...\n\n");
+
+    size_t i, Ri, j, Rj, k, cc;
+    size_t max  = 1000;
+    size_t size = 1000;
+    size_t *sets = disjoint_new(max);
+
+    while (size > 300) {
+        i = rand_size_t(max);
+        j = rand_size_t(max);
+        Ri = disjoint_root(sets, i);
+        Rj = disjoint_root(sets, j);
+        if (Ri == Rj) { assert(disjoint_merge(sets, i, j) == 0); }
+        else  { size--; assert(disjoint_merge(sets, i, j) == 1); }
+
+        assert(sets[i]  == sets[j] );
+        assert(sets[Ri] == sets[Rj]);
+
+        
+        for (cc = k = 0; k < max; k++) { if (sets[k] == k) { cc++; } }
+        assert(cc == size);
+
+        if (verbose && Ri == Rj) {
+            printf("Root[%03zu] = %03zu;   Root[%03zu] = %03zu;", i, Ri, j, Rj);
+            printf("   Connected components = %zu\n", cc);
+        } 
+
+        
+    }
+    
+    free(sets);
+
+    sets = disjoint_new(max);
+
+    while (size > 300) {
+        i = rand_size_t(max);
+        j = rand_size_t(max);
+        size -= disjoint_merge(sets, i, j);
+
+        assert(sets[i]  == sets[j] );
+        assert(sets[Ri] == sets[Rj]);
+
+        for (cc = k = 0; k < max; k++) { if (sets[k] == k) { cc++; } }
+        assert(cc == size);
+
+        if (verbose && Ri == Rj) {
+            printf("Root[%03zu] = %03zu;   Root[%03zu] = %03zu;", i, Ri, j, Rj);
+            printf("   Connected components = %zu\n", cc);
+        }         
+    }
+    
+    free(sets);
+}
+
 void CLM_ARRAY_TEST(bool verbose) {
 
     printf("\nTesting CLM_ARRAY...\n\n");
@@ -2153,6 +2210,7 @@ int main (void) {
     CLM_ARC4_TEST(verbose);
     CLM_ITER_TEST(verbose);
     CLM_FRACTAL_TEST(verbose);
+    CLM_DISJOINT_TEST(verbose);
     CLM_ARRAY_TEST(verbose);
     CLM_CLIST_TEST(verbose);
     CLM_STREE_TEST(verbose);
