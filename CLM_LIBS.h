@@ -2294,7 +2294,7 @@
     /** this function and `1` otherwise (so you can easily keep track of    **/ \
     /** the current number of sets).                                        **/ \
     /**                                                                     **/ \
-    /** **Warning:** User must ensure that `i < max_size` & `j < max_size`. **/ \
+    /** **Warning:** User must ensure that `i < max_size && j < max_size`.  **/ \
     /**                                                                     **/ \
     /** **Example:** Make `K` random merges with:                           **/ \
     /**                                                                     **/ \
@@ -2452,7 +2452,8 @@
         assert(MIN_SIZE > 0);                                                   \
                                                                                 \
         size_t l, r, left, right, rank, half, step;                             \
-        type   t, pivot;                                                        \
+        type   pivot;                                                           \
+        type   t;                                                               \
                                                                                 \
         /* MEDIAN SORT (down to MIN_SIZE intervals) */                          \
         for (step = 1; step <  length;   step <<= 1);                           \
@@ -2565,7 +2566,8 @@
                                                                                 \
         size_t l, left  = 0;                                                    \
         size_t r, right = length-1;                                             \
-        type   t, pivot;                                                        \
+        type   pivot;                                                           \
+        type   t;                                                               \
                                                                                 \
         /* Apply Quickselect in place */                                        \
         do {pivot = A[rank];                                                    \
