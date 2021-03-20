@@ -1,7 +1,7 @@
 
 # Basic parameters
 CC     = gcc 
-CFLAGS = -std=c99 -Wall -Wextra -pedantic -O3
+CFLAGS = -std=c99 -Wall -Wextra -pedantic -Wformat-overflow=0 -O3
 OBJS   = test.o
 DEPS   = CLM_LIBS.h
 
