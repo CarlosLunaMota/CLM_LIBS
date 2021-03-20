@@ -108,9 +108,9 @@ for the developement of `CLM_LIBS.h` and are not needed in practice:
  * `test.c` - Contains a unit-test suite for each library
 
 `CLM_LIBS.h` relies only on the C standard library and compiles without
-warnings using the GCC parameters `-std=c99 -Wall -Wextra -pedantic`.
-More over, the code has been tested using `valgrind --leak-check=full`
-reporting no memory leaks.
+warnings using the GCC parameters `-std=c99 -Wall -Wextra -pedantic
+-Wformat-overflow=0`. More over, the code has been tested using
+`valgrind --leak-check=full` reporting no memory leaks.
 
 The standard libraries used are (in alphabetical order):
 
