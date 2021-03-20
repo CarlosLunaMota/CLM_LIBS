@@ -218,7 +218,7 @@
   /**                                                                       **/
   /** Contains the version number (= date) of this release of CLM_LIBS.     **/
   /**                                                                       **/
-  #define CLM_LIBS 20200907
+  #define CLM_LIBS 20210320
 
   /** ********************************************************************* **/
   /**                                                                       **/
@@ -2381,48 +2381,8 @@
     /**                                                                     **/ \
     /** #### array_sort                                                     **/ \
     /**                                                                     **/ \
-    /** Sorts the first `length` elements of the array `A` in-place.        **/ \
-    /**                                                                     **/ \
-    /** This function is based on a rather obscure variant of QuickSort     **/ \
-    /** called MedianSort:                                                  **/ \
-    /**                                                                     **/ \
-    /**     void MedianSort(const array A, const size_t length) {           **/ \
-    /**                                                                     **/ \
-    /**         const size_t MIN_SIZE = 1<<7;                               **/ \
-    /**                                                                     **/ \
-    /**         size_t step, low, high, rank;                               **/ \
-    /**                                                                     **/ \
-    /**         for (step   = 1; step <  length;   step <<= 1);             **/ \
-    /**         for (step >>= 1; step >= MIN_SIZE; step >>= 1) {            **/ \
-    /**             for (rank = step; rank < length; rank += (step << 1)) { **/ \
-    /**                 low  = (rank-step);                                 **/ \
-    /**                 high = (rank+step) > length ? length : (rank+step); **/ \
-    /**                 QuickSelect(A+low, high-low, step);                 **/ \
-    /**             }                                                       **/ \
-    /**         }                                                           **/ \
-    /**                                                                     **/ \
-    /**         if (MIN_SIZE > 1) { InsertionSort(A, length); }             **/ \
-    /**     }                                                               **/ \
-    /**                                                                     **/ \
-    /** The implementation relies heavily on the properties of QuickSelect: **/ \
-    /**                                                                     **/ \
-    /** If we assume that `QuickSelect` is a non-recursive function that    **/ \
-    /** runs in `O(high-low)` time and `O(1)` space, then `MedianSort` is   **/ \
-    /** a non-recursive function that runs in `O(length*log(length))` time  **/ \
-    /** and `O(1)` space.                                                   **/ \
-    /**                                                                     **/ \
-    /** This implementation uses a simple variant of `QuickSelect` that is  **/ \
-    /** lightning fast in practice but may require a quadratic number of    **/ \
-    /** steps to finish for some particular inputs (much like QuickSort).   **/ \
-    /**                                                                     **/ \
-    /** These degenerate cases are VERY rare in practice and do NOT include **/ \
-    /** sorted arrays, reversely sorted arrays or arrays with many repeated **/ \
-    /** elements. Indeed, for these three particular cases, the algorithm   **/ \
-    /** performs better than usual (again, much like QuickSort).            **/ \
-    /**                                                                     **/ \
-    /** Finally, for efficiency reasons, it is advisable to stop the        **/ \
-    /** algorithm early and perform a final `InsertionSort` step. The       **/ \
-    /** constant `MIN_SIZE` controls the breaking point and may be tuned.   **/ \
+    /** Sorts the first `length` elements of the array `A` in-place using   **/ \
+    /** heapsort.                                                           **/ \
     /**                                                                     **/ \
     /** **Warning:** The parameter `A` must satisfy: `A != NULL`.           **/ \
     /**                                                                     **/ \
@@ -2445,44 +2405,65 @@
     static inline void prefix##array_sort(const prefix##array A,                \
                                           const size_t length) {                \
                                                                                 \
-        const size_t MIN_SIZE = 1<<7; /* Any power of 2 */                      \
+        const size_t N = length-1;                                              \
+        size_t       k, min, max, parent, child;                                \
+        type         temp, pivot;                                               \
                                                                                 \
-        /* Preconditions */                                                     \
-        assert(A != NULL);                                                      \
-        assert(MIN_SIZE > 0);                                                   \
-                                                                                \
-        size_t l, r, left, right, rank, half, step;                             \
-        type   pivot;                                                           \
-        type   t;                                                               \
-                                                                                \
-        /* MEDIAN SORT (down to MIN_SIZE intervals) */                          \
-        for (step = 1; step <  length;   step <<= 1);                           \
-        for (half = (step >> 1); half >= MIN_SIZE; step = half, half >>= 1) {   \
-            for (rank = half; rank < length; rank += step) {                    \
-                left  =  (rank-half);                                           \
-                right = ((rank+half) > length ? length : (rank+half)) - 1;      \
-                                                                                \
-                /* QUICK_SELECT the element `rank` in `A[left, right)` */       \
-                do {pivot = A[rank];                                            \
-                    l     = left;                                               \
-                    r     = right;                                              \
-                    do {while (less(A[l], pivot)) { ++l; }                      \
-                        while (less(pivot, A[r])) { --r; }                      \
-                        if  (l <= r) { t=A[l]; A[l]=A[r]; A[r]=t; ++l; --r; }   \
-                    } while (l <= r);                                           \
-                    if (r < rank) { left  = l; }                                \
-                    if (rank < l) { right = r; }                                \
-                } while (left < right);                                         \
+        /* Insertion sort for tiny arrays */                                    \
+        if (length <= 128) {                                                    \
+            for (size_t i = 1; i < length; ++i) {                               \
+                temp = A[i];                                                    \
+                for (k = i; k && less(temp, A[k-1]); --k) { A[k] = A[k-1]; }    \
+                A[k] = temp;                                                    \
             }                                                                   \
         }                                                                       \
                                                                                 \
-        /* INSERTION SORT (up to MIN_SIZE distances) */                         \
-        if (MIN_SIZE > 1) {                                                     \
-            for(r = 1; r < length; ++r) {                                       \
-                t = A[r];                                                       \
-                for (l = r; l > 0 && less(t, A[l-1]); --l) { A[l] = A[l-1]; }   \
-                A[l] = t;                                                       \
+        /* Heap sort for everything else */                                     \
+        else {                                                                  \
+                                                                                \
+            /* Place sentinels at A[0] and A[N] */                              \
+            min = max = N;                                                      \
+            for (k = N; k-->0; ) {                                              \
+                if      (less(A[k], A[min])) { min = k; }                       \
+                else if (less(A[max], A[k])) { max = k; }                       \
             }                                                                   \
+            temp = A[0]; A[0] = A[max]; A[max] = temp;                          \
+            if (min) { temp = A[N]; A[N] = A[min]; A[min] = temp; }             \
+            else     { temp = A[N]; A[N] = A[max]; A[max] = temp; }             \
+                                                                                \
+            /* Heapify the range [1, N) */                                      \
+            for (k = (N-1) >> 1; k; k--) {                                      \
+                parent = k;                                                     \
+                child  = k << 1;                                                \
+                pivot  = A[k];                                                  \
+                do {child += (less(A[child], A[child+1]) ? 1 : 0);              \
+                    if (!less(pivot, A[child])) { break; }                      \
+                    A[parent] = A[child];                                       \
+                    parent    = child;                                          \
+                    child   <<= 1;                                              \
+                } while (child < N);                                            \
+                A[parent] = pivot;                                              \
+            }                                                                   \
+                                                                                \
+            /* Sort the range [1, N) */                                         \
+            for (k = N-1; k > 2; k--) {                                         \
+                parent = 1;                                                     \
+                child  = 2;                                                     \
+                temp   = A[1];                                                  \
+                pivot  = A[k];                                                  \
+                do {child += (less(A[child], A[child+1]) ? 1 : 0);              \
+                    if (!less(pivot, A[child])) { break; }                      \
+                    A[parent] = A[child];                                       \
+                    parent    = child;                                          \
+                    child   <<= 1;                                              \
+                } while (child < k);                                            \
+                A[parent] = pivot;                                              \
+                A[k]      = temp;                                               \
+            }                                                                   \
+            temp = A[1]; A[1] = A[2]; A[2] = temp;                              \
+                                                                                \
+            /* Swap the sentinels back */                                       \
+            temp = A[0]; A[0] = A[N]; A[N] = temp;                              \
         }                                                                       \
     }                                                                           \
                                                                                 \

@@ -240,7 +240,7 @@ int main(void) {
 ### CLM\_LIBS [⯅](#CLM_LIBS)
 
 ```c
-#define CLM_LIBS 20200907
+#define CLM_LIBS 20210320
 ```
 
 Contains the version number (= date) of this release of CLM_LIBS.
@@ -1671,7 +1671,7 @@ Returns `0` if `i` and `j` belonged to the same set before calling
 this function and `1` otherwise (so you can easily keep track of
 the current number of sets).
 
-**Warning:** User must ensure that `i < max_size` & `j < max_size`.
+**Warning:** User must ensure that `i < max_size && j < max_size`.
 
 **Example:** Make `K` random merges with:
 
@@ -1735,50 +1735,8 @@ free(A);
 static inline void array_sort(const array A, const size_t length);
 ```
 
-Sorts the first `length` elements of the array `A` in-place.
-
-This function is based on a rather obscure variant of QuickSort
-called MedianSort:
-
-```c
-void MedianSort(const array A, const size_t length) {
-
-    const size_t MIN_SIZE = 1<<7;
-
-    size_t step, low, high, rank;
-
-    for (step   = 1; step <  length;   step <<= 1);
-    for (step >>= 1; step >= MIN_SIZE; step >>= 1) {
-        for (rank = step; rank < length; rank += (step << 1)) {
-            low  = (rank-step);
-            high = (rank+step) > length ? length : (rank+step);
-            QuickSelect(A+low, high-low, step);
-        }
-    }
-
-    if (MIN_SIZE > 1) { InsertionSort(A, length); }
-}
-```
-
-The implementation relies heavily on the properties of QuickSelect:
-
-If we assume that `QuickSelect` is a non-recursive function that
-runs in `O(high-low)` time and `O(1)` space, then `MedianSort` is
-a non-recursive function that runs in `O(length*log(length))` time
-and `O(1)` space.
-
-This implementation uses a simple variant of `QuickSelect` that is
-lightning fast in practice but may require a quadratic number of
-steps to finish for some particular inputs (much like QuickSort).
-
-These degenerate cases are VERY rare in practice and do NOT include
-sorted arrays, reversely sorted arrays or arrays with many repeated
-elements. Indeed, for these three particular cases, the algorithm
-performs better than usual (again, much like QuickSort).
-
-Finally, for efficiency reasons, it is advisable to stop the
-algorithm early and perform a final `InsertionSort` step. The
-constant `MIN_SIZE` controls the breaking point and may be tuned.
+Sorts the first `length` elements of the array `A` in-place using
+heapsort.
 
 **Warning:** The parameter `A` must satisfy: `A != NULL`.
 
