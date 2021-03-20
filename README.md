@@ -1740,6 +1740,8 @@ heapsort.
 
 **Warning:** The parameter `A` must satisfy: `A != NULL`.
 
+**Warning:** The parameter `length` must satisfy: `length > 0`.
+
 **Warning:** This sorting algorithm is NOT stable.
 
 **Example:** Sort the first `N` elements of `MyArray` with:

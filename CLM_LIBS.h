@@ -2386,6 +2386,8 @@
     /**                                                                     **/ \
     /** **Warning:** The parameter `A` must satisfy: `A != NULL`.           **/ \
     /**                                                                     **/ \
+    /** **Warning:** The parameter `length` must satisfy: `length > 0`.     **/ \
+    /**                                                                     **/ \
     /** **Warning:** This sorting algorithm is NOT stable.                  **/ \
     /**                                                                     **/ \
     /** **Example:** Sort the first `N` elements of `MyArray` with:         **/ \
@@ -2405,66 +2407,64 @@
     static inline void prefix##array_sort(const prefix##array A,                \
                                           const size_t length) {                \
                                                                                 \
+        /* Preconditions */                                                     \
+        assert(A != NULL);                                                      \
+        assert(length > 0);                                                     \
+                                                                                \
         const size_t N = length-1;                                              \
-        size_t       k, min, max, parent, child;                                \
-        type         temp, pivot;                                               \
+        size_t i, j, min, max;                                                  \
+        type   pivot;                                                           \
+        type   temp;                                                            \
                                                                                 \
-        /* Insertion sort for tiny arrays */                                    \
-        if (length <= 128) {                                                    \
-            for (size_t i = 1; i < length; ++i) {                               \
+        /* Insertion sort for small arrays */                                   \
+        if (length < 128) {                                                     \
+            for (i = 1; i < length; ++i) {                                      \
                 temp = A[i];                                                    \
-                for (k = i; k && less(temp, A[k-1]); --k) { A[k] = A[k-1]; }    \
-                A[k] = temp;                                                    \
-            }                                                                   \
+                for (j = i; j && less(temp, A[j-1]); --j) { A[j] = A[j-1]; }    \
+                A[j] = temp;                                                    \
+            } return;                                                           \
         }                                                                       \
                                                                                 \
-        /* Heap sort for everything else */                                     \
-        else {                                                                  \
-                                                                                \
-            /* Place sentinels at A[0] and A[N] */                              \
-            min = max = N;                                                      \
-            for (k = N; k-->0; ) {                                              \
-                if      (less(A[k], A[min])) { min = k; }                       \
-                else if (less(A[max], A[k])) { max = k; }                       \
-            }                                                                   \
-            temp = A[0]; A[0] = A[max]; A[max] = temp;                          \
-            if (min) { temp = A[N]; A[N] = A[min]; A[min] = temp; }             \
-            else     { temp = A[N]; A[N] = A[max]; A[max] = temp; }             \
-                                                                                \
-            /* Heapify the range [1, N) */                                      \
-            for (k = (N-1) >> 1; k; k--) {                                      \
-                parent = k;                                                     \
-                child  = k << 1;                                                \
-                pivot  = A[k];                                                  \
-                do {child += (less(A[child], A[child+1]) ? 1 : 0);              \
-                    if (!less(pivot, A[child])) { break; }                      \
-                    A[parent] = A[child];                                       \
-                    parent    = child;                                          \
-                    child   <<= 1;                                              \
-                } while (child < N);                                            \
-                A[parent] = pivot;                                              \
-            }                                                                   \
-                                                                                \
-            /* Sort the range [1, N) */                                         \
-            for (k = N-1; k > 2; k--) {                                         \
-                parent = 1;                                                     \
-                child  = 2;                                                     \
-                temp   = A[1];                                                  \
-                pivot  = A[k];                                                  \
-                do {child += (less(A[child], A[child+1]) ? 1 : 0);              \
-                    if (!less(pivot, A[child])) { break; }                      \
-                    A[parent] = A[child];                                       \
-                    parent    = child;                                          \
-                    child   <<= 1;                                              \
-                } while (child < k);                                            \
-                A[parent] = pivot;                                              \
-                A[k]      = temp;                                               \
-            }                                                                   \
-            temp = A[1]; A[1] = A[2]; A[2] = temp;                              \
-                                                                                \
-            /* Swap the sentinels back */                                       \
-            temp = A[0]; A[0] = A[N]; A[N] = temp;                              \
+        /* Place sentinels at A[0] and A[N] */                                  \
+        min = max = N;                                                          \
+        for (i = N; i-->0; ) {                                                  \
+            if      (less(A[i], A[min])) { min = i; }                           \
+            else if (less(A[max], A[i])) { max = i; }                           \
         }                                                                       \
+        temp = A[0]; A[0] = A[max]; A[max] = temp;                              \
+        if (min) { temp = A[N]; A[N] = A[min]; A[min] = temp; }                 \
+        else     { temp = A[N]; A[N] = A[max]; A[max] = temp; }                 \
+                                                                                \
+        /* Heapify the range [1, N) */                                          \
+        for (i = (N-1) >> 1; i; i--) {                                          \
+            j     = i << 1;                                                     \
+            pivot = A[i];                                                       \
+            do {j += (less(A[j], A[j+1]) ? 1 : 0);                              \
+                if (!less(pivot, A[j])) { break; }                              \
+                A[j >> 1] = A[j];                                               \
+            } while ((j <<= 1) < N);                                            \
+            A[j >> 1] = pivot;                                                  \
+        }                                                                       \
+                                                                                \
+        /* Sort the range [4, N) */                                             \
+        for (i = N-1; i > 3; i--) {                                             \
+            j     = 2;                                                          \
+            temp  = A[1];                                                       \
+            pivot = A[i];                                                       \
+            do {j += (less(A[j], A[j+1]) ? 1 : 0);                              \
+                if (!less(pivot, A[j])) { break; }                              \
+                A[j >> 1] = A[j];                                               \
+            } while ((j <<= 1) < i);                                            \
+            A[j >> 1] = pivot;                                                  \
+            A[i]      = temp;                                                   \
+        }                                                                       \
+                                                                                \
+        /* Sort the range [1, 4) */                                             \
+        if (less(A[3], A[2])) { temp = A[1]; A[1] = A[3]; A[3] = temp; }        \
+        else     { temp = A[1]; A[1] = A[2]; A[2] = A[3]; A[3] = temp; }        \
+                                                                                \
+        /* Swap the sentinels back */                                           \
+        temp = A[0]; A[0] = A[N]; A[N] = temp;                                  \
     }                                                                           \
                                                                                 \
     /** ******************************************************************* **/ \
