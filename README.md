@@ -240,7 +240,7 @@ int main(void) {
 ### CLM\_LIBS [⯅](#CLM_LIBS)
 
 ```c
-#define CLM_LIBS 20210320
+#define CLM_LIBS 20240815
 ```
 
 Contains the version number (= date) of this release of CLM_LIBS.
@@ -1736,11 +1736,9 @@ static inline void array_sort(const array A, const size_t length);
 ```
 
 Sorts the first `length` elements of the array `A` in-place using
-heapsort.
+shellsort with a growing factor of 2.25.
 
 **Warning:** The parameter `A` must satisfy: `A != NULL`.
-
-**Warning:** The parameter `length` must satisfy: `length > 0`.
 
 **Warning:** This sorting algorithm is NOT stable.
 
@@ -2066,7 +2064,7 @@ use less memory and show an adaptive behavior that might benefit the
 user in many common applications (e.g. inserting N sorted elements
 takes just `O(N)` time rather than `O(N*log(N))` time).
 
-Incidentaly, Splay Trees also solve the "failed quieries" problem of
+Incidentaly, Splay Trees also solve the "failed queries" problem of
 type-safe search trees (i.e. what to return when a `find` or `delete`
 query fails) in a very natural way:
 

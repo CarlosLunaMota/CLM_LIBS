@@ -2,7 +2,7 @@
 # CLM\_LIBS CHEAT SHEET
 
 ```c
-#define CLM_LIBS 20210320
+#define CLM_LIBS 20240815
 
 
 #define IMPORT_CLM_TIME(prefix)

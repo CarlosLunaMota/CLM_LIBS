@@ -218,7 +218,7 @@
   /**                                                                       **/
   /** Contains the version number (= date) of this release of CLM_LIBS.     **/
   /**                                                                       **/
-  #define CLM_LIBS 20210320
+  #define CLM_LIBS 20240815
 
   /** ********************************************************************* **/
   /**                                                                       **/
@@ -2382,11 +2382,9 @@
     /** #### array_sort                                                     **/ \
     /**                                                                     **/ \
     /** Sorts the first `length` elements of the array `A` in-place using   **/ \
-    /** heapsort.                                                           **/ \
+    /** shellsort with a growing factor of 2.25.                            **/ \
     /**                                                                     **/ \
     /** **Warning:** The parameter `A` must satisfy: `A != NULL`.           **/ \
-    /**                                                                     **/ \
-    /** **Warning:** The parameter `length` must satisfy: `length > 0`.     **/ \
     /**                                                                     **/ \
     /** **Warning:** This sorting algorithm is NOT stable.                  **/ \
     /**                                                                     **/ \
@@ -2409,62 +2407,22 @@
                                                                                 \
         /* Preconditions */                                                     \
         assert(A != NULL);                                                      \
-        assert(length > 0);                                                     \
                                                                                 \
-        const size_t N = length-1;                                              \
-        size_t i, j, min, max;                                                  \
-        type   pivot;                                                           \
+        size_t i, j, gap;                                                       \
         type   temp;                                                            \
                                                                                 \
-        /* Insertion sort for small arrays */                                   \
-        if (length < 128) {                                                     \
-            for (i = 1; i < length; ++i) {                                      \
+        /* Shellsort(2.25) */                                                   \
+        for (gap = 3; gap <= length/9; gap = gap*9/4 + 1);                      \
+                                                                                \
+        for (gap = gap*4/9; gap; gap = gap*4/9) {                               \
+            for (i = gap; i < length; ++i) {                                    \
                 temp = A[i];                                                    \
-                for (j = i; j && less(temp, A[j-1]); --j) { A[j] = A[j-1]; }    \
+                for (j = i; gap <= j && less(temp, A[j-gap]); j -= gap) {       \
+                    A[j] = A[j-gap];                                            \
+                }                                                               \
                 A[j] = temp;                                                    \
-            } return;                                                           \
+            }                                                                   \
         }                                                                       \
-                                                                                \
-        /* Place sentinels at A[0] and A[N] */                                  \
-        min = max = N;                                                          \
-        for (i = N; i-->0; ) {                                                  \
-            if      (less(A[i], A[min])) { min = i; }                           \
-            else if (less(A[max], A[i])) { max = i; }                           \
-        }                                                                       \
-        temp = A[0]; A[0] = A[max]; A[max] = temp;                              \
-        if (min) { temp = A[N]; A[N] = A[min]; A[min] = temp; }                 \
-        else     { temp = A[N]; A[N] = A[max]; A[max] = temp; }                 \
-                                                                                \
-        /* Heapify the range [1, N) */                                          \
-        for (i = (N-1) >> 1; i; i--) {                                          \
-            j     = i << 1;                                                     \
-            pivot = A[i];                                                       \
-            do {j += (less(A[j], A[j+1]) ? 1 : 0);                              \
-                if (!less(pivot, A[j])) { break; }                              \
-                A[j >> 1] = A[j];                                               \
-            } while ((j <<= 1) < N);                                            \
-            A[j >> 1] = pivot;                                                  \
-        }                                                                       \
-                                                                                \
-        /* Sort the range [4, N) */                                             \
-        for (i = N-1; i > 3; i--) {                                             \
-            j     = 2;                                                          \
-            temp  = A[1];                                                       \
-            pivot = A[i];                                                       \
-            do {j += (less(A[j], A[j+1]) ? 1 : 0);                              \
-                if (!less(pivot, A[j])) { break; }                              \
-                A[j >> 1] = A[j];                                               \
-            } while ((j <<= 1) < i);                                            \
-            A[j >> 1] = pivot;                                                  \
-            A[i]      = temp;                                                   \
-        }                                                                       \
-                                                                                \
-        /* Sort the range [1, 4) */                                             \
-        if (less(A[3], A[2])) { temp = A[1]; A[1] = A[3]; A[3] = temp; }        \
-        else     { temp = A[1]; A[1] = A[2]; A[2] = A[3]; A[3] = temp; }        \
-                                                                                \
-        /* Swap the sentinels back */                                           \
-        temp = A[0]; A[0] = A[N]; A[N] = temp;                                  \
     }                                                                           \
                                                                                 \
     /** ******************************************************************* **/ \
@@ -2841,7 +2799,7 @@
   /** user in many common applications (e.g. inserting N sorted elements    **/
   /** takes just `O(N)` time rather than `O(N*log(N))` time).               **/
   /**                                                                       **/
-  /** Incidentaly, Splay Trees also solve the "failed quieries" problem of  **/
+  /** Incidentaly, Splay Trees also solve the "failed queries" problem of   **/
   /** type-safe search trees (i.e. what to return when a `find` or `delete` **/
   /** query fails) in a very natural way:                                   **/
   /**                                                                       **/
